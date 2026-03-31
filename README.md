@@ -25,4 +25,4 @@ Standard-Endpoint für lokale Entwicklung: `ws://10.0.2.2:8080/ws` (Android Emul
 
 
 ## Backend Repo
-https://github.com/STEFANLEGAT2002/server
+https://github.com/HexaBrawl/server
