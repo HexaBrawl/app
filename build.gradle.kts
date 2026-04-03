@@ -3,7 +3,7 @@ plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.kotlin.android) apply false
     alias(libs.plugins.kotlin.compose) apply false
-    id("org.sonarqube") version "7.2.3.7755"
+    id("org.sonarqube") version "5.1.0.4882"
 }
 
 sonar {
@@ -11,4 +11,4 @@ sonar {
         property("sonar.projectKey","HexaBrawl_app")
         property("sonar.organization","hexabrawl")
     }
-}
+}        
