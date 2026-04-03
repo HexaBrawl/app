@@ -1,4 +1,4 @@
-name: SonarQube
+name: SonarCloud
 on:
   push:
     branches:
@@ -17,8 +17,8 @@ jobs:
         uses: actions/setup-java@v5
         with:
           java-version: 17
-          distribution: 'zulu' # Alternative distribution options are available
-      - name: Cache SonarQube packages
+          distribution: 'zulu'
+      - name: Cache SonarCloud packages
         uses: actions/cache@v5
         with:
           path: ~/.sonar/cache
@@ -27,10 +27,15 @@ jobs:
       - name: Cache Gradle packages
         uses: actions/cache@v5
         with:
-          path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle.kts', '**/libs.versions.toml') }}
           restore-keys: ${{ runner.os }}-gradle
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
       - name: Build and analyze
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: ./gradlew build sonar --info
+        run: ./gradlew jacocoTestReport sonar --info
