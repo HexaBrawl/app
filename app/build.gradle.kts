@@ -101,8 +101,8 @@ tasks.register<JacocoReport>("jacocoTestReport") {
 
 sonar {
     properties {
-        property("sonar.projectKey", "AAU-SE2_WebSocketBrokerDemo-App")
-        property("sonar.organization", "aau-se2")
+        property("sonar.projectKey", "HexaBrawl_app")
+        property("sonar.organization", "hexabrawl")
         property("sonar.host.url", "https://sonarcloud.io")
         property("sonar.java.coveragePlugin", "jacoco")
         property(
