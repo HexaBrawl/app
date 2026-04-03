@@ -10,5 +10,6 @@ sonar {
     properties{
         property("sonar.projectKey","HexaBrawl_app")
         property("sonar.organization","hexabrawl")
+        property("sonar.host.url", "https://sonarcloud.io")
     }
 }        
