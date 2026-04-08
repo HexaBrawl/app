@@ -96,4 +96,15 @@ class MyStomp(val callbacks: Callbacks) {
             }
         }
     }
+
+    fun disconnect() {
+        scope.launch {
+            try {
+                session?.disconnect()
+                callback("Disconnected")
+            } catch (e: Exception) {
+                callback("Error during disconnect: ${e.message}")
+            }
+        }
+    }
 }

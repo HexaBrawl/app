@@ -5,27 +5,37 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.mutableStateOf
+import androidx.navigation.compose.rememberNavController
+import at.aau.serg.websocketbrokerdemo.ui.navigation.AppNavHost
 import com.example.myapplication.R
 
 class MainActivity : ComponentActivity(), Callbacks {
-    lateinit var myStomp: MyStomp
-    lateinit var response: TextView
+    lateinit var myStomp: MyStomp   //STOMP-Client-Instanz
+    private val responseState = mutableStateOf("")
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        //Initialisierte STOMP-Client mit Callback-Interface
         myStomp = MyStomp(this)
 
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContentView(R.layout.fragment_fullscreen)
-
-        findViewById<Button>(R.id.connectbtn).setOnClickListener { myStomp.connect() }
-        findViewById<Button>(R.id.hellobtn).setOnClickListener { myStomp.sendHello() }
-        findViewById<Button>(R.id.jsonbtn).setOnClickListener { myStomp.sendJson() }
-        response = findViewById(R.id.response_view)
+        //Compose-Content setzen
+        setContent {
+            val navController = rememberNavController()
+            AppNavHost(navController, myStomp, responseState)
+        }
     }
 
     override fun onResponse(res: String) {
-        response.text = res
+        responseState.value = res
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        myStomp.disconnect()
     }
 
 
