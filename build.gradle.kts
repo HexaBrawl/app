@@ -14,5 +14,6 @@ sonar {
         property("sonar.host.url", "https://sonarcloud.io")
         //Exclude UI folders from testing
         property("sonar.coverage.exclusions", "**/at/aau/serg/websocketbrokerdemo/ui/**")
+        property("sonar.exclusions", "**/at/aau/serg/websocketbrokerdemo/grid/HexGridOld.kt")
     }
 }        
