@@ -4,8 +4,8 @@
       <verify-metadata>true</verify-metadata>
       <verify-signatures>false</verify-signatures>
       <trusted-artifacts>
-         <trust file=".*-javadoc.jar" regex="true"/>
          <trust file=".*-sources.jar" regex="true"/>
+         <trust file=".*-javadoc.jar" regex="true"/>
       </trusted-artifacts>
    </configuration>
    <components>
