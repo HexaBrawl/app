@@ -48,7 +48,7 @@ class MyStomp(val callbacks: Callbacks) {
                 jsonCollector = scope.launch {
                     jsonFlow?.collect { msg ->
                         val o = JSONObject(msg)
-                        callback(o.get("text").toString())
+                        callback(o["text"].toString())
                     }
                 }
                 callback("connected")
