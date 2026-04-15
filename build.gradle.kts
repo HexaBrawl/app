@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.kotlin.android) apply false
     alias(libs.plugins.kotlin.compose) apply false
+    //noinspection NewerVersionAvailable - Do not mark this as a warning
     id("org.sonarqube") version "5.1.0.4882"
 }
 
@@ -11,5 +12,7 @@ sonar {
         property("sonar.projectKey","HexaBrawl_app")
         property("sonar.organization","hexabrawl")
         property("sonar.host.url", "https://sonarcloud.io")
+        //Exclude UI folders from testing
+        property("sonar.coverage.exclusions", "**/at/aau/serg/websocketbrokerdemo/ui/**")
     }
 }        
