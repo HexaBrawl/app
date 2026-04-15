@@ -19,8 +19,14 @@ sonar {
             app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/**,
             app/src/main/java/at/aau/serg/websocketbrokerdemo/grid/HexGrid.kt,
             app/src/main/java/at/aau/serg/websocketbrokerdemo/grid/GridRenderer.kt,
+            
+            app/src/main/java/at/aau/serg/websocketbrokerdemo/grid/UnitData.kt,
+            app/src/main/java/at/aau/serg/websocketbrokerdemo/grid/ShapeUtils.kt
+            
+            app/src/main/java/MyStomp.kt
+            app/src/main/java/at/aau/serg/websocketbrokerdemo/MainActivity.kt,
+            
             app/src/main/java/at/aau/serg/websocketbrokerdemo/grid/HexGridOld.kt,
-            app/src/main/java/at/aau/serg/websocketbrokerdemo/MyStomp.kt
             """.trimIndent()
         )
 
