@@ -1,5 +1,6 @@
 [versions]
-agp = "8.13.0"
+agp = "9.1.1"
+#noinspection NewerVersionAvailable
 kotlin = "2.3.10"
 coreKtx = "1.18.0"
 junit = "4.13.2"
