@@ -14,6 +14,10 @@ sonar {
         property("sonar.host.url", "https://sonarcloud.io")
         //Exclude UI folders from testing
         property("sonar.coverage.exclusions", "**/at/aau/serg/websocketbrokerdemo/ui/**")
+        //Too much UI logic, review refactoring possibilities in the future
+        property("sonar.coverage.exclusions", "**/at/aau/serg/websocketbrokerdemo/grid/HexGrid")
+        property("sonar.coverage.exclusions", "**/at/aau/serg/websocketbrokerdemo/grid/GridRenderer")
+        //Legacy class that I don't want to delete
         property("sonar.exclusions", "**/at/aau/serg/websocketbrokerdemo/grid/HexGridOld.kt")
     }
 }        
