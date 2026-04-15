@@ -23,5 +23,7 @@ sonar {
             app/src/main/java/at/aau/serg/websocketbrokerdemo/MyStomp.kt
             """.trimIndent()
         )
+
+        property("sonar.cpd.exclusions", "app/src/main/java/at/aau/serg/websocketbrokerdemo/grid/HexGridOld.kt")
     }
 }        
