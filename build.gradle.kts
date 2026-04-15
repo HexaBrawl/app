@@ -15,8 +15,8 @@ sonar {
         //Exclude UI folders from testing
         property("sonar.coverage.exclusions", "**/at/aau/serg/websocketbrokerdemo/ui/**")
         //Too much UI logic, review refactoring possibilities in the future
-        property("sonar.coverage.exclusions", "**/at/aau/serg/websocketbrokerdemo/grid/HexGrid")
-        property("sonar.coverage.exclusions", "**/at/aau/serg/websocketbrokerdemo/grid/GridRenderer")
+        property("sonar.coverage.exclusions", "**/at/aau/serg/websocketbrokerdemo/grid/HexGrid.kt")
+        property("sonar.coverage.exclusions", "**/at/aau/serg/websocketbrokerdemo/grid/GridRenderer.kt")
         //Legacy class that I don't want to delete
         property("sonar.exclusions", "**/at/aau/serg/websocketbrokerdemo/grid/HexGridOld.kt")
     }
