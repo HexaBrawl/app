@@ -13,12 +13,15 @@ sonar {
         property("sonar.organization","hexabrawl")
         property("sonar.host.url", "https://sonarcloud.io")
         //Exclude UI folders from testing
-        property("sonar.coverage.exclusions", "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/**")
-        //Too much UI logic, review refactoring possibilities in the future
-        property("sonar.coverage.exclusions", "app/src/main/java/at/aau/serg/websocketbrokerdemo/grid/HexGrid.kt")
-        property("sonar.coverage.exclusions", "app/src/main/java/at/aau/serg/websocketbrokerdemo/grid/GridRenderer.kt")
-        //Legacy class that I don't want to delete
-        property("sonar.coverage.exclusions", "app/src/main/java/at/aau/serg/websocketbrokerdemo/grid/HexGridOld.kt")
-        property("sonar.coverage.exclusions", "app/src/main/java/at/aau/serg/websocketbrokerdemo/MyStomp.kt")
+        property(
+            "sonar.coverage.exclusions",
+            """
+            app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/**,
+            app/src/main/java/at/aau/serg/websocketbrokerdemo/grid/HexGrid.kt,
+            app/src/main/java/at/aau/serg/websocketbrokerdemo/grid/GridRenderer.kt,
+            app/src/main/java/at/aau/serg/websocketbrokerdemo/grid/HexGridOld.kt,
+            app/src/main/java/at/aau/serg/websocketbrokerdemo/MyStomp.kt
+            """.trimIndent()
+        )
     }
 }        
