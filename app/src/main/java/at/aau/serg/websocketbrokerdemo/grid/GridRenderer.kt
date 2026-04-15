@@ -1,7 +1,8 @@
 package at.aau.serg.websocketbrokerdemo.grid
 
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import kotlin.math.cos
@@ -14,39 +15,61 @@ fun DrawScope.drawHexGrid(
     units: List<UnitData>,
     shape: GridShape
 ) {
+    val unitMap = units.associateBy { it.x to it.y }
+
     for (row in 0 until rows) {
         for (col in 0 until cols) {
+
             if (!ShapeUtils.isInShape(shape, col, row)) continue
 
             val (centerX, centerY) = getHexCenter(col, row, layout)
+            val unit = unitMap[col to row]
 
-            val path = Path()
-            for (i in 0..5) {
-                val angle = Math.toRadians((60 * i).toDouble())
-                val x = centerX + layout.hexSize * cos(angle).toFloat()
-                val y = centerY + layout.hexSize * sin(angle).toFloat()
+            drawHex(centerX, centerY, layout.hexSize)
 
-                if (i == 0) path.moveTo(x, y)
-                else path.lineTo(x, y)
-            }
-            path.close()
-
-            drawPath(
-                path = path,
-                color = Color.Black,
-                style = Stroke(width = 3f)
-            )
-
-            val unit = units.find { it.x == col && it.y == row }
             if (unit != null) {
-                val colorInt = PlayerColors.getColorForPlayer(unit.player)
-
-                drawCircle(
-                    color = Color(colorInt),
-                    radius = layout.hexSize / 2.5f,
-                    center = Offset(centerX, centerY)
-                )
+                drawUnit(unit, centerX, centerY, layout.hexSize)
             }
         }
     }
+}
+
+private fun DrawScope.drawHex(
+    centerX: Float,
+    centerY: Float,
+    hexSize: Float
+) {
+    val path = Path()
+
+    for (i in 0..5) {
+        val angle = Math.toRadians((60 * i).toDouble())
+        val x = centerX + hexSize * cos(angle).toFloat()
+        val y = centerY + hexSize * sin(angle).toFloat()
+
+        if (i == 0) path.moveTo(x, y)
+        else path.lineTo(x, y)
+    }
+
+    path.close()
+
+    drawPath(
+        path = path,
+        color = Color.Black,
+        style = Stroke(width = 3f)
+    )
+}
+
+private fun DrawScope.drawUnit(
+    unit: UnitData,
+    centerX: Float,
+    centerY: Float,
+    hexSize: Float
+) {
+    val colorInt = PlayerColors.getColorForPlayer(unit.player)
+
+    drawCircle(
+        color = Color(colorInt),
+        radius = hexSize / 2.5f,
+        center = Offset(centerX, centerY)
+    )
 }
