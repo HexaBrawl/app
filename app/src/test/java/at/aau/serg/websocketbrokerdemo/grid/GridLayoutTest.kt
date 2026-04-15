@@ -1,7 +1,7 @@
 package at.aau.serg.websocketbrokerdemo.grid
 
-import org.junit.Assert.assertTrue
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
 
 class GridLayoutTest {
 
