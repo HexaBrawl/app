@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">HexaBrawl</string>
+
+    <!-- HomeScreen -->
+    <string name="home_welcome">Willkommen bei</string>
+    <string name="home_title">HEXABRAWL</string>
+    <string name="home_play">SPIELEN</string>
+    <string name="home_exit">Beenden</string>
+    <string name="home_settings">Einstellungen</string>
+
+    <!-- SettingsScreen -->
+    <string name="settings_title">Einstellungen</string>
+    <string name="settings_language">Sprache</string>
+    <string name="settings_lang_en">English</string>
+    <string name="settings_lang_de">Deutsch</string>
+    <string name="settings_audio">Audio</string>
+    <string name="settings_music">Musik</string>
+    <string name="settings_music_volume">Musiklautstärke</string>
+    <string name="settings_sfx">Soundeffekte</string>
+    <string name="settings_back">Zurück</string>
+    <string name="settings_on">An</string>
+    <string name="settings_off">Aus</string>
+</resources>
