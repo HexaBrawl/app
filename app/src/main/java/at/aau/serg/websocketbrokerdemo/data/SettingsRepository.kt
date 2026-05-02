@@ -11,23 +11,14 @@ import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-/**
- * Persistente App-Einstellungen via DataStore.
- *
- * Hält:
- *  - Sprache ("de" / "en")
- *  - Musik on/off + Lautstärke (0.0 - 1.0)
- *  - SFX (Soundeffekte) on/off
- *
- * Wird in einem späteren Task ggf. um weitere Felder ergänzt
- * (z. B. Spielername, Server-URL).
- */
+
+
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "hexabrawl_settings")
 
 object SettingsKeys {
-    val LANGUAGE = stringPreferencesKey("language")        // "de" | "en"
+    val LANGUAGE = stringPreferencesKey("language")
     val MUSIC_ENABLED = booleanPreferencesKey("music_enabled")
-    val MUSIC_VOLUME = floatPreferencesKey("music_volume") // 0f..1f
+    val MUSIC_VOLUME = floatPreferencesKey("music_volume")
     val SFX_ENABLED = booleanPreferencesKey("sfx_enabled")
 }
 
@@ -42,7 +33,7 @@ class SettingsRepository(private val context: Context) {
 
     val settings: Flow<AppSettings> = context.dataStore.data.map { prefs ->
         AppSettings(
-            language = prefs[SettingsKeys.LANGUAGE] ?: defaultLanguage(),
+            language = prefs[SettingsKeys.LANGUAGE] ?: LocaleCache.get(context),
             musicEnabled = prefs[SettingsKeys.MUSIC_ENABLED] ?: true,
             musicVolume = prefs[SettingsKeys.MUSIC_VOLUME] ?: 0.6f,
             sfxEnabled = prefs[SettingsKeys.SFX_ENABLED] ?: true
@@ -50,7 +41,10 @@ class SettingsRepository(private val context: Context) {
     }
 
     suspend fun setLanguage(lang: String) {
+        // 1) Persistent in DataStore
         context.dataStore.edit { it[SettingsKeys.LANGUAGE] = lang }
+        // 2) Synchroner Spiegel für attachBaseContext()
+        LocaleCache.set(context, lang)
     }
 
     suspend fun setMusicEnabled(enabled: Boolean) {
@@ -63,11 +57,5 @@ class SettingsRepository(private val context: Context) {
 
     suspend fun setSfxEnabled(enabled: Boolean) {
         context.dataStore.edit { it[SettingsKeys.SFX_ENABLED] = enabled }
-    }
-
-    /** Defaultsprache anhand der System-Locale wählen. */
-    private fun defaultLanguage(): String {
-        val sys = java.util.Locale.getDefault().language
-        return if (sys == "de") "de" else "en"
     }
 }
