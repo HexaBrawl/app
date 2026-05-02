@@ -40,6 +40,7 @@ krossbow-websocket-okhttp = { module = "org.hildan.krossbow:krossbow-websocket-o
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junitJupiterApi" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
 navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationComposeVersion" }
+androidx-compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
 
 [plugins]
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }

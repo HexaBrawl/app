@@ -127,6 +127,7 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.navigation.compose)
+    implementation(libs.androidx.compose.material.icons.extended)
     testImplementation(libs.junit)
     testImplementation(libs.junit.jupiter.api)
     testRuntimeOnly(libs.junit.jupiter.engine)
