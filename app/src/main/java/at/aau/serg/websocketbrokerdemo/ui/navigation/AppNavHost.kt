@@ -7,12 +7,31 @@ import androidx.navigation.compose.composable
 import at.aau.serg.websocketbrokerdemo.ui.lobby.HomeScreen
 import at.aau.serg.websocketbrokerdemo.ui.game.GameScreen
 import MyStomp
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
+import at.aau.serg.websocketbrokerdemo.audio.MusicManager
 
 @Composable
-fun AppNavHost(navController: NavHostController, myStomp: MyStomp, responseState: State<String>) {
+fun AppNavHost(
+    navController: NavHostController,
+    myStomp: MyStomp,
+    responseState: State<String>
+) {
     NavHost(navController, startDestination = "home") {
-        composable("home") { HomeScreen(navController) }
-        composable("game") { GameScreen(myStomp, responseState) }
+
+        composable("home") {
+            HomeScreen(navController)
+        }
+
+        // TODO Task 2+: composable("mainmenu") { MainMenuScreen(navController) }
+
+        composable("game") {
+            // Sobald der Spieler ins Kampfsystem wechselt, pausiert der Menü-Track.
+            // Eine eigene Kampf-Musik kommt in einem späteren Task hierher.
+            LaunchedEffect(Unit) {
+                MusicManager.pause()
+            }
+            GameScreen(myStomp, responseState)
+        }
     }
 }
