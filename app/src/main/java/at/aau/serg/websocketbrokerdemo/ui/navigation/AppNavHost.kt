@@ -10,6 +10,7 @@ import MyStomp
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import at.aau.serg.websocketbrokerdemo.audio.MusicManager
+import at.aau.serg.websocketbrokerdemo.ui.settings.SettingsScreen
 
 @Composable
 fun AppNavHost(
@@ -23,10 +24,14 @@ fun AppNavHost(
             HomeScreen(navController)
         }
 
+        composable("settings") {
+            SettingsScreen(navController)
+        }
+
         // TODO Task 2+: composable("mainmenu") { MainMenuScreen(navController) }
 
         composable("game") {
-            // Sobald der Spieler ins Kampfsystem wechselt, pausiert der Menü-Track.
+            // Menü-Track pausieren, sobald wir ins Kampfsystem wechseln.
             // Eine eigene Kampf-Musik kommt in einem späteren Task hierher.
             LaunchedEffect(Unit) {
                 MusicManager.pause()
