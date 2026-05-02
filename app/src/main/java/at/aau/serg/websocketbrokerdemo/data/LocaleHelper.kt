@@ -1,26 +1,44 @@
 package at.aau.serg.websocketbrokerdemo.data
 
+import android.content.Context
+import android.content.res.Configuration
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
+import java.util.Locale
 
 /**
- * Setzt die App-Sprache zur Laufzeit.
+ * App-interne Sprachumschaltung — komplett ohne System-Einstellungen.
  *
- * Nutzt die Per-App-Language-API (AppCompat 1.6+).
- * - Auf Android 13+ ist das systemweit integriert
- * - Auf älteren Versionen wird die Sprache app-intern persistiert
+ * Funktioniert so:
+ *  1. Beim Start liest die MainActivity in attachBaseContext() die gespeicherte
+ *     Sprache aus DataStore und ruft updateLocale(base, lang) auf, um den
+ *     Activity-Context zu wrappen.
+ *  2. Bei einem Sprachwechsel im SettingsScreen wird die Activity recreated,
+ *     wodurch attachBaseContext() erneut aufgerufen wird und die neue Sprache
+ *     greift.
  *
- * Wichtig: Das löst eine Activity-Recreation aus, damit alle
- * Composables neue Strings ziehen.
+ * Der Vorteil gegenüber AppCompatDelegate.setApplicationLocales:
+ *  - Kein Eintrag in den System-Einstellungen
+ *  - Kein localeConfig.xml im Manifest nötig
+ *  - Funktioniert identisch auf allen Android-Versionen
  */
 object LocaleHelper {
 
-    fun apply(language: String) {
-        val tag = when (language) {
-            "de" -> "de"
-            "en" -> "en"
-            else -> "en"
-        }
-        AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(tag))
+    /** Wrappt den gegebenen Context, sodass alle Resources die Ziel-Locale nutzen. */
+    fun updateLocale(context: Context, language: String): Context {
+        val locale = Locale(normalize(language))
+        Locale.setDefault(locale)
+
+        val config = Configuration(context.resources.configuration)
+        config.setLocale(locale)
+        config.setLayoutDirection(locale)
+
+        return context.createConfigurationContext(config)
+    }
+
+    private fun normalize(language: String): String = when (language) {
+        "de" -> "de"
+        "en" -> "en"
+        else -> "en"
     }
 }
