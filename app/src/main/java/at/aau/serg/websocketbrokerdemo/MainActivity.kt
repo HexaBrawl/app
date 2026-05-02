@@ -9,24 +9,39 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.mutableStateOf
 import androidx.navigation.compose.rememberNavController
+import at.aau.serg.websocketbrokerdemo.audio.MusicManager
 import at.aau.serg.websocketbrokerdemo.ui.navigation.AppNavHost
 import com.example.myapplication.R
 
 class MainActivity : ComponentActivity(), Callbacks {
-    lateinit var myStomp: MyStomp   //STOMP-Client-Instanz
+
+    lateinit var myStomp: MyStomp   // STOMP-Client-Instanz
     private val responseState = mutableStateOf("")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        //Initialisierte STOMP-Client mit Callback-Interface
+        // STOMP-Client mit Callback-Interface initialisieren
         myStomp = MyStomp(this)
 
-        //Compose-Content setzen
+        // Compose-Content setzen
         setContent {
             val navController = rememberNavController()
             AppNavHost(navController, myStomp, responseState)
         }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        // App im Hintergrund -> Musik stumm stellen, kein Resourcen-Frei
+        MusicManager.pause()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Wenn der Nutzer zurückkehrt, Menü-Track ggf. wieder starten.
+        // (Im Game-Screen ist die Musik eh pausiert.)
+        MusicManager.resume()
     }
 
     override fun onResponse(res: String) {
@@ -36,8 +51,6 @@ class MainActivity : ComponentActivity(), Callbacks {
     override fun onDestroy() {
         super.onDestroy()
         myStomp.disconnect()
+        MusicManager.release()
     }
-
-
 }
-
