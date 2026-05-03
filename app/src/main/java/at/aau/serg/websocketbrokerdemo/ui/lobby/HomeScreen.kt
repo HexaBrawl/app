@@ -1,21 +1,21 @@
 package at.aau.serg.websocketbrokerdemo.ui.lobby
 
 import android.app.Activity
-import android.graphics.drawable.Icon
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.AbsoluteRoundedCornerShape
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -26,9 +26,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Icon
-
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
@@ -38,14 +36,12 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -54,19 +50,13 @@ import at.aau.serg.websocketbrokerdemo.ui.theme.GoldCoin
 import at.aau.serg.websocketbrokerdemo.ui.theme.GoldCoinDark
 import at.aau.serg.websocketbrokerdemo.ui.theme.GoldCoinLight
 import at.aau.serg.websocketbrokerdemo.ui.theme.InkBlack
-import at.aau.serg.websocketbrokerdemo.ui.theme.InkBrown
-import at.aau.serg.websocketbrokerdemo.ui.theme.InkFaded
 import at.aau.serg.websocketbrokerdemo.ui.theme.ParchmentBase
 import at.aau.serg.websocketbrokerdemo.ui.theme.ParchmentDark
-import at.aau.serg.websocketbrokerdemo.ui.theme.ParchmentEdge
 import at.aau.serg.websocketbrokerdemo.ui.theme.ParchmentLight
 import at.aau.serg.websocketbrokerdemo.ui.theme.WoodDark
 import at.aau.serg.websocketbrokerdemo.ui.theme.WoodLight
 import at.aau.serg.websocketbrokerdemo.ui.theme.WoodMedium
 import com.example.myapplication.R
-
-
-
 
 @Composable
 fun HomeScreen(navController: NavController) {
@@ -79,7 +69,7 @@ fun HomeScreen(navController: NavController) {
 
     Box(modifier = Modifier.fillMaxSize()) {
 
-        // 1) Hintergrund-Holzfläche, sichtbar an den Rändern wo das Bild aufhört
+        // 1) Hintergrund-Holzfläche
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -91,14 +81,7 @@ fun HomeScreen(navController: NavController) {
                 )
         )
 
-        // 2) Hintergrundbild – komplett sichtbar (Fit), leicht herauszoomen via scale
-        //
-        //    ContentScale.Fit:  Bild komplett zeigen, ggf. Ränder leer (gelöst durch
-        //                       die Holz-Box darunter).
-        //    scale(0.92f):      Optisches "weiter weg" – kannst du anpassen:
-        //                       1.0f  = Bild füllt soviel wie möglich
-        //                       0.85f = deutlich kleiner, mehr Holzrahmen sichtbar
-        //                       0.95f = ganz leicht zurückgenommen
+        // 2) Hintergrundbild
         Image(
             painter = painterResource(id = R.drawable.bg_homescreen),
             contentDescription = null,
@@ -108,7 +91,7 @@ fun HomeScreen(navController: NavController) {
                 .scale(1.25f)
         )
 
-        // 3) Sanfte Vignette für Tiefe und besseren Button-Kontrast
+        // 3) Sanfte Vignette
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -145,26 +128,48 @@ fun HomeScreen(navController: NavController) {
             )
         }
 
+        // 4.5) Logo / Überschrift
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .padding(top = 5.dp)
+                .fillMaxWidth()
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.hexalogo),
+                contentDescription = "HexaBrawl Logo",
+                modifier = Modifier
+                    .fillMaxWidth(1.0f)
+                    .height(315.dp)
+                    .requiredWidth(460.dp)
+                    .shadow(elevation = 1.dp, shape = AbsoluteRoundedCornerShape(14.dp), clip = false)
+                    .align(Alignment.Center),
+                contentScale = ContentScale.FillWidth
+            )
+        }
+
         // 5) PLAY mittig als Goldmünze
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
                 .align(Alignment.Center)
-                .size(250.dp)
+                .padding(bottom = 20.dp)
+                .size(120.dp)
                 .shadow(elevation = 14.dp, shape = CircleShape)
                 .background(
-                    brush = Brush.radialGradient(
+                    brush = Brush.linearGradient(
                         colors = listOf(GoldCoinLight, GoldCoin, GoldCoinDark),
-                        radius = 280f
+                        start = Offset.Zero,
+                        end = Offset(0f, 700F)
                     ),
                     shape = CircleShape
                 )
-                .border(width = 4.dp, color = GoldCoinDark, shape = CircleShape)
+                .border(width = 10.dp, Brush.verticalGradient(listOf(ParchmentBase, ParchmentDark)), shape = CircleShape)
         ) {
             Box(
                 modifier = Modifier
-                    .size(220.dp)
-                    .border(width = 1.5.dp, color = GoldCoinDark, shape = CircleShape)
+                    .fillMaxSize(0.80f)
+                    .border(width = 2.dp, color = GoldCoinDark.copy(alpha = 0.5f), shape = CircleShape)
             )
             Button(
                 onClick = {
@@ -177,15 +182,25 @@ fun HomeScreen(navController: NavController) {
                 ),
                 modifier = Modifier.size(220.dp)
             ) {
-                Text(
-                    text = stringResource(R.string.home_play),
-                    style = TextStyle(
-                        fontSize = 36.sp,
-                        fontWeight = FontWeight.ExtraBold,
-                        color = InkBlack,
-                        letterSpacing = 3.sp
+                Box(contentAlignment = Alignment.Center) {
+                    // 1. Der "Schatten" des Icons
+                    Icon(
+                        painter = painterResource(id = R.drawable.playbutton),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(90.dp)
+                            .offset(y = 2.dp), // Leicht nach unten versetzt
+                        tint = GoldCoinDark.copy(alpha = 0.5f)
                     )
-                )
+
+                    // 2. Das eigentliche Icon
+                    Icon(
+                        painter = painterResource(id = R.drawable.playbutton),
+                        contentDescription = "Play",
+                        modifier = Modifier.size(90.dp),
+                        tint = InkBlack
+                    )
+                }
             }
         }
 
@@ -214,7 +229,7 @@ fun HomeScreen(navController: NavController) {
                 modifier = Modifier.height(54.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Filled.ExitToApp,
+                    imageVector = Icons.Filled.Cancel,
                     contentDescription = null,
                     tint = GoldCoinLight,
                     modifier = Modifier.size(22.dp)
