@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">HexaBrawl</string>
+
+    <!-- HomeScreen -->
+    <string name="home_welcome">Willkommen bei</string>
+    <string name="home_title">HEXABRAWL</string>
+    <string name="home_play">SPIELEN</string>
+    <string name="home_exit">Beenden</string>
+    <string name="home_settings">Einstellungen</string>
+
+    <!-- SettingsScreen -->
+    <string name="settings_title">Einstellungen</string>
+    <string name="settings_language">Sprache</string>
+    <string name="settings_lang_en">English</string>
+    <string name="settings_lang_de">Deutsch</string>
+    <string name="settings_audio">Audio</string>
+    <string name="settings_music">Musik</string>
+    <string name="settings_music_volume">Musiklautstärke</string>
+    <string name="settings_sfx">Soundeffekte</string>
+    <string name="settings_back">Zurück</string>
+    <string name="settings_on">An</string>
+    <string name="settings_off">Aus</string>
+
+    <!-- MainMenu -->
+    <string name="menu_info">Information</string>
+    <string name="menu_choose_battlefield">WÄHLE DEIN SCHLACHTFELD</string>
+    <string name="menu_player_count">%d Spieler</string>
+
+    <!-- Spielmodi -->
+    <string name="mode_dual_valley">Dual Valley</string>
+    <string name="mode_dual_valley_tagline">Zwei Heere, eine Brücke.</string>
+    <string name="mode_triad_outpost">Triad Outpost</string>
+    <string name="mode_triad_outpost_tagline">Drei Banner, drei Festungen.</string>
+    <string name="mode_battlefield_peaks">Battlefield Peaks</string>
+    <string name="mode_battlefield_peaks_tagline">Vier Häuser im Hochland.</string>
+
+    <!-- Info-Dialog -->
+    <string name="info_title">Kriegshandbuch</string>
+    <string name="info_combat_label">⚔ KAMPF</string>
+    <string name="info_combat">Schere-Stein-Papier: Infanterie schlägt Kavallerie, Kavallerie schlägt Bogenschützen, Bogenschützen schlagen Infanterie.</string>
+    <string name="info_economy_label">⚖ WIRTSCHAFT</string>
+    <string name="info_economy">Jedes verbundene Feld bringt 1 Gold pro Runde. Truppenunterhalt beginnt bei 3 und steigt um +1 pro weiterer Einheit.</string>
+    <string name="info_supply_label">🏰 VERSORGUNGSLINIE</string>
+    <string name="info_supply">Wird ein Feld vom Hauptgebäude abgeschnitten, fällt es brach — und alle dortigen Truppen mit ihm.</string>
+    <string name="info_terrain_label">🌲 GELÄNDE</string>
+    <string name="info_terrain">Bäume können gerodet werden. Grabsteine bleiben für immer und blockieren das Bauen.</string>
+
+    <!-- Dialog-Buttons -->
+    <string name="dialog_cancel">Abbrechen</string>
+    <string name="dialog_march">Marsch!</string>
+    <string name="dialog_understood">Verstanden</string>
+    <string name="dialog_join">Beitreten</string>
+
+    <!-- Lobby-Aktionen -->
+    <string name="lobby_orders_headline">— WÄHLE DEINEN AUFTRAG, GENERAL —</string>
+    <string name="lobby_create_private">Privates Spiel erstellen</string>
+    <string name="lobby_create_private_sub">Versiegelte Schlacht mit Verbündeten</string>
+    <string name="lobby_join_with_code">Mit Code beitreten</string>
+    <string name="lobby_join_with_code_sub">Gib das Siegel eines Verbündeten ein</string>
+    <string name="lobby_join_random">Zufällig beitreten</string>
+    <string name="lobby_join_random_sub">Wirf die Würfel des Schicksals</string>
+
+    <!-- Code-Dialog -->
+    <string name="dialog_enter_code">Schlacht-Siegel eingeben</string>
+    <string name="dialog_enter_code_sub">4 bis 8 Zeichen, von deinem Verbündeten</string>
+
+    <!-- Coming-Soon (Server kommt später) -->
+    <string name="coming_soon_create">Hier würde nun ein privates Spiel erstellt. Die Server-Anbindung folgt im nächsten Task.</string>
+    <string name="coming_soon_code">Beitreten zur Schlacht mit Code: %s\n\nDie Server-Anbindung folgt im nächsten Task.</string>
+    <string name="coming_soon_random">Suche nach zufälliger Schlacht… Die Server-Anbindung folgt im nächsten Task.</string>
+</resources>
