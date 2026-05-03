@@ -23,6 +23,8 @@ Die ersten Mockups und Screens für die Lobby und das Spielfeld werden aktuell e
 Die App verbindet sich beim Start mit dem Game-Server via WebSockets. 
 Standard-Endpoint für lokale Entwicklung: `ws://10.0.2.2:8080/ws` (Android Emulator Adresse für localhost).
 
+# Link zum Wiki
+https://github.com/HexaBrawl/server/wiki
 
 ## Backend Repo
 https://github.com/HexaBrawl/server
