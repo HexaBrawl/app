@@ -21,4 +21,52 @@
     <string name="settings_back">Back</string>
     <string name="settings_on">On</string>
     <string name="settings_off">Off</string>
+
+    <!-- MainMenu -->
+    <string name="menu_info">Information</string>
+    <string name="menu_choose_battlefield">CHOOSE YOUR BATTLEFIELD</string>
+    <string name="menu_player_count">%d players</string>
+
+    <!-- Game modes -->
+    <string name="mode_dual_valley">Dual Valley</string>
+    <string name="mode_dual_valley_tagline">Two armies, one bridge.</string>
+    <string name="mode_triad_outpost">Triad Outpost</string>
+    <string name="mode_triad_outpost_tagline">Three banners, three forts.</string>
+    <string name="mode_battlefield_peaks">Battlefield Peaks</string>
+    <string name="mode_battlefield_peaks_tagline">Four houses among the highlands.</string>
+
+    <!-- Info dialog -->
+    <string name="info_title">War Manual</string>
+    <string name="info_combat_label">⚔ COMBAT</string>
+    <string name="info_combat">Rock-paper-scissors: Infantry beats Cavalry, Cavalry beats Archers, Archers beat Infantry.</string>
+    <string name="info_economy_label">⚖ ECONOMY</string>
+    <string name="info_economy">Each connected tile yields 1 gold per round. Troop upkeep starts at 3 and rises by 1 per additional unit.</string>
+    <string name="info_supply_label">🏰 SUPPLY LINE</string>
+    <string name="info_supply">If a tile is cut off from your main hold, it falls inactive — and your troops there fall with it.</string>
+    <string name="info_terrain_label">🌲 TERRAIN</string>
+    <string name="info_terrain">Trees can be cleared. Tombstones of fallen troops remain forever and block construction.</string>
+
+    <!-- Dialog buttons -->
+    <string name="dialog_cancel">Cancel</string>
+    <string name="dialog_march">March!</string>
+    <string name="dialog_understood">Understood</string>
+    <string name="dialog_join">Join</string>
+
+    <!-- Lobby actions -->
+    <string name="lobby_orders_headline">— CHOOSE YOUR ORDERS, GENERAL —</string>
+    <string name="lobby_create_private">Create Private Battle</string>
+    <string name="lobby_create_private_sub">Forge a sealed war with friends</string>
+    <string name="lobby_join_with_code">Join with Code</string>
+    <string name="lobby_join_with_code_sub">Enter the seal of an ally</string>
+    <string name="lobby_join_random">Join Random Battle</string>
+    <string name="lobby_join_random_sub">Throw the dice of fate</string>
+
+    <!-- Code dialog -->
+    <string name="dialog_enter_code">Enter Battle Seal</string>
+    <string name="dialog_enter_code_sub">4 to 8 characters, sent by your ally</string>
+
+    <!-- Coming soon (Server kommt später) -->
+    <string name="coming_soon_create">A private battle would be created here. Server connection coming in the next task.</string>
+    <string name="coming_soon_code">Joining battle with code: %s\n\nServer connection coming in the next task.</string>
+    <string name="coming_soon_random">Searching for a random battle… Server connection coming in the next task.</string>
 </resources>
