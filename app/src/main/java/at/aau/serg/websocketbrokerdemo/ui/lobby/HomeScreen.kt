@@ -5,6 +5,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -85,10 +86,10 @@ fun HomeScreen(navController: NavController) {
         Image(
             painter = painterResource(id = R.drawable.bg_homescreen),
             contentDescription = null,
-            contentScale = ContentScale.Fit,
+            contentScale = ContentScale.FillBounds,
             modifier = Modifier
                 .fillMaxSize()
-                .scale(1.25f)
+
         )
 
         // 3) Sanfte Vignette
@@ -106,12 +107,12 @@ fun HomeScreen(navController: NavController) {
                 )
         )
 
-        // 4) Settings-Button oben rechts
+        // 4) Settings-Button oben
         IconButton(
             onClick = { navController.navigate("settings") },
             modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(40.dp)
+                .align(Alignment.TopCenter)
+                .padding(156.dp)
                 .size(56.dp)
                 .shadow(6.dp, CircleShape)
                 .background(
@@ -128,49 +129,50 @@ fun HomeScreen(navController: NavController) {
             )
         }
 
-        // 4.5) Logo / Überschrift
-        Box(
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .padding(top = 5.dp)
-                .fillMaxWidth()
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.hexalogo),
-                contentDescription = "HexaBrawl Logo",
-                modifier = Modifier
-                    .fillMaxWidth(1.0f)
-                    .height(315.dp)
-                    .requiredWidth(460.dp)
-                    .shadow(elevation = 1.dp, shape = AbsoluteRoundedCornerShape(14.dp), clip = false)
-                    .align(Alignment.Center),
-                contentScale = ContentScale.FillWidth
-            )
-        }
+//        // 4.5) Logo / Überschrift
+//        Box(
+//            modifier = Modifier
+//                .align(Alignment.TopCenter)
+//                .padding(top = 5.dp)
+//                .fillMaxWidth()
+//        ) {
+//            Image(
+//                painter = painterResource(id = R.drawable.hexalogo),
+//                contentDescription = "HexaBrawl Logo",
+//                modifier = Modifier
+//                    .fillMaxWidth(1.0f)
+//                    .height(200.dp)
+//                    .requiredWidth(460.dp)
+//                    .shadow(elevation = 1.dp, shape = AbsoluteRoundedCornerShape(14.dp), clip = false)
+//                    .align(Alignment.Center),
+//                contentScale = ContentScale.FillWidth
+//            )
+//        }
 
         // 5) PLAY mittig als Goldmünze
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
                 .align(Alignment.Center)
-                .padding(bottom = 20.dp)
-                .size(120.dp)
-                .shadow(elevation = 14.dp, shape = CircleShape)
-                .background(
-                    brush = Brush.linearGradient(
-                        colors = listOf(GoldCoinLight, GoldCoin, GoldCoinDark),
-                        start = Offset.Zero,
-                        end = Offset(0f, 700F)
-                    ),
-                    shape = CircleShape
-                )
-                .border(width = 10.dp, Brush.verticalGradient(listOf(ParchmentBase, ParchmentDark)), shape = CircleShape)
+                .padding(bottom = 10.dp)
+                //.offset(x = 20.dp)
+                .size(300.dp)
+//                .shadow(elevation = 14.dp, shape = CircleShape)
+//                .background(
+//                    brush = Brush.linearGradient(
+//                        colors = listOf(GoldCoinLight, GoldCoin, GoldCoinDark),
+//                        start = Offset.Zero,
+//                        end = Offset(0f, 700F)
+//                    ),
+//                    shape = CircleShape
+//                )
+//                .border(width = 10.dp, Brush.verticalGradient(listOf(ParchmentBase, ParchmentDark)), shape = CircleShape)
         ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize(0.80f)
-                    .border(width = 2.dp, color = GoldCoinDark.copy(alpha = 0.5f), shape = CircleShape)
-            )
+//            Box(
+//                modifier = Modifier
+//                    .fillMaxSize(0.80f)
+//                    .border(width = 2.dp, color = GoldCoinDark.copy(alpha = 0.5f), shape = CircleShape)
+//          )
             Button(
                 onClick = {
                     navigateSafe(navController, primary = "mainmenu", fallback = "game")
@@ -178,29 +180,30 @@ fun HomeScreen(navController: NavController) {
                 shape = CircleShape,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.Transparent,
-                    contentColor = InkBlack
+                    contentColor = Color.Unspecified
                 ),
-                modifier = Modifier.size(220.dp)
+                modifier = Modifier.fillMaxSize() ,
+                contentPadding = PaddingValues(0.dp)
             ) {
-                Box(contentAlignment = Alignment.Center) {
-                    // 1. Der "Schatten" des Icons
-                    Icon(
-                        painter = painterResource(id = R.drawable.playbutton),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(90.dp)
-                            .offset(y = 2.dp), // Leicht nach unten versetzt
-                        tint = GoldCoinDark.copy(alpha = 0.5f)
-                    )
+               // Box(contentAlignment = Alignment.Center) {
+//                    // 1. Der "Schatten" des Icons
+//                    Icon(
+//                        painter = painterResource(id = R.drawable.playbutton),
+//                        contentDescription = null,
+//                        modifier = Modifier
+//                            .size(150.dp)
+//                            .offset(y = 2.dp), // Leicht nach unten versetzt
+//                        tint = GoldCoinDark.copy(alpha = 0.5f)
+//                    )
 
                     // 2. Das eigentliche Icon
                     Icon(
                         painter = painterResource(id = R.drawable.playbutton),
                         contentDescription = "Play",
-                        modifier = Modifier.size(90.dp),
-                        tint = InkBlack
+                        modifier = Modifier.fillMaxSize(),
+                        tint = Color.Unspecified
                     )
-                }
+               // }
             }
         }
 
