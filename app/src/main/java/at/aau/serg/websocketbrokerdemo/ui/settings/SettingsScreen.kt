@@ -93,7 +93,7 @@ fun SettingsScreen(
         Image(
             painter = painterResource(id = R.drawable.bg_homescreen),
             contentDescription = null,
-            contentScale = ContentScale.Fit,
+            contentScale = ContentScale.FillBounds,
             modifier = Modifier
                 .fillMaxSize()
                 .background(WoodDark)
@@ -107,22 +107,23 @@ fun SettingsScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
+                .padding(vertical = 140.dp)
+                .padding(35.dp),
+            verticalArrangement = Arrangement.spacedBy(15.dp)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 BackButton(onClick = { navController.popBackStack() })
-                Spacer(Modifier.width(12.dp))
-                Text(
-                    text = stringResource(R.string.settings_title),
-                    style = TextStyle(
-                        fontSize = 32.sp,
-                        fontWeight = FontWeight.ExtraBold,
-                        color = GoldCoinLight,
-                        letterSpacing = 2.sp
-                    ),
-                    modifier = Modifier.shadow(2.dp)
-                )
+                Spacer(Modifier.width(32.dp))
+//                Text(
+//                    text = stringResource(R.string.settings_title),
+//                    style = TextStyle(
+//                        fontSize = 32.sp,
+//                        fontWeight = FontWeight.ExtraBold,
+//                        color = ParchmentLight,
+//                        letterSpacing = 2.sp
+//                    ),
+//                    modifier = Modifier.shadow(2.dp)
+//                )
             }
 
             // Sprache
