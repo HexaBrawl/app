@@ -10,6 +10,9 @@ import MyStomp
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import at.aau.serg.websocketbrokerdemo.audio.MusicManager
+import at.aau.serg.websocketbrokerdemo.ui.lobby_modes.LobbyScreen
+import at.aau.serg.websocketbrokerdemo.ui.mainmenu.GameMode
+import at.aau.serg.websocketbrokerdemo.ui.mainmenu.MainMenuScreen
 import at.aau.serg.websocketbrokerdemo.ui.settings.SettingsScreen
 
 @Composable
@@ -28,11 +31,23 @@ fun AppNavHost(
             SettingsScreen(navController)
         }
 
-        // TODO Task 2+: composable("mainmenu") { MainMenuScreen(navController) }
+        composable("mainmenu") {
+            MainMenuScreen(navController)
+        }
+
+        // Drei Lobbys – jeweils eine eigene Route, damit der Backstack
+        // sauber ist (zurück geht direkt zum Hauptmenü).
+        composable(GameMode.DUAL_VALLEY.route) {
+            LobbyScreen(GameMode.DUAL_VALLEY, navController)
+        }
+        composable(GameMode.TRIAD_OUTPOST.route) {
+            LobbyScreen(GameMode.TRIAD_OUTPOST, navController)
+        }
+        composable(GameMode.BATTLEFIELD_PEAKS.route) {
+            LobbyScreen(GameMode.BATTLEFIELD_PEAKS, navController)
+        }
 
         composable("game") {
-            // Menü-Track pausieren, sobald wir ins Kampfsystem wechseln.
-            // Eine eigene Kampf-Musik kommt in einem späteren Task hierher.
             LaunchedEffect(Unit) {
                 MusicManager.pause()
             }
