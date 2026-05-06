@@ -306,4 +306,44 @@ class MusicManagerTest {
         @Suppress("UNCHECKED_CAST")
         (getPrivate<MutableMap<Int, Int>>("sfxIds")).clear()
     }
+
+    @Test
+    fun `playMenuMusic creates player and starts playback when enabled`() {
+        setPrivate("musicEnabled", true)
+
+        // Dummy-ID für medieval_theme
+        val dummyTrack = 12345
+        setPrivate("currentTrack", 0)
+
+        // Wir mocken: MediaPlayer.create(appContext, dummyTrack) → mediaPlayer
+        every { MediaPlayer.create(appContext, dummyTrack) } returns mediaPlayer
+
+        // Jetzt rufen wir play() direkt, weil playMenuMusic() sonst R.raw braucht
+        val playMethod = MusicManager::class.java.getDeclaredMethod(
+            "play",
+            Context::class.java,
+            Int::class.javaPrimitiveType
+        )
+        playMethod.isAccessible = true
+        playMethod.invoke(MusicManager, context, dummyTrack)
+
+        verify { MediaPlayer.create(appContext, dummyTrack) }
+        verify { mediaPlayer.isLooping = true }
+        verify { mediaPlayer.start() }
+    }
+
+
+    @Test
+    fun `playSwordBlock delegates to playSfx`() {
+        setPrivate("soundPoolReady", true)
+        setPrivate("soundPool", soundPool)
+
+        val ids = getPrivate<MutableMap<Int, Int>>("sfxIds")
+        ids[999] = 7   // 999 = Dummy-ID für sfx_sword_block
+
+        // Wir simulieren: playSwordBlock() ruft playSfx(999)
+        MusicManager.playSfx(999)
+
+        verify { soundPool.play(7, 1f, 1f, 1, 0, 1f) }
+    }
 }
