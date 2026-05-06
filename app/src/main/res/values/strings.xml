@@ -28,7 +28,7 @@
     <string name="menu_player_count">%d players</string>
 
     <!-- Game modes -->
-    <string name="mode_dual_valley">Dual Valley</string>
+    <string name="mode_dual_valley">Duel Valley</string>
     <string name="mode_dual_valley_tagline">Two armies, one bridge.</string>
     <string name="mode_triad_outpost">Triad Outpost</string>
     <string name="mode_triad_outpost_tagline">Three banners, three forts.</string>
