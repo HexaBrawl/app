@@ -7,19 +7,21 @@ import android.media.SoundPool
 import androidx.annotation.RawRes
 import com.example.myapplication.R
 
-
-
 /**
  * Globaler Manager für die gesamte Audio-Ausgabe der App.
  *
- *  - Hintergrundmusik im Menü (Loop, MediaPlayer)
- *  - Soundeffekte im Spiel (SoundPool – mehrere parallel, niedrige Latenz)
+ *  - Hintergrundmusik (Loop, MediaPlayer):
+ *      * Menü-Track       (Home/MainMenu/Lobby/Settings)
+ *      * Turnier-Track    (Wartelobby — "Versammlung der Generäle")
+ *      * Kampf-Track      (In-Game)
+ *  - Soundeffekte (SoundPool — mehrere parallel, niedrige Latenz)
  *
  * Konfigurierbar über die Settings:
  *   musicEnabled, musicVolume, sfxEnabled
  *
- * Wichtig: applyMusicSettings() / applySfxSettings() müssen aufgerufen werden,
- * sobald die Settings sich ändern (geschieht automatisch via SettingsViewModel).
+ * Wichtig: applyMusicSettings() / applySfxSettings() müssen aufgerufen
+ * werden, sobald die Settings sich ändern (geschieht automatisch via
+ * SettingsViewModel).
  */
 object MusicManager {
 
@@ -48,12 +50,11 @@ object MusicManager {
             .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
             .build()
         soundPool = SoundPool.Builder()
-            .setMaxStreams(6)            // bis zu 6 SFX gleichzeitig
+            .setMaxStreams(6)
             .setAudioAttributes(attrs)
             .build()
         soundPoolReady = true
 
-        // SFX vorab laden -> erster Trigger ist nicht laggy
         preloadSfx(context, R.raw.sfx_sword_block)
     }
 
@@ -64,14 +65,31 @@ object MusicManager {
     }
 
     // -------------------------------------------------------------------------
-    // Music
+    // Music — Track-spezifische Convenience-Funktionen
     // -------------------------------------------------------------------------
 
-    /** Startet den Menü-Track, sofern aktiviert. */
+    /** Menü-Track (Home, MainMenu, Mode-Auswahl, Settings). */
     fun playMenuMusic(context: Context) {
         play(context, R.raw.medieval_theme)
     }
 
+    /** Turnier-Track (Wartelobby — Versammlung der Generäle). */
+    fun playTournamentMusic(context: Context) {
+        play(context, R.raw.tournament_theme)
+    }
+
+    /** Kampf-Track (In-Game, Hexagon-Feld). */
+    fun playBattleMusic(context: Context) {
+        play(context, R.raw.fighting_theme)
+    }
+
+    /**
+     * Wechselt den Track.
+     *
+     * Wenn der gewünschte Track bereits läuft, passiert nichts (außer Volume
+     * wird neu angewandt). Ansonsten wird der alte Track sauber beendet und
+     * der neue gestartet.
+     */
     private fun play(context: Context, @RawRes resId: Int) {
         if (player != null && currentTrack == resId) {
             applyVolumeToPlayer()
@@ -127,14 +145,12 @@ object MusicManager {
     // SFX
     // -------------------------------------------------------------------------
 
-    /** Spielt einen SFX-Effekt ab (no-op wenn deaktiviert). */
     fun playSfx(@RawRes resId: Int) {
         if (!sfxEnabled || !soundPoolReady) return
         val id = sfxIds[resId] ?: return
         soundPool.play(id, 1f, 1f, 1, 0, 1f)
     }
 
-    /** Convenience – Schwert-Block-Sound für Truppenkampf. */
     fun playSwordBlock() = playSfx(R.raw.sfx_sword_block)
 
     fun applySfxSettings(enabled: Boolean) {
