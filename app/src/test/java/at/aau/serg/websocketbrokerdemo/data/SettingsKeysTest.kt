@@ -3,6 +3,7 @@ package at.aau.serg.websocketbrokerdemo.data
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Assertions.assertTrue
 
 /**
  * Schützt die Persistenz-Schlüssel vor versehentlichen Umbenennungen.
@@ -42,5 +43,26 @@ class SettingsKeysTest {
             SettingsKeys.SFX_ENABLED.name
         )
         assertEquals(4, names.size, "All preference keys must be unique")
+    }
+
+    @Test
+    fun `all keys start with expected prefixes`() {
+        assertTrue(SettingsKeys.LANGUAGE.name.startsWith("language"))
+        assertTrue(SettingsKeys.MUSIC_ENABLED.name.startsWith("music"))
+        assertTrue(SettingsKeys.MUSIC_VOLUME.name.startsWith("music"))
+        assertTrue(SettingsKeys.SFX_ENABLED.name.startsWith("sfx"))
+    }
+
+    @Test
+    fun `keys do not accidentally contain whitespace`() {
+        val keys = listOf(
+            SettingsKeys.LANGUAGE.name,
+            SettingsKeys.MUSIC_ENABLED.name,
+            SettingsKeys.MUSIC_VOLUME.name,
+            SettingsKeys.SFX_ENABLED.name
+        )
+        keys.forEach { key ->
+            assertEquals(key.trim(), key, "Key must not contain whitespace")
+        }
     }
 }
