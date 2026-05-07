@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.map
 
 
 
-private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "hexabrawl_settings")
+internal val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "hexabrawl_settings")
 
 object SettingsKeys {
     val LANGUAGE = stringPreferencesKey("language")
