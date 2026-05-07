@@ -3,14 +3,10 @@
     <string name="app_name">HexaBrawl</string>
 
     <!-- HomeScreen -->
-    <string name="home_welcome">Welcome to</string>
-    <string name="home_title">HEXABRAWL</string>
-    <string name="home_play">PLAY</string>
     <string name="home_exit">Exit</string>
     <string name="home_settings">Settings</string>
 
     <!-- SettingsScreen -->
-    <string name="settings_title">Settings</string>
     <string name="settings_language">Language</string>
     <string name="settings_lang_en">English</string>
     <string name="settings_lang_de">Deutsch</string>
@@ -19,13 +15,10 @@
     <string name="settings_music_volume">Music Volume</string>
     <string name="settings_sfx">Sound Effects</string>
     <string name="settings_back">Back</string>
-    <string name="settings_on">On</string>
-    <string name="settings_off">Off</string>
 
     <!-- MainMenu -->
     <string name="menu_info">Information</string>
     <string name="menu_choose_battlefield">CHOOSE YOUR BATTLEFIELD</string>
-    <string name="menu_player_count">%d players</string>
 
     <!-- Game modes -->
     <string name="mode_dual_valley">Duel Valley</string>
@@ -53,7 +46,6 @@
     <string name="dialog_join">Join</string>
 
     <!-- Lobby actions -->
-    <string name="lobby_orders_headline">— CHOOSE YOUR ORDERS, GENERAL —</string>
     <string name="lobby_create_private">Create Private Battle</string>
     <string name="lobby_create_private_sub">Forge a sealed war with friends</string>
     <string name="lobby_join_with_code">Join with Code</string>
@@ -64,11 +56,6 @@
     <!-- Code dialog -->
     <string name="dialog_enter_code">Enter Battle Seal</string>
     <string name="dialog_enter_code_sub">4 to 8 characters, sent by your ally</string>
-
-    <!-- Coming soon (Server kommt später) -->
-    <string name="coming_soon_create">A private battle would be created here. Server connection coming in the next task.</string>
-    <string name="coming_soon_code">Joining battle with code: %s\n\nServer connection coming in the next task.</string>
-    <string name="coming_soon_random">Searching for a random battle… Server connection coming in the next task.</string>
 
     <!-- Waiting Lobby -->
     <string name="waiting_headline">— ASSEMBLY OF GENERALS —</string>
