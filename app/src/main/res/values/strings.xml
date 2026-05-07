@@ -69,4 +69,16 @@
     <string name="coming_soon_create">A private battle would be created here. Server connection coming in the next task.</string>
     <string name="coming_soon_code">Joining battle with code: %s\n\nServer connection coming in the next task.</string>
     <string name="coming_soon_random">Searching for a random battle… Server connection coming in the next task.</string>
+
+    <!-- Waiting Lobby -->
+    <string name="waiting_headline">— ASSEMBLY OF GENERALS —</string>
+    <string name="waiting_your_orders">YOUR BANNER, GENERAL</string>
+    <string name="waiting_your_name">Your name</string>
+    <string name="waiting_choose_color">CHOOSE YOUR COLOR</string>
+    <string name="waiting_ready">READY FOR BATTLE</string>
+    <string name="waiting_not_ready">NOT READY</string>
+    <string name="waiting_empty_slot">Awaiting ally…</string>
+    <string name="waiting_remote_ally">Connected ally</string>
+    <string name="waiting_bot_ally">Bot ally</string>
+
 </resources>

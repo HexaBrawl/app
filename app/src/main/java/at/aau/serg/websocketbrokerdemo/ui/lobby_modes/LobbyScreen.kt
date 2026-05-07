@@ -19,6 +19,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Casino
 import androidx.compose.material.icons.filled.GroupAdd
@@ -63,32 +64,24 @@ import at.aau.serg.websocketbrokerdemo.ui.theme.WoodDark
 import at.aau.serg.websocketbrokerdemo.ui.theme.WoodLight
 import at.aau.serg.websocketbrokerdemo.ui.theme.WoodMedium
 import com.example.myapplication.R
+import at.aau.serg.websocketbrokerdemo.ui.components.PlayerCountBadge
 
-/**
- * LobbyScreen — der "General-Tisch" für einen bestimmten Modus.
- *
- * Layout:
- *  - Hintergrundbild der Karte (z. B. Dual Valley) mit eingebauten Titel,
- *    daher kein zusätzlicher Header-Text nötig.
- *  - Zurück-Button oben links (führt zum MainMenu zurück).
- *  - Spielerzahl-Indikator oben rechts ("II Schwerter" / "III" / "IV").
- *  - Drei Aktion-Karten am unteren Drittel, gestaltet wie offizielle
- *    Order-Pergamente, die auf dem Tisch liegen:
- *      1. Privates Spiel erstellen   (Schloss-Wachssiegel)
- *      2. Mit Code beitreten          (Code-Eingabefeld als Dialog)
- *      3. Zufällig beitreten          (Würfel-Wachssiegel)
- */
 @Composable
 fun LobbyScreen(
     mode: GameMode,
     navController: NavController
 ) {
     var showJoinDialog by remember { mutableStateOf(false) }
-    var pendingAction by remember { mutableStateOf<LobbyAction?>(null) }
+
+    /** Wartelobby-Route je nach Modus. */
+    fun toWaitingRoute(): String = when (mode) {
+        GameMode.DUAL_VALLEY -> "waiting_dual"
+        GameMode.TRIAD_OUTPOST -> "waiting_triad"
+        GameMode.BATTLEFIELD_PEAKS -> "waiting_battlefield"
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
 
-        // Holz-Hintergrund (für Letterbox-Ränder)
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -100,7 +93,6 @@ fun LobbyScreen(
                 )
         )
 
-        // Karten-Hintergrund (Pergament-Map mit eingebrannten Titel)
         Image(
             painter = painterResource(id = mode.backgroundRes),
             contentDescription = null,
@@ -108,7 +100,6 @@ fun LobbyScreen(
             modifier = Modifier.fillMaxSize()
         )
 
-        // Sanfte Vignette für Lesbarkeit
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -123,7 +114,6 @@ fun LobbyScreen(
                 )
         )
 
-        // Zurück-Button oben links
         IconButton(
             onClick = { navController.popBackStack() },
             modifier = Modifier
@@ -132,13 +122,12 @@ fun LobbyScreen(
                 .roundCoinButton()
         ) {
             Icon(
-                imageVector = Icons.Filled.ArrowBack,
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                 contentDescription = stringResource(R.string.settings_back),
                 tint = GoldCoinLight
             )
         }
 
-        // Spielerzahl-Indikator oben rechts
         PlayerCountBadge(
             count = mode.playerCount,
             modifier = Modifier
@@ -146,7 +135,6 @@ fun LobbyScreen(
                 .padding(16.dp)
         )
 
-        // Aktion-Karten am unteren Drittel
         Column(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
@@ -154,26 +142,12 @@ fun LobbyScreen(
                 .padding(horizontal = 16.dp, vertical = 240.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            // Headline ("Wähle deinen Auftrag, General")
-//            Text(
-//                text = stringResource(R.string.lobby_orders_headline),
-//                style = TextStyle(
-//                    fontSize = 13.sp,
-//                    color = ParchmentLight,
-//                    fontWeight = FontWeight.ExtraBold,
-//                    background = WoodMedium,
-//                    letterSpacing = 2.sp,
-//                    textAlign = TextAlign.Center
-//                ),
-//                modifier = Modifier.fillMaxWidth()
-//            )
-
             ActionCard(
                 icon = Icons.Filled.Lock,
                 title = stringResource(R.string.lobby_create_private),
                 subtitle = stringResource(R.string.lobby_create_private_sub),
                 sealColor = SealColor.Red,
-                onClick = { pendingAction = LobbyAction.CreatePrivate }
+                onClick = { navController.navigate(toWaitingRoute()) }
             )
             ActionCard(
                 icon = Icons.Filled.GroupAdd,
@@ -187,39 +161,20 @@ fun LobbyScreen(
                 title = stringResource(R.string.lobby_join_random),
                 subtitle = stringResource(R.string.lobby_join_random_sub),
                 sealColor = SealColor.Gold,
-                onClick = { pendingAction = LobbyAction.JoinRandom }
+                onClick = { navController.navigate(toWaitingRoute()) }
             )
         }
     }
 
-    // Code-Eingabe-Dialog
     if (showJoinDialog) {
         JoinByCodeDialog(
             onDismiss = { showJoinDialog = false },
-            onJoin = { code ->
+            onJoin = {
                 showJoinDialog = false
-                pendingAction = LobbyAction.JoinWithCode(code)
+                navController.navigate(toWaitingRoute())
             }
         )
     }
-
-    // "Coming Soon"-Dialog für die Aktionen (Server-Anbindung kommt später)
-    pendingAction?.let { action ->
-        ComingSoonDialog(
-            action = action,
-            onDismiss = { pendingAction = null }
-        )
-    }
-}
-
-// -----------------------------------------------------------------------------
-// State
-// -----------------------------------------------------------------------------
-
-private sealed interface LobbyAction {
-    data object CreatePrivate : LobbyAction
-    data class JoinWithCode(val code: String) : LobbyAction
-    data object JoinRandom : LobbyAction
 }
 
 private enum class SealColor(val main: Color, val dark: Color) {
@@ -227,10 +182,6 @@ private enum class SealColor(val main: Color, val dark: Color) {
     Blue(Color(0xFF1F3A6B), Color(0xFF13264A)),
     Gold(Color(0xFFD4A24C), Color(0xFF9C6F22))
 }
-
-// -----------------------------------------------------------------------------
-// Komponenten
-// -----------------------------------------------------------------------------
 
 @Composable
 private fun ActionCard(
@@ -253,7 +204,6 @@ private fun ActionCard(
             .clickable(onClick = onClick)
             .padding(12.dp)
     ) {
-        // Wachssiegel mit Icon
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
@@ -275,9 +225,7 @@ private fun ActionCard(
                 modifier = Modifier.size(26.dp)
             )
         }
-
         Spacer(Modifier.width(14.dp))
-
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = title,
@@ -293,8 +241,6 @@ private fun ActionCard(
                 style = TextStyle(fontSize = 12.sp, color = InkBrown)
             )
         }
-
-        // Pfeil-Andeutung
         Text(
             text = "›",
             style = TextStyle(
@@ -307,39 +253,6 @@ private fun ActionCard(
     }
 }
 
-@Composable
-private fun PlayerCountBadge(count: Int, modifier: Modifier = Modifier) {
-    val roman = when (count) {
-        2 -> "II"
-        3 -> "III"
-        4 -> "IV"
-        else -> count.toString()
-    }
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = modifier
-            .size(48.dp)
-            .shadow(6.dp, CircleShape)
-            .background(
-                brush = Brush.radialGradient(
-                    colors = listOf(GoldCoinLight, GoldCoin, GoldCoinDark),
-                    radius = 70f
-                ),
-                shape = CircleShape
-            )
-            .border(2.dp, GoldCoinDark, CircleShape)
-    ) {
-        Text(
-            text = roman,
-            style = TextStyle(
-                fontSize = 18.sp,
-                fontWeight = FontWeight.ExtraBold,
-                color = InkBlack,
-                letterSpacing = 1.sp
-            )
-        )
-    }
-}
 
 @Composable
 private fun JoinByCodeDialog(
@@ -384,7 +297,6 @@ private fun JoinByCodeDialog(
                 OutlinedTextField(
                     value = code,
                     onValueChange = { input ->
-                        // Nur Buchstaben/Zahlen, max 8 Stellen, automatisch uppercase
                         code = input.filter { it.isLetterOrDigit() }
                             .take(8)
                             .uppercase()
@@ -424,63 +336,6 @@ private fun JoinByCodeDialog(
                         onClick = { if (canJoin) onJoin(code) }
                     )
                 }
-            }
-        }
-    }
-}
-
-@Composable
-private fun ComingSoonDialog(
-    action: LobbyAction,
-    onDismiss: () -> Unit
-) {
-    val title = when (action) {
-        LobbyAction.CreatePrivate -> stringResource(R.string.lobby_create_private)
-        is LobbyAction.JoinWithCode -> stringResource(R.string.lobby_join_with_code)
-        LobbyAction.JoinRandom -> stringResource(R.string.lobby_join_random)
-    }
-    val body = when (action) {
-        LobbyAction.CreatePrivate -> stringResource(R.string.coming_soon_create)
-        is LobbyAction.JoinWithCode -> stringResource(R.string.coming_soon_code, action.code)
-        LobbyAction.JoinRandom -> stringResource(R.string.coming_soon_random)
-    }
-
-    Dialog(onDismissRequest = onDismiss) {
-        Box(
-            modifier = Modifier
-                .shadow(20.dp, RoundedCornerShape(16.dp))
-                .background(
-                    brush = Brush.verticalGradient(listOf(ParchmentLight, ParchmentDark)),
-                    shape = RoundedCornerShape(16.dp)
-                )
-                .border(3.dp, GoldCoinDark, RoundedCornerShape(16.dp))
-                .padding(24.dp)
-        ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
-                    text = title,
-                    style = TextStyle(
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.ExtraBold,
-                        color = InkBlack,
-                        textAlign = TextAlign.Center
-                    )
-                )
-                Spacer(Modifier.height(8.dp))
-                Text(
-                    text = body,
-                    style = TextStyle(
-                        fontSize = 14.sp,
-                        color = InkBrown,
-                        textAlign = TextAlign.Center
-                    )
-                )
-                Spacer(Modifier.height(20.dp))
-                DialogButton(
-                    text = stringResource(R.string.dialog_understood),
-                    primary = true,
-                    onClick = onDismiss
-                )
             }
         }
     }

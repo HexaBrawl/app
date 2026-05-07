@@ -129,26 +129,6 @@ fun HomeScreen(navController: NavController) {
             )
         }
 
-//        // 4.5) Logo / Überschrift
-//        Box(
-//            modifier = Modifier
-//                .align(Alignment.TopCenter)
-//                .padding(top = 5.dp)
-//                .fillMaxWidth()
-//        ) {
-//            Image(
-//                painter = painterResource(id = R.drawable.hexalogo),
-//                contentDescription = "HexaBrawl Logo",
-//                modifier = Modifier
-//                    .fillMaxWidth(1.0f)
-//                    .height(200.dp)
-//                    .requiredWidth(460.dp)
-//                    .shadow(elevation = 1.dp, shape = AbsoluteRoundedCornerShape(14.dp), clip = false)
-//                    .align(Alignment.Center),
-//                contentScale = ContentScale.FillWidth
-//            )
-//        }
-
         // 5) PLAY mittig als Goldmünze
         Box(
             contentAlignment = Alignment.Center,
@@ -157,22 +137,7 @@ fun HomeScreen(navController: NavController) {
                 .padding(bottom = 10.dp)
                 //.offset(x = 20.dp)
                 .size(300.dp)
-//                .shadow(elevation = 14.dp, shape = CircleShape)
-//                .background(
-//                    brush = Brush.linearGradient(
-//                        colors = listOf(GoldCoinLight, GoldCoin, GoldCoinDark),
-//                        start = Offset.Zero,
-//                        end = Offset(0f, 700F)
-//                    ),
-//                    shape = CircleShape
-//                )
-//                .border(width = 10.dp, Brush.verticalGradient(listOf(ParchmentBase, ParchmentDark)), shape = CircleShape)
         ) {
-//            Box(
-//                modifier = Modifier
-//                    .fillMaxSize(0.80f)
-//                    .border(width = 2.dp, color = GoldCoinDark.copy(alpha = 0.5f), shape = CircleShape)
-//          )
             Button(
                 onClick = {
                     navigateSafe(navController, primary = "mainmenu", fallback = "game")
@@ -185,16 +150,6 @@ fun HomeScreen(navController: NavController) {
                 modifier = Modifier.fillMaxSize() ,
                 contentPadding = PaddingValues(0.dp)
             ) {
-               // Box(contentAlignment = Alignment.Center) {
-//                    // 1. Der "Schatten" des Icons
-//                    Icon(
-//                        painter = painterResource(id = R.drawable.playbutton),
-//                        contentDescription = null,
-//                        modifier = Modifier
-//                            .size(150.dp)
-//                            .offset(y = 2.dp), // Leicht nach unten versetzt
-//                        tint = GoldCoinDark.copy(alpha = 0.5f)
-//                    )
 
                     // 2. Das eigentliche Icon
                     Icon(

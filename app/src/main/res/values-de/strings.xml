@@ -69,4 +69,19 @@
     <string name="coming_soon_create">Hier würde nun ein privates Spiel erstellt. Die Server-Anbindung folgt im nächsten Task.</string>
     <string name="coming_soon_code">Beitreten zur Schlacht mit Code: %s\n\nDie Server-Anbindung folgt im nächsten Task.</string>
     <string name="coming_soon_random">Suche nach zufälliger Schlacht… Die Server-Anbindung folgt im nächsten Task.</string>
+
+    <!-- Wartelobby -->
+    <string name="waiting_headline">— VERSAMMLUNG DER GENERÄLE —</string>
+    <string name="waiting_your_orders">DEIN BANNER, GENERAL</string>
+    <string name="waiting_your_name">Dein Name</string>
+    <string name="waiting_choose_color">WÄHLE DEINE FARBE</string>
+    <string name="waiting_ready">BEREIT FÜR DIE SCHLACHT</string>
+    <string name="waiting_not_ready">NICHT BEREIT</string>
+    <string name="waiting_empty_slot">Warte auf Verbündeten…</string>
+    <string name="waiting_remote_ally">Verbundener Verbündeter</string>
+    <string name="waiting_bot_ally">Bot-Verbündeter</string>
+
+
+
+
 </resources>

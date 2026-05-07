@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -114,16 +115,6 @@ fun SettingsScreen(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 BackButton(onClick = { navController.popBackStack() })
                 Spacer(Modifier.width(32.dp))
-//                Text(
-//                    text = stringResource(R.string.settings_title),
-//                    style = TextStyle(
-//                        fontSize = 32.sp,
-//                        fontWeight = FontWeight.ExtraBold,
-//                        color = ParchmentLight,
-//                        letterSpacing = 2.sp
-//                    ),
-//                    modifier = Modifier.shadow(2.dp)
-//                )
             }
 
             // Sprache
@@ -211,7 +202,7 @@ private fun BackButton(onClick: () -> Unit) {
             .border(2.dp, GoldCoinDark, CircleShape)
     ) {
         Icon(
-            imageVector = Icons.Filled.ArrowBack,
+            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
             contentDescription = stringResource(R.string.settings_back),
             tint = GoldCoinLight
         )

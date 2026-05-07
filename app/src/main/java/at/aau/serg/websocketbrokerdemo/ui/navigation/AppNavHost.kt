@@ -1,19 +1,47 @@
 package at.aau.serg.websocketbrokerdemo.ui.navigation
 
+import MyStomp
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import at.aau.serg.websocketbrokerdemo.ui.lobby.HomeScreen
-import at.aau.serg.websocketbrokerdemo.ui.game.GameScreen
-import MyStomp
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.State
+import androidx.navigation.compose.currentBackStackEntryAsState
 import at.aau.serg.websocketbrokerdemo.audio.MusicManager
+import at.aau.serg.websocketbrokerdemo.ui.game.GameScreen
+import at.aau.serg.websocketbrokerdemo.ui.lobby.HomeScreen
 import at.aau.serg.websocketbrokerdemo.ui.lobby_modes.LobbyScreen
 import at.aau.serg.websocketbrokerdemo.ui.mainmenu.GameMode
 import at.aau.serg.websocketbrokerdemo.ui.mainmenu.MainMenuScreen
 import at.aau.serg.websocketbrokerdemo.ui.settings.SettingsScreen
+import at.aau.serg.websocketbrokerdemo.ui.waiting.WaitingLobbyScreen
+
+/**
+ * Welcher Track gehört zu welcher Route.
+ *
+ * - waiting_*  -> Turnier-Track
+ * - game       -> Kampf-Track
+ * - sonst      -> Menü-Track (Home, MainMenu, Mode-Lobbys, Settings)
+ *
+ * So passt sich die Musik automatisch an, egal über welchen Weg der
+ * Spieler den Screen erreicht (z. B. Zurück-Button aus der Wartelobby
+ * zur Mode-Lobby -> Menü-Track läuft sofort wieder).
+ */
+private fun trackForRoute(route: String?): MusicTrack = when (route) {
+    "waiting_dual",
+    "waiting_triad",
+    "waiting_battlefield" -> MusicTrack.Tournament
+
+    "game" -> MusicTrack.Battle
+
+    // home, settings, mainmenu, lobby_dual, lobby_triad, lobby_battlefield, null
+    else -> MusicTrack.Menu
+}
+
+private enum class MusicTrack { Menu, Tournament, Battle }
 
 @Composable
 fun AppNavHost(
@@ -21,6 +49,20 @@ fun AppNavHost(
     myStomp: MyStomp,
     responseState: State<String>
 ) {
+    val context = LocalContext.current
+
+    // Aktive Route beobachten und Musik beim Wechsel umstellen.
+    val backStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = backStackEntry?.destination?.route
+
+    LaunchedEffect(currentRoute) {
+        when (trackForRoute(currentRoute)) {
+            MusicTrack.Menu -> MusicManager.playMenuMusic(context)
+            MusicTrack.Tournament -> MusicManager.playTournamentMusic(context)
+            MusicTrack.Battle -> MusicManager.playBattleMusic(context)
+        }
+    }
+
     NavHost(navController, startDestination = "home") {
 
         composable("home") {
@@ -35,8 +77,6 @@ fun AppNavHost(
             MainMenuScreen(navController)
         }
 
-        // Drei Lobbys – jeweils eine eigene Route, damit der Backstack
-        // sauber ist (zurück geht direkt zum Hauptmenü).
         composable(GameMode.DUAL_VALLEY.route) {
             LobbyScreen(GameMode.DUAL_VALLEY, navController)
         }
@@ -47,10 +87,17 @@ fun AppNavHost(
             LobbyScreen(GameMode.BATTLEFIELD_PEAKS, navController)
         }
 
+        composable("waiting_dual") {
+            WaitingLobbyScreen(GameMode.DUAL_VALLEY, navController)
+        }
+        composable("waiting_triad") {
+            WaitingLobbyScreen(GameMode.TRIAD_OUTPOST, navController)
+        }
+        composable("waiting_battlefield") {
+            WaitingLobbyScreen(GameMode.BATTLEFIELD_PEAKS, navController)
+        }
+
         composable("game") {
-            LaunchedEffect(Unit) {
-                MusicManager.pause()
-            }
             GameScreen(myStomp, responseState)
         }
     }
