@@ -24,7 +24,7 @@ import com.example.myapplication.R
 // --- Slot-Karten ---
 
 @Composable
-public fun LocalPlayerSlotCard(
+fun LocalPlayerSlotCard(
     slot: PlayerSlot,
     takenColors: Set<PlayerColor>,
     onNameChange: (String) -> Unit,
@@ -144,7 +144,7 @@ public fun LocalPlayerSlotCard(
 
 
 @Composable
-public fun RemotePlayerSlotCard(slot: PlayerSlot) {
+fun RemotePlayerSlotCard(slot: PlayerSlot) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -197,7 +197,7 @@ public fun RemotePlayerSlotCard(slot: PlayerSlot) {
 }
 
 @Composable
-public fun EmptySlotCard() {
+fun EmptySlotCard() {
     val infinite = rememberInfiniteTransition(label = "emptySlotPulse")
     val pulseAlpha by infinite.animateFloat(
         initialValue = 0.5f,
@@ -267,7 +267,7 @@ public fun EmptySlotCard() {
 // --- Kleine Komponenten ---
 
 @Composable
-public fun ColorSeal(
+fun ColorSeal(
     color: PlayerColor,
     selected: Boolean,
     disabled: Boolean,
@@ -312,7 +312,7 @@ public fun ColorSeal(
 }
 
 @Composable
-public fun ReadyButton(
+fun ReadyButton(
     ready: Boolean,
     enabled: Boolean,
     onClick: () -> Unit,
@@ -351,7 +351,7 @@ public fun ReadyButton(
 }
 
 @Composable
-public fun ReadyBadge(ready: Boolean) {
+fun ReadyBadge(ready: Boolean) {
     val main = if (ready) Color(0xFF2D5A1A) else Color(0xFF6B6B6B)
     val dark = if (ready) Color(0xFF1A3A0F) else Color(0xFF3A3A3A)
 
@@ -374,7 +374,7 @@ public fun ReadyBadge(ready: Boolean) {
 
 
 @Composable
-public fun CountdownOverlay(seconds: Int) {
+fun CountdownOverlay(seconds: Int) {
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
