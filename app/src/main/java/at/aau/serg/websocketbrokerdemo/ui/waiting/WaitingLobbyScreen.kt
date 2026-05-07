@@ -82,6 +82,7 @@ import at.aau.serg.websocketbrokerdemo.ui.theme.WoodLight
 import at.aau.serg.websocketbrokerdemo.ui.theme.WoodMedium
 import com.example.myapplication.R
 import kotlinx.coroutines.delay
+import at.aau.serg.websocketbrokerdemo.ui.components.PlayerCountBadge
 
 private const val DEV_AUTO_FILL_SLOTS = true
 
@@ -628,40 +629,6 @@ private fun ReadyBadge(ready: Boolean) {
             contentDescription = null,
             tint = ParchmentLight,
             modifier = Modifier.size(20.dp)
-        )
-    }
-}
-
-@Composable
-private fun PlayerCountBadge(count: Int, modifier: Modifier = Modifier) {
-    val roman = when (count) {
-        2 -> "II"
-        3 -> "III"
-        4 -> "IV"
-        else -> count.toString()
-    }
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = modifier
-            .size(48.dp)
-            .shadow(6.dp, CircleShape)
-            .background(
-                brush = Brush.radialGradient(
-                    colors = listOf(GoldCoinLight, GoldCoin, GoldCoinDark),
-                    radius = 70f
-                ),
-                shape = CircleShape
-            )
-            .border(2.dp, GoldCoinDark, CircleShape)
-    ) {
-        Text(
-            text = roman,
-            style = TextStyle(
-                fontSize = 18.sp,
-                fontWeight = FontWeight.ExtraBold,
-                color = InkBlack,
-                letterSpacing = 1.sp
-            )
         )
     }
 }
