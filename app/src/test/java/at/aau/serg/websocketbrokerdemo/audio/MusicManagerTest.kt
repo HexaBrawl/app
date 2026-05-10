@@ -126,6 +126,13 @@ class MusicManagerTest {
         verify { mediaPlayer.start() }
     }
 
+    @Test
+    fun `applyMusicSettings handles null player safely`() {
+        setPrivate("player", null)
+        MusicManager.applyMusicSettings(enabled = true, volume = 0.5f)
+        // kein Crash, kein verify nötig
+    }
+
     // -------------------------------------------------------------------------
     // applySfxSettings
     // -------------------------------------------------------------------------
@@ -277,6 +284,17 @@ class MusicManagerTest {
 
         // Darf nicht crashen
         MusicManager.release()
+    }
+
+    @Test
+    fun `release handles soundPoolReady true but player null`() {
+        setPrivate("soundPoolReady", true)
+        setPrivate("soundPool", soundPool)
+        setPrivate("player", null)
+
+        MusicManager.release()
+
+        verify { soundPool.release() }
     }
 
     // -------------------------------------------------------------------------
