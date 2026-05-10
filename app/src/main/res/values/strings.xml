@@ -19,6 +19,7 @@
     <!-- MainMenu -->
     <string name="menu_info">Information</string>
     <string name="menu_choose_battlefield">CHOOSE YOUR BATTLEFIELD</string>
+    <string name="menu_player_count">%d players</string>
 
     <!-- Game modes -->
     <string name="mode_dual_valley">Duel Valley</string>

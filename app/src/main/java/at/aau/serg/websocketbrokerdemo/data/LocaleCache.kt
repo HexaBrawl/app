@@ -1,6 +1,7 @@
 package at.aau.serg.websocketbrokerdemo.data
 
 import android.content.Context
+import androidx.core.content.edit
 
 /**
  * Kleiner synchroner Cache für die Sprache.
@@ -23,9 +24,9 @@ object LocaleCache {
 
     fun set(context: Context, language: String) {
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-            .edit()
-            .putString(KEY_LANG, language)
-            .apply()
+            .edit {
+                putString(KEY_LANG, language)
+            }
     }
 
     private fun defaultLanguage(): String {
