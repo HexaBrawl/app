@@ -19,6 +19,7 @@ import at.aau.serg.websocketbrokerdemo.grid.model.UnitData
 import at.aau.serg.websocketbrokerdemo.grid.shape.RectangleShape
 import at.aau.serg.websocketbrokerdemo.grid.layout.HexLayout
 import at.aau.serg.websocketbrokerdemo.grid.renderer.HexRenderer
+import at.aau.serg.websocketbrokerdemo.grid.renderer.ComposeHexDrawer
 import at.aau.serg.websocketbrokerdemo.grid.input.HexInput
 import at.aau.serg.websocketbrokerdemo.grid.library.GridLibrary
 import at.aau.serg.websocketbrokerdemo.ui.game.camera.CameraState
@@ -73,14 +74,18 @@ fun GameScreen(
                 )
             )
 
+            val drawer = remember { ComposeHexDrawer() }
+            val renderer = remember { HexRenderer(drawer) }
+
             // ⭐ ZENTRIERTE BOX FÜR DAS GRID
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
+
                 UniversalGrid(
                     model = gridModel,
-                    renderer = HexRenderer,
+                    renderer = renderer,
                     input = HexInput,
                     onCellClicked = { col, row ->
                         println("Hex clicked: $col, $row")
