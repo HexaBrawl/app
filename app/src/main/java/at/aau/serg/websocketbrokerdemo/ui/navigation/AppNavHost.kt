@@ -30,19 +30,6 @@ import at.aau.serg.websocketbrokerdemo.ui.waiting.WaitingLobbyScreen
  * Spieler den Screen erreicht (z. B. Zurück-Button aus der Wartelobby
  * zur Mode-Lobby -> Menü-Track läuft sofort wieder).
  */
-private fun trackForRoute(route: String?): MusicTrack = when (route) {
-    "waiting_dual",
-    "waiting_triad",
-    "waiting_battlefield" -> MusicTrack.Tournament
-
-    "game" -> MusicTrack.Battle
-
-    // home, settings, mainmenu, lobby_dual, lobby_triad, lobby_battlefield, null
-    else -> MusicTrack.Menu
-}
-
-private enum class MusicTrack { Menu, Tournament, Battle }
-
 @Composable
 fun AppNavHost(
     navController: NavHostController,
@@ -56,7 +43,7 @@ fun AppNavHost(
     val currentRoute = backStackEntry?.destination?.route
 
     LaunchedEffect(currentRoute) {
-        when (trackForRoute(currentRoute)) {
+        when (NavigationLogic.trackForRoute(currentRoute)) {
             MusicTrack.Menu -> MusicManager.playMenuMusic(context)
             MusicTrack.Tournament -> MusicManager.playTournamentMusic(context)
             MusicTrack.Battle -> MusicManager.playBattleMusic(context)
