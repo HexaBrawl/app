@@ -3,14 +3,10 @@
     <string name="app_name">HexaBrawl</string>
 
     <!-- HomeScreen -->
-    <string name="home_welcome">Willkommen bei</string>
-    <string name="home_title">HEXABRAWL</string>
-    <string name="home_play">SPIELEN</string>
     <string name="home_exit">Beenden</string>
     <string name="home_settings">Einstellungen</string>
 
     <!-- SettingsScreen -->
-    <string name="settings_title">Einstellungen</string>
     <string name="settings_language">Sprache</string>
     <string name="settings_lang_en">English</string>
     <string name="settings_lang_de">Deutsch</string>
@@ -19,8 +15,6 @@
     <string name="settings_music_volume">Musiklautstärke</string>
     <string name="settings_sfx">Soundeffekte</string>
     <string name="settings_back">Zurück</string>
-    <string name="settings_on">An</string>
-    <string name="settings_off">Aus</string>
 
     <!-- MainMenu -->
     <string name="menu_info">Information</string>
@@ -53,7 +47,6 @@
     <string name="dialog_join">Beitreten</string>
 
     <!-- Lobby-Aktionen -->
-    <string name="lobby_orders_headline">— WÄHLE DEINEN AUFTRAG, GENERAL —</string>
     <string name="lobby_create_private">Privates Spiel erstellen</string>
     <string name="lobby_create_private_sub">Versiegelte Schlacht mit Verbündeten</string>
     <string name="lobby_join_with_code">Mit Code beitreten</string>
@@ -64,11 +57,6 @@
     <!-- Code-Dialog -->
     <string name="dialog_enter_code">Schlacht-Siegel eingeben</string>
     <string name="dialog_enter_code_sub">4 bis 8 Zeichen, von deinem Verbündeten</string>
-
-    <!-- Coming-Soon (Server kommt später) -->
-    <string name="coming_soon_create">Hier würde nun ein privates Spiel erstellt. Die Server-Anbindung folgt im nächsten Task.</string>
-    <string name="coming_soon_code">Beitreten zur Schlacht mit Code: %s\n\nDie Server-Anbindung folgt im nächsten Task.</string>
-    <string name="coming_soon_random">Suche nach zufälliger Schlacht… Die Server-Anbindung folgt im nächsten Task.</string>
 
     <!-- Wartelobby -->
     <string name="waiting_headline">— VERSAMMLUNG DER GENERÄLE —</string>
