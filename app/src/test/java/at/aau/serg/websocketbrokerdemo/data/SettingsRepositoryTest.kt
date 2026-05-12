@@ -1,320 +1,239 @@
 package at.aau.serg.websocketbrokerdemo.data
 
-import android.app.Application
 import android.content.Context
 import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.preferencesOf
-import at.aau.serg.websocketbrokerdemo.ui.settings.SettingsViewModel
-import io.mockk.*
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.flowOf
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.mockkObject
+import io.mockk.mockkStatic
+import io.mockk.unmockkAll
+import io.mockk.verify
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.io.TempDir
+import java.io.File
 
-@OptIn(ExperimentalCoroutinesApi::class)
+/**
+ * Tests für SettingsRepository.
+ *
+ * Strategie:
+ *  - Statt DataStore zu mocken, verwenden wir einen ECHTEN
+ *    PreferenceDataStore in einem temporären Verzeichnis. Das ist robuster
+ *    als das Mocken von suspend-Extension-Funktionen wie `edit { }`, die
+ *    intern komplexe Coroutine-Logik haben.
+ *  - Wir mocken nur die Top-Level-Extension Context.dataStore (damit
+ *    SettingsRepository unseren Test-DataStore statt des "echten" sieht)
+ *    und LocaleCache (object).
+ *
+ * Voraussetzung in SettingsRepository.kt:
+ *     internal val Context.dataStore: DataStore<Preferences> by preferencesDataStore(...)
+ */
 class SettingsRepositoryTest {
+
+    @TempDir
+    lateinit var tempDir: File
 
     private lateinit var context: Context
     private lateinit var dataStore: DataStore<Preferences>
-    private lateinit var repository: SettingsRepository
 
     @BeforeEach
     fun setUp() {
         context = mockk(relaxed = true)
-        dataStore = mockk()
 
-        // WICHTIG: echtes leeres Preferences-Objekt
-        every { dataStore.data } returns flowOf(emptyPreferences())
+        // Ein echter, in einem TempDir gespeicherter DataStore.
+        // Eindeutiger Filename pro Testlauf, damit Tests sich nicht stören.
+        val file = File(tempDir, "settings_${System.nanoTime()}.preferences_pb")
+        dataStore = PreferenceDataStoreFactory.create(produceFile = { file })
+
+        // Context.dataStore-Extension umlenken auf unseren Test-DataStore
+        mockkStatic("at.aau.serg.websocketbrokerdemo.data.SettingsRepositoryKt")
+        every { any<Context>().dataStore } returns dataStore
+
+        // LocaleCache als object mocken
+        mockkObject(LocaleCache)
+        every { LocaleCache.set(any(), any()) } returns Unit
+        every { LocaleCache.get(any()) } returns "en"
+    }
+
+    @AfterEach
+    fun tearDown() {
+        unmockkAll()
+    }
+
+    // ---- settings flow --------------------------------------------------
+
+    @Test
+    fun `settings flow returns defaults when DataStore is empty`() = runTest {
+        val result = SettingsRepository(context).settings.first()
+
+        assertEquals("en", result.language)
+        assertTrue(result.musicEnabled)
+        assertEquals(0.6f, result.musicVolume, 0.0001f)
+        assertTrue(result.sfxEnabled)
     }
 
     @Test
-    fun `settings maps preferences to AppSettings`() = runTest {
-        mockkObject(LocaleCache)
-        every { LocaleCache.get(context) } returns "xx"
+    fun `settings flow returns stored language`() = runTest {
+        // Zuerst über das Repository den Wert schreiben
+        val repo = SettingsRepository(context)
+        repo.setLanguage("de")
 
-        val prefs = preferencesOf(
-            SettingsKeys.LANGUAGE to "de",
-            SettingsKeys.MUSIC_ENABLED to false,
-            SettingsKeys.MUSIC_VOLUME to 0.3f,
-            SettingsKeys.SFX_ENABLED to false
-        )
+        // Dann lesen
+        val result = repo.settings.first()
+        assertEquals("de", result.language)
+    }
 
-        // WICHTIG: VOR Repository-Erstellung stubben
-        every { dataStore.data } returns flowOf(prefs)
+    @Test
+    fun `settings flow returns stored musicEnabled false`() = runTest {
+        val repo = SettingsRepository(context)
+        repo.setMusicEnabled(false)
 
-        repository = SettingsRepository(dataStore, context)
+        val result = repo.settings.first()
+        assertFalse(result.musicEnabled)
+    }
 
-        val result = repository.settings.first()
+    @Test
+    fun `settings flow returns stored musicVolume`() = runTest {
+        val repo = SettingsRepository(context)
+        repo.setMusicVolume(0.25f)
+
+        val result = repo.settings.first()
+        assertEquals(0.25f, result.musicVolume, 0.0001f)
+    }
+
+    @Test
+    fun `settings flow returns stored sfxEnabled false`() = runTest {
+        val repo = SettingsRepository(context)
+        repo.setSfxEnabled(false)
+
+        val result = repo.settings.first()
+        assertFalse(result.sfxEnabled)
+    }
+
+    @Test
+    fun `settings flow returns all stored values together`() = runTest {
+        val repo = SettingsRepository(context)
+        repo.setLanguage("de")
+        repo.setMusicEnabled(false)
+        repo.setMusicVolume(0.3f)
+        repo.setSfxEnabled(false)
+
+        val result = repo.settings.first()
+        assertEquals("de", result.language)
+        assertFalse(result.musicEnabled)
+        assertEquals(0.3f, result.musicVolume, 0.0001f)
+        assertFalse(result.sfxEnabled)
+    }
+
+    @Test
+    fun `settings flow language falls back to LocaleCache when not stored`() = runTest {
+        every { LocaleCache.get(any()) } returns "de"
+
+        // DataStore ist leer -> Fallback auf LocaleCache
+        val result = SettingsRepository(context).settings.first()
 
         assertEquals("de", result.language)
-        assertEquals(false, result.musicEnabled)
-        assertEquals(0.3f, result.musicVolume)
-        assertEquals(false, result.sfxEnabled)
+        verify { LocaleCache.get(any()) }
     }
 
-
+    // ---- setLanguage ----------------------------------------------------
 
     @Test
-    fun `setLanguage updates DataStore and LocaleCache`() = runTest {
-        repository = SettingsRepository(dataStore, context)
-        coEvery { dataStore.updateData(any()) } returns mockk()
+    fun `setLanguage persists value to DataStore`() = runTest {
+        val repo = SettingsRepository(context)
 
-        mockkObject(LocaleCache)
-        every { LocaleCache.set(context, "de") } just Runs
+        repo.setLanguage("de")
 
-        repository.setLanguage("de")
+        // Nach setLanguage muss der Wert im DataStore stehen
+        val prefs = dataStore.data.first()
+        assertEquals("de", prefs[SettingsKeys.LANGUAGE])
+    }
 
-        coVerify { dataStore.updateData(any()) }
+    @Test
+    fun `setLanguage also updates LocaleCache`() = runTest {
+        SettingsRepository(context).setLanguage("de")
+
         verify { LocaleCache.set(context, "de") }
     }
 
     @Test
-    fun `setMusicEnabled updates DataStore`() = runTest {
-        repository = SettingsRepository(dataStore, context)
-        coEvery { dataStore.updateData(any()) } returns mockk()
+    fun `setLanguage stores correct value in preferences`() = runTest {
+        SettingsRepository(context).setLanguage("de")
 
-        repository.setMusicEnabled(false)
+        val prefs = dataStore.data.first()
+        assertEquals("de", prefs[SettingsKeys.LANGUAGE])
+    }
 
-        coVerify { dataStore.updateData(any()) }
+    // ---- setMusicEnabled ------------------------------------------------
+
+    @Test
+    fun `setMusicEnabled writes value to preferences`() = runTest {
+        SettingsRepository(context).setMusicEnabled(false)
+
+        val prefs = dataStore.data.first()
+        assertEquals(false, prefs[SettingsKeys.MUSIC_ENABLED])
+    }
+
+    // ---- setMusicVolume -------------------------------------------------
+
+    @Test
+    fun `setMusicVolume stores value within range`() = runTest {
+        SettingsRepository(context).setMusicVolume(0.42f)
+
+        val prefs = dataStore.data.first()
+        assertEquals(0.42f, prefs[SettingsKeys.MUSIC_VOLUME])
     }
 
     @Test
-    fun `setMusicVolume updates DataStore`() = runTest {
-        repository = SettingsRepository(dataStore, context)
-        coEvery { dataStore.updateData(any()) } returns mockk()
+    fun `setMusicVolume coerces values above 1 down to 1`() = runTest {
+        SettingsRepository(context).setMusicVolume(1.5f)
 
-        repository.setMusicVolume(2.5f)
-
-        coVerify { dataStore.updateData(any()) }
+        val prefs = dataStore.data.first()
+        assertEquals(1.0f, prefs[SettingsKeys.MUSIC_VOLUME])
     }
 
     @Test
-    fun `setSfxEnabled updates DataStore`() = runTest {
-        repository = SettingsRepository(dataStore, context)
-        coEvery { dataStore.updateData(any()) } returns mockk()
+    fun `setMusicVolume coerces negative values up to 0`() = runTest {
+        SettingsRepository(context).setMusicVolume(-0.5f)
 
-        repository.setSfxEnabled(true)
-
-        coVerify { dataStore.updateData(any()) }
+        val prefs = dataStore.data.first()
+        assertEquals(0.0f, prefs[SettingsKeys.MUSIC_VOLUME])
     }
 
     @Test
-    fun `settings uses fallback language when not set`() = runTest {
-        mockkObject(LocaleCache)
-        every { LocaleCache.get(context) } returns "fallback"
+    fun `setMusicVolume accepts boundary 0`() = runTest {
+        SettingsRepository(context).setMusicVolume(0f)
 
-        val prefs = preferencesOf() // leer
-
-        every { dataStore.data } returns flowOf(prefs)
-        repository = SettingsRepository(dataStore, context)
-
-        val result = repository.settings.first()
-
-        assertEquals("fallback", result.language)
+        val prefs = dataStore.data.first()
+        assertEquals(0.0f, prefs[SettingsKeys.MUSIC_VOLUME])
     }
 
     @Test
-    fun `settings uses default musicEnabled when not set`() = runTest {
-        val prefs = preferencesOf() // leer
+    fun `setMusicVolume accepts boundary 1`() = runTest {
+        SettingsRepository(context).setMusicVolume(1f)
 
-        every { dataStore.data } returns flowOf(prefs)
-        repository = SettingsRepository(dataStore, context)
-
-        val result = repository.settings.first()
-
-        assertEquals(true, result.musicEnabled)
+        val prefs = dataStore.data.first()
+        assertEquals(1.0f, prefs[SettingsKeys.MUSIC_VOLUME])
     }
 
+    // ---- setSfxEnabled --------------------------------------------------
 
     @Test
-    fun `settings uses default musicVolume when not set`() = runTest {
-        val prefs = preferencesOf()
+    fun `setSfxEnabled writes value to preferences`() = runTest {
+        SettingsRepository(context).setSfxEnabled(false)
 
-        every { dataStore.data } returns flowOf(prefs)
-        repository = SettingsRepository(dataStore, context)
-
-        val result = repository.settings.first()
-
-        assertEquals(0.6f, result.musicVolume)
-    }
-
-
-    @Test
-    fun `settings uses default sfxEnabled when not set`() = runTest {
-        val prefs = preferencesOf()
-
-        every { dataStore.data } returns flowOf(prefs)
-        repository = SettingsRepository(dataStore, context)
-
-        val result = repository.settings.first()
-
-        assertEquals(true, result.sfxEnabled)
-    }
-
-    @Test
-    fun `settings uses default musicEnabled when missing`() = runTest {
-        val prefs = preferencesOf()
-
-        every { dataStore.data } returns flowOf(prefs)
-
-        repository = SettingsRepository(dataStore, context)
-
-        val result = repository.settings.first()
-
-        assertEquals(true, result.musicEnabled)
-    }
-
-    @Test
-    fun `settingsDataStore delegate compiles`() {
-        val ctx = mockk<Context>(relaxed = true)
-        // Zugriff löst den Delegaten aus, aber DataStore wird NICHT wirklich erzeugt
-        ctx.settingsDataStore
-    }
-
-    @Test
-    fun `settings emits updated values when preferences change`() = runTest {
-        val prefs1 = preferencesOf(SettingsKeys.LANGUAGE to "de")
-        val prefs2 = preferencesOf(SettingsKeys.LANGUAGE to "fr")
-
-        every { dataStore.data } returns flowOf(prefs1, prefs2)
-        repository = SettingsRepository(dataStore, context)
-
-        val results = repository.settings.toList()
-
-        assertEquals("de", results[0].language)
-        assertEquals("fr", results[1].language)
-    }
-
-    @Test
-    fun `settings uses empty string when LocaleCache returns empty`() = runTest {
-        mockkObject(LocaleCache)
-        every { LocaleCache.get(context) } returns ""
-
-        val prefs = preferencesOf()
-        every { dataStore.data } returns flowOf(prefs)
-        repository = SettingsRepository(dataStore, context)
-
-        val result = repository.settings.first()
-        assertEquals("", result.language)
-    }
-
-    @Test
-    fun `setMusicVolume keeps value within range`() = runTest {
-        repository = SettingsRepository(dataStore, context)
-
-        coEvery { dataStore.updateData(any()) } coAnswers {
-            val transform = arg<suspend (Preferences) -> Preferences>(0)
-
-            // suspend-Lambda in einem eigenen runBlocking ausführen
-            val updated = kotlinx.coroutines.runBlocking {
-                transform(emptyPreferences())
-            }
-
-            assertEquals(0.5f, updated[SettingsKeys.MUSIC_VOLUME])
-            updated
-        }
-        repository.setMusicVolume(0.5f)
-
-        coVerify { dataStore.updateData(any()) }
-    }
-
-    @Test
-    fun `setLanguage writes correct key`() = runTest {
-        repository = SettingsRepository(dataStore, context)
-        coEvery { dataStore.updateData(any()) } coAnswers {
-            val transform = arg<suspend (Preferences) -> Preferences>(0)
-            val updated = kotlinx.coroutines.runBlocking { transform(emptyPreferences()) }
-            assertEquals("fr", updated[SettingsKeys.LANGUAGE])
-            updated
-        }
-
-        repository.setLanguage("fr")
-    }
-
-    @Test
-    fun `setMusicVolume clamps value below 0 to 0`() = runTest {
-        repository = SettingsRepository(dataStore, context)
-        coEvery { dataStore.updateData(any()) } coAnswers {
-            val transform = arg<suspend (Preferences) -> Preferences>(0)
-            val updated = kotlinx.coroutines.runBlocking { transform(emptyPreferences()) }
-            assertEquals(0f, updated[SettingsKeys.MUSIC_VOLUME])
-            updated
-        }
-
-        repository.setMusicVolume(-1f)
-    }
-
-    @Test
-    fun `setMusicVolume keeps value at upper bound`() = runTest {
-        repository = SettingsRepository(dataStore, context)
-        coEvery { dataStore.updateData(any()) } coAnswers {
-            val transform = arg<suspend (Preferences) -> Preferences>(0)
-            val updated = kotlinx.coroutines.runBlocking { transform(emptyPreferences()) }
-            assertEquals(1f, updated[SettingsKeys.MUSIC_VOLUME])
-            updated
-        }
-
-        repository.setMusicVolume(1f)
-    }
-
-    @Test
-    fun `settings mixes stored and default values`() = runTest {
-        mockkObject(LocaleCache)
-        every { LocaleCache.get(context) } returns "en"
-
-        val prefs = preferencesOf(SettingsKeys.LANGUAGE to "de") // nur Sprache gesetzt
-        every { dataStore.data } returns flowOf(prefs)
-        repository = SettingsRepository(dataStore, context)
-
-        val result = repository.settings.first()
-
-        assertEquals("de", result.language)
-        assertEquals(true, result.musicEnabled) // Default
-        assertEquals(0.6f, result.musicVolume)  // Default
-        assertEquals(true, result.sfxEnabled)   // Default
-    }
-
-    @Test
-    fun `settings does not call LocaleCache when language is stored`() = runTest {
-        mockkObject(LocaleCache)
-        every { LocaleCache.get(context) } returns "should_not_be_used"
-
-        val prefs = preferencesOf(SettingsKeys.LANGUAGE to "it")
-
-        every { dataStore.data } returns flowOf(prefs)
-        repository = SettingsRepository(dataStore, context)
-
-        val result = repository.settings.first()
-
-        assertEquals("it", result.language)
-        verify(exactly = 0) { LocaleCache.get(context) }
-    }
-
-    @Test
-    fun `settings reads stored musicEnabled true`() = runTest {
-        val prefs = preferencesOf(SettingsKeys.MUSIC_ENABLED to true)
-
-        every { dataStore.data } returns flowOf(prefs)
-        repository = SettingsRepository(dataStore, context)
-
-        val result = repository.settings.first()
-        assertEquals(true, result.musicEnabled)
-    }
-
-    @Test
-    fun `settings reads stored sfxEnabled false`() = runTest {
-        val prefs = preferencesOf(SettingsKeys.SFX_ENABLED to false)
-
-        every { dataStore.data } returns flowOf(prefs)
-        repository = SettingsRepository(dataStore, context)
-
-        val result = repository.settings.first()
-        assertEquals(false, result.sfxEnabled)
+        val prefs = dataStore.data.first()
+        assertEquals(false, prefs[SettingsKeys.SFX_ENABLED])
     }
 }

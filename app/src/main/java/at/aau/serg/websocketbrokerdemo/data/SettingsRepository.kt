@@ -11,7 +11,26 @@ class SettingsRepository(private val dataStore: DataStore<Preferences>,
                          private val context: Context
 ) {
 
-    val settings: Flow<AppSettings> = dataStore.data.map { prefs ->
+
+internal val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "hexabrawl_settings")
+
+object SettingsKeys {
+    val LANGUAGE = stringPreferencesKey("language")
+    val MUSIC_ENABLED = booleanPreferencesKey("music_enabled")
+    val MUSIC_VOLUME = floatPreferencesKey("music_volume")
+    val SFX_ENABLED = booleanPreferencesKey("sfx_enabled")
+}
+
+data class AppSettings(
+    val language: String = "en",
+    val musicEnabled: Boolean = true,
+    val musicVolume: Float = 0.6f,
+    val sfxEnabled: Boolean = true
+)
+
+class SettingsRepository(private val context: Context) {
+
+    val settings: Flow<AppSettings> = context.dataStore.data.map { prefs ->
         AppSettings(
             language = prefs[SettingsKeys.LANGUAGE] ?: LocaleCache.get(context),
             musicEnabled = prefs[SettingsKeys.MUSIC_ENABLED] ?: true,
