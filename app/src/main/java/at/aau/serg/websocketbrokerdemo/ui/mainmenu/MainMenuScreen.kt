@@ -194,30 +194,15 @@ private fun HotspotMarker(
 ) {
     // Das Bild ist Hochformat – wir berechnen, wie groß es nach Fit
     // wirklich auf dem Screen ist. Aspect Ratio ~ 2:3 (1024x1536).
-    val imgAspect = 1024f / 1536f
-    val screenAspect = parentW.value / parentH.value
+    val (cx, cy) = HotspotCalculator.computeCenter(
+        parentW = parentW.value,
+        parentH = parentH.value,
+        xPct = xPct,
+        yPct = yPct
+    )
 
-    val imgW: androidx.compose.ui.unit.Dp
-    val imgH: androidx.compose.ui.unit.Dp
-    val padX: androidx.compose.ui.unit.Dp
-    val padY: androidx.compose.ui.unit.Dp
-
-    if (screenAspect > imgAspect) {
-        // Screen breiter -> Bild ist höhenbegrenzt, links/rechts Holzrand
-        imgH = parentH
-        imgW = (parentH.value * imgAspect).dp
-        padX = ((parentW.value - imgW.value) / 2f).dp
-        padY = 0.dp
-    } else {
-        // Screen schmaler / gleich -> Bild ist breitenbegrenzt, oben/unten Rand
-        imgW = parentW
-        imgH = (parentW.value / imgAspect).dp
-        padX = 0.dp
-        padY = ((parentH.value - imgH.value) / 2f).dp
-    }
-
-    val centerX = padX + (imgW.value * xPct).dp
-    val centerY = padY + (imgH.value * yPct).dp
+    val centerX = cx.dp
+    val centerY = cy.dp
 
     // Pulse-Animation für das "Glühen"
     val infinite = rememberInfiniteTransition(label = "hotspotPulse")

@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import at.aau.serg.websocketbrokerdemo.audio.MusicManager
 import at.aau.serg.websocketbrokerdemo.data.AppSettings
 import at.aau.serg.websocketbrokerdemo.data.SettingsRepository
+import at.aau.serg.websocketbrokerdemo.data.settingsDataStore
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.onEach
@@ -20,7 +21,7 @@ import kotlinx.coroutines.launch
  */
 class SettingsViewModel(app: Application) : AndroidViewModel(app) {
 
-    private val repo = SettingsRepository(app)
+    private val repo = SettingsRepository(app.settingsDataStore, app)
 
     val settings: StateFlow<AppSettings> = repo.settings
         .onEach { s ->

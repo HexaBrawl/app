@@ -3,11 +3,8 @@ package at.aau.serg.websocketbrokerdemo
 import MyStomp
 import android.content.Context
 import android.os.Bundle
-import android.widget.Button
-import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.rememberNavController
@@ -15,8 +12,8 @@ import at.aau.serg.websocketbrokerdemo.audio.MusicManager
 import at.aau.serg.websocketbrokerdemo.data.LocaleCache
 import at.aau.serg.websocketbrokerdemo.data.LocaleHelper
 import at.aau.serg.websocketbrokerdemo.data.SettingsRepository
+import at.aau.serg.websocketbrokerdemo.data.settingsDataStore
 import at.aau.serg.websocketbrokerdemo.ui.navigation.AppNavHost
-import com.example.myapplication.R
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -45,7 +42,7 @@ class MainActivity : ComponentActivity(), Callbacks {
 
         // Persistierte Audio-Settings einmalig anwenden
         lifecycleScope.launch {
-            val s = SettingsRepository(applicationContext).settings.first()
+            val s = SettingsRepository(applicationContext.settingsDataStore, applicationContext).settings.first()
             MusicManager.applyMusicSettings(s.musicEnabled, s.musicVolume)
             MusicManager.applySfxSettings(s.sfxEnabled)
         }

@@ -4,7 +4,6 @@ import android.content.Context
 import android.media.MediaPlayer
 import android.media.SoundPool
 import com.example.myapplication.R
-import io.mockk.confirmVerified
 import io.mockk.every
 import io.mockk.justRun
 import io.mockk.mockk
@@ -14,12 +13,10 @@ import io.mockk.unmockkAll
 import io.mockk.verify
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertSame
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Assertions.assertTrue
 
 /**
  * Ergänzende Tests für die noch ungetesteten Bereiche im MusicManager:
@@ -66,6 +63,21 @@ class MusicManagerInitAndPlayTest {
         every { soundPool.load(any<Context>(), any<Int>(), any()) } returns 42
         justRun { soundPool.release() }
 
+        // ---------------------------------------------------------
+        // AudioAttributes.Builder mocken  ← HIER KOMMT DER FIX
+        // ---------------------------------------------------------
+        mockkConstructor(android.media.AudioAttributes.Builder::class)
+
+        every { anyConstructed<android.media.AudioAttributes.Builder>().setUsage(any()) } answers {
+            self as android.media.AudioAttributes.Builder
+        }
+
+        every { anyConstructed<android.media.AudioAttributes.Builder>().setContentType(any()) } answers {
+            self as android.media.AudioAttributes.Builder
+        }
+
+        every { anyConstructed<android.media.AudioAttributes.Builder>().build() } returns mockk(relaxed = true)
+
         // MediaPlayer.create(Context, Int) ist statisch
         mockkStatic(MediaPlayer::class)
         // Default: gibt player1 zurück
@@ -82,44 +94,56 @@ class MusicManagerInitAndPlayTest {
     // init(context)
     // -------------------------------------------------------------------------
 
-//    @Test
-//    fun `init creates soundPool and marks ready`() {
-//        MusicManager.init(context)
-//
-//        assertTrue(getPrivate<Boolean>("soundPoolReady"))
-//        assertSame(soundPool, getPrivate("soundPool"))
-//    }
-//
-//    @Test
-//    fun `init preloads sword block sfx`() {
-//        MusicManager.init(context)
-//
-//        verify { soundPool.load(appContext, R.raw.sfx_sword_block, 1) }
-//
-//        @Suppress("UNCHECKED_CAST")
-//        val sfxIds = getPrivate<MutableMap<Int, Int>>("sfxIds")
-//        assertEquals(42, sfxIds[R.raw.sfx_sword_block])
-//    }
-//
-//    @Test
-//    fun `init is idempotent — second call is a no-op`() {
-//        MusicManager.init(context)
-//        // Erstes init hat soundPool.load() einmal aufgerufen.
-//
-//        MusicManager.init(context)
-//        MusicManager.init(context)
-//
-//        // Soll trotzdem nur EINMAL geladen worden sein
-//        verify(exactly = 1) { soundPool.load(any<Context>(), any<Int>(), any()) }
-//    }
-//
-//    @Test
-//    fun `init uses applicationContext for sfx loading`() {
-//        MusicManager.init(context)
-//
-//        // appContext, nicht context selbst
-//        verify { soundPool.load(appContext, any<Int>(), any()) }
-//    }
+    @Test
+    fun `init creates soundPool and marks ready`() {
+        MusicManager.init(context)
+
+        assertTrue(getPrivate<Boolean>("soundPoolReady"))
+        assertSame(soundPool, getPrivate("soundPool"))
+    }
+
+    @Test
+    fun `init preloads sword block sfx`() {
+        MusicManager.init(context)
+
+        verify { soundPool.load(appContext, R.raw.sfx_sword_block, 1) }
+
+        @Suppress("UNCHECKED_CAST")
+        val sfxIds = getPrivate<MutableMap<Int, Int>>("sfxIds")
+        assertEquals(42, sfxIds[R.raw.sfx_sword_block])
+    }
+
+    @Test
+    fun `init is idempotent — second call is a no-op`() {
+        MusicManager.init(context)
+        // Erstes init hat soundPool.load() einmal aufgerufen.
+
+        MusicManager.init(context)
+        MusicManager.init(context)
+
+        // Soll trotzdem nur EINMAL geladen worden sein
+        verify(exactly = 1) { soundPool.load(any<Context>(), any<Int>(), any()) }
+    }
+
+    @Test
+    fun `init uses applicationContext for sfx loading`() {
+        MusicManager.init(context)
+
+        // appContext, nicht context selbst
+        verify { soundPool.load(appContext, any<Int>(), any()) }
+    }
+
+    @Test
+    fun `init does nothing when already ready`() {
+        setPrivate("soundPoolReady", true)
+        setPrivate("soundPool", soundPool)
+
+        MusicManager.init(context)
+
+        // Kein erneutes load() oder rebuild
+        verify(exactly = 0) { soundPool.load(any(), any(), any()) }
+    }
+
 
     // -------------------------------------------------------------------------
     // play() — Track-spezifische Wrapper
@@ -148,6 +172,18 @@ class MusicManagerInitAndPlayTest {
         verify { MediaPlayer.create(appContext, R.raw.fighting_theme) }
         assertEquals(R.raw.fighting_theme, getPrivate<Int>("currentTrack"))
     }
+
+    @Test
+    fun `play handles disabled music with null player safely`() {
+        setPrivate("musicEnabled", false)
+        setPrivate("player", null)
+
+        MusicManager.playMenuMusic(context)
+
+        // Kein Crash, kein start()
+        verify(exactly = 0) { player1.start() }
+    }
+
 
     // -------------------------------------------------------------------------
     // play() — Verhalten beim Track-Wechsel und Wiederholung
@@ -295,6 +331,18 @@ class MusicManagerInitAndPlayTest {
         assertEquals(R.raw.medieval_theme, getPrivate<Int>("currentTrack"))
         assertEquals(null, getPrivate<String>("player"))
     }
+
+    @Test
+    fun `play stops active player when music disabled`() {
+        setPrivate("musicEnabled", false)
+        setPrivate("player", player1)
+        every { player1.isPlaying } returns true
+
+        MusicManager.playMenuMusic(context)
+
+        verify { player1.stop() }
+    }
+
 
     // -------------------------------------------------------------------------
     // Reflection helpers
