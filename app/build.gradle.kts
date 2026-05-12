@@ -137,9 +137,10 @@ dependencies {
 //    testImplementation(libs.junit)
     testImplementation(libs.junit.jupiter.api)
     testImplementation(libs.mockk)
+    androidTestImplementation(libs.junit.jupiter)
     testRuntimeOnly(libs.junit.jupiter.engine)
-//    testRuntimeOnly(libs.junit.platform.launcher)
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+    testRuntimeOnly(libs.junit.platform.launcher)
+    testImplementation(libs.kotlinx.coroutines.test)
 
     // Instrumented Tests
     androidTestImplementation(libs.androidx.junit)
