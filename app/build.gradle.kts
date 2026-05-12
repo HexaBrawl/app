@@ -134,12 +134,10 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.compose)
 
     // Unit-Tests
-//    testImplementation(libs.junit)
     testImplementation(libs.junit.jupiter.api)
     testImplementation(libs.mockk)
     androidTestImplementation(libs.junit.jupiter)
     testRuntimeOnly(libs.junit.jupiter.engine)
-    testRuntimeOnly(libs.junit.platform.launcher)
     testImplementation(libs.kotlinx.coroutines.test)
 
     // Instrumented Tests
