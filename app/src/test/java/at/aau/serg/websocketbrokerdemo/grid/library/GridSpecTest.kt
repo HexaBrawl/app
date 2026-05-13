@@ -1,7 +1,6 @@
-package at.aau.serg.websocketbrokerdemo.grid
+package at.aau.serg.websocketbrokerdemo.grid.library
 
-import at.aau.serg.websocketbrokerdemo.grid.library.GridSpec
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
 class GridSpecTest {
@@ -10,9 +9,9 @@ class GridSpecTest {
     fun `should correctly store rows cols and name`() {
         val spec = GridSpec(rows = 10, cols = 12, name = "Test Grid")
 
-        assertEquals(10, spec.rows)
-        assertEquals(12, spec.cols)
-        assertEquals("Test Grid", spec.name)
+        Assertions.assertEquals(10, spec.rows)
+        Assertions.assertEquals(12, spec.cols)
+        Assertions.assertEquals("Test Grid", spec.name)
     }
 
     @Test
@@ -20,8 +19,8 @@ class GridSpecTest {
         val a = GridSpec(8, 8, "Grid")
         val b = GridSpec(8, 8, "Grid")
 
-        assertEquals(a, b)
-        assertEquals(a.hashCode(), b.hashCode())
+        Assertions.assertEquals(a, b)
+        Assertions.assertEquals(a.hashCode(), b.hashCode())
     }
 
     @Test
@@ -29,6 +28,6 @@ class GridSpecTest {
         val a = GridSpec(8, 8, "Grid")
         val b = GridSpec(10, 10, "Other")
 
-        assertNotEquals(a, b)
+        Assertions.assertNotEquals(a, b)
     }
 }

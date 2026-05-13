@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.assertNull
 
 /**
  * Ergänzende Tests für die noch ungetesteten Bereiche im MusicManager:
@@ -114,7 +115,7 @@ class MusicManagerInitAndPlayTest {
     }
 
     @Test
-    fun `init is idempotent — second call is a no-op`() {
+    fun `init is idempotent - second call is a no-op`() {
         MusicManager.init(context)
         // Erstes init hat soundPool.load() einmal aufgerufen.
 
@@ -141,6 +142,16 @@ class MusicManagerInitAndPlayTest {
         MusicManager.init(context)
 
         // Kein erneutes load() oder rebuild
+        verify(exactly = 0) { soundPool.load(any(), any(), any()) }
+    }
+
+    @Test
+    fun `init does not reload sfx when already in map`() {
+        val ids = getPrivate<MutableMap<Int, Int>>("sfxIds")
+        ids[R.raw.sfx_sword_block] = 99
+
+        MusicManager.init(context)
+
         verify(exactly = 0) { soundPool.load(any(), any(), any()) }
     }
 
@@ -292,7 +303,7 @@ class MusicManagerInitAndPlayTest {
     }
 
     @Test
-    fun `play sequence — menu to tournament to battle`() {
+    fun `play sequence - menu to tournament to battle`() {
         setPrivate("musicEnabled", true)
         val player3 = mockk<MediaPlayer>(relaxed = true)
         every { MediaPlayer.create(any(), R.raw.medieval_theme) } returns player1
@@ -343,6 +354,18 @@ class MusicManagerInitAndPlayTest {
         verify { player1.stop() }
     }
 
+    @Test
+    fun `play handles null player and disabled music`() {
+        setPrivate("musicEnabled", false)
+        every { MediaPlayer.create(any(), any<Int>()) } returns null
+
+        MusicManager.playMenuMusic(context)
+
+        // currentTrack gesetzt, player bleibt null
+        assertEquals(R.raw.medieval_theme, getPrivate<Int>("currentTrack"))
+        assertNull(getPrivate<MediaPlayer?>("player"))
+    }
+
 
     // -------------------------------------------------------------------------
     // Reflection helpers
@@ -376,4 +399,38 @@ class MusicManagerInitAndPlayTest {
             // dann beim ersten Reflection-Zugriff in @Test sauber failen.
         }
     }
+
+    @Test
+    fun `preloadSfx does not reload when id already exists`() {
+        // Arrange
+        setPrivate("soundPoolReady", true)
+        setPrivate("soundPool", soundPool)
+
+        val ids = getPrivate<MutableMap<Int, Int>>("sfxIds")
+        ids[R.raw.sfx_sword_block] = 999   // already loaded
+
+        // Act
+        MusicManager.init(context)
+
+        // Assert
+        verify(exactly = 0) { soundPool.load(any(), any(), any()) }
+    }
+
+    @Test
+    fun `same track restarts player when music enabled and was paused`() {
+        // Arrange
+        setPrivate("musicEnabled", true)
+        every { player1.isPlaying } returns false
+
+        // Erster Aufruf: Player wird erstellt
+        MusicManager.playMenuMusic(context)
+
+        // Zweiter Aufruf: gleicher Track → same-track branch
+        MusicManager.playMenuMusic(context)
+
+        // Assert: Branch wurde ausgeführt
+        verify(atLeast = 2) { player1.start() }
+    }
+
+
 }

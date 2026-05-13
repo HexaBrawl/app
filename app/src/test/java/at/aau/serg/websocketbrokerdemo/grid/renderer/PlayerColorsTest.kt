@@ -1,8 +1,7 @@
-package at.aau.serg.websocketbrokerdemo.grid
+package at.aau.serg.websocketbrokerdemo.grid.renderer
 
 import android.graphics.Color
-import at.aau.serg.websocketbrokerdemo.grid.renderer.PlayerColors
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -19,21 +18,21 @@ class PlayerColorsTest {
     @Test
     fun `first player should get first color`() {
         val color = PlayerColors.getColorForPlayer("A")
-        assertEquals(Color.RED, color)
+        Assertions.assertEquals(Color.RED, color)
     }
 
     @Test
     fun `second player should get second color`() {
         PlayerColors.getColorForPlayer("A")
         val color = PlayerColors.getColorForPlayer("B")
-        assertEquals(Color.BLUE, color)
+        Assertions.assertEquals(Color.BLUE, color)
     }
 
     @Test
     fun `same player should always get same color`() {
         val c1 = PlayerColors.getColorForPlayer("A")
         val c2 = PlayerColors.getColorForPlayer("A")
-        assertEquals(c1, c2)
+        Assertions.assertEquals(c1, c2)
     }
 
     @Test
@@ -44,6 +43,6 @@ class PlayerColorsTest {
         PlayerColors.getColorForPlayer("D") // YELLOW
 
         val colorE = PlayerColors.getColorForPlayer("E") // back to RED
-        assertEquals(Color.RED, colorE)
+        Assertions.assertEquals(Color.RED, colorE)
     }
 }

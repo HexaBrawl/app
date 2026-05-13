@@ -1,7 +1,6 @@
-package at.aau.serg.websocketbrokerdemo.grid
+package at.aau.serg.websocketbrokerdemo.grid.layout
 
-import at.aau.serg.websocketbrokerdemo.grid.layout.HexLayout
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
 class HexLayoutTest {
@@ -18,7 +17,7 @@ class HexLayoutTest {
 
     @Test
     fun `cellSize should match hexSize`() {
-        assertEquals(hexSize, layout.cellSize)
+        Assertions.assertEquals(hexSize, layout.cellSize)
     }
 
     @Test
@@ -26,8 +25,8 @@ class HexLayoutTest {
         val (x, y) = layout.cellCenter(0, 0)
 
         // Erste Zelle liegt exakt bei offsetX, offsetY
-        assertTrue(x < 0f)
-        assertTrue(y < 0f)
+        Assertions.assertTrue(x < 0f)
+        Assertions.assertTrue(y < 0f)
     }
 
     @Test
@@ -36,19 +35,19 @@ class HexLayoutTest {
 
         val result = layout.pixelToCell(cx, cy)
 
-        assertEquals(2 to 2, result)
+        Assertions.assertEquals(2 to 2, result)
     }
 
     @Test
     fun `pixelToCell should return null for far outside click`() {
         val result = layout.pixelToCell(9999f, 9999f)
-        assertNull(result)
+        Assertions.assertNull(result)
     }
 
     @Test
     fun `pixelToCell should return null for negative coordinates`() {
         val result = layout.pixelToCell(-999f, -999f)
-        assertNull(result)
+        Assertions.assertNull(result)
     }
 
     @Test
@@ -58,6 +57,6 @@ class HexLayoutTest {
         // Klick knapp innerhalb des Radius
         val result = layout.pixelToCell(cx + hexSize * 0.9f, cy)
 
-        assertEquals(1 to 1, result)
+        Assertions.assertEquals(1 to 1, result)
     }
 }

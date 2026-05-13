@@ -133,6 +133,27 @@ class MusicManagerTest {
         // kein Crash, kein verify nötig
     }
 
+    @Test
+    fun `applyMusicSettings disabled does not pause when player not playing`() {
+        setPrivate("player", mediaPlayer)
+        every { mediaPlayer.isPlaying } returns false
+
+        MusicManager.applyMusicSettings(enabled = false, volume = 0.5f)
+
+        verify(exactly = 0) { mediaPlayer.pause() }
+    }
+
+    @Test
+    fun `applyMusicSettings enabled does nothing when player is null`() {
+        setPrivate("player", null)
+
+        MusicManager.applyMusicSettings(enabled = true, volume = 0.5f)
+
+        // Kein start(), kein pause()
+        verify(exactly = 0) { mediaPlayer.start() }
+        verify(exactly = 0) { mediaPlayer.pause() }
+    }
+
     // -------------------------------------------------------------------------
     // applySfxSettings
     // -------------------------------------------------------------------------
@@ -197,6 +218,8 @@ class MusicManagerTest {
         verify { soundPool.play(5, 1f, 1f, 1, 0, 1f) }
     }
 
+
+
     // -------------------------------------------------------------------------
     // pause / resume
     // -------------------------------------------------------------------------
@@ -250,6 +273,18 @@ class MusicManagerTest {
         verify(exactly = 0) { mediaPlayer.start() }
     }
 
+    @Test
+    fun `resume does nothing when player is already playing`() {
+        setPrivate("player", mediaPlayer)
+        setPrivate("musicEnabled", true)
+        every { mediaPlayer.isPlaying } returns true
+
+        MusicManager.resume()
+
+        verify(exactly = 0) { mediaPlayer.start() }
+    }
+
+
     // -------------------------------------------------------------------------
     // release
     // -------------------------------------------------------------------------
@@ -296,6 +331,20 @@ class MusicManagerTest {
 
         verify { soundPool.release() }
     }
+
+    @Test
+    fun `releaseMusic releases player without stopping when not playing`() {
+        setPrivate("player", mediaPlayer)
+        every { mediaPlayer.isPlaying } returns false
+
+        val method = MusicManager::class.java.getDeclaredMethod("releaseMusic")
+        method.isAccessible = true
+        method.invoke(MusicManager)
+
+        verify(exactly = 0) { mediaPlayer.stop() }
+        verify { mediaPlayer.release() }
+    }
+
 
     // -------------------------------------------------------------------------
     // Reflection helpers (because MusicManager is an object with private state)
@@ -364,4 +413,19 @@ class MusicManagerTest {
 
         verify { soundPool.play(7, 1f, 1f, 1, 0, 1f) }
     }
+
+    @Test
+    fun `applyVolumeToPlayer does nothing when target is null`() {
+        setPrivate("player", null)
+        setPrivate("musicEnabled", true)
+        setPrivate("musicVolume", 0.5f)
+
+        val method = MusicManager::class.java.getDeclaredMethod("applyVolumeToPlayer", MediaPlayer::class.java)
+        method.isAccessible = true
+        method.invoke(MusicManager, null)
+
+        // Kein Crash, kein setVolume()
+        verify(exactly = 0) { mediaPlayer.setVolume(any(), any()) }
+    }
+
 }

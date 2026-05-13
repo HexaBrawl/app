@@ -1,7 +1,6 @@
-package at.aau.serg.websocketbrokerdemo.grid
+package at.aau.serg.websocketbrokerdemo.grid.model
 
-import at.aau.serg.websocketbrokerdemo.grid.model.UnitData
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
 class UnitDataTest {
@@ -10,9 +9,9 @@ class UnitDataTest {
     fun `should correctly store x y and player`() {
         val unit = UnitData(x = 3, y = 5, player = "Player 1")
 
-        assertEquals(3, unit.x)
-        assertEquals(5, unit.y)
-        assertEquals("Player 1", unit.player)
+        Assertions.assertEquals(3, unit.x)
+        Assertions.assertEquals(5, unit.y)
+        Assertions.assertEquals("Player 1", unit.player)
     }
 
     @Test
@@ -20,8 +19,8 @@ class UnitDataTest {
         val a = UnitData(1, 2, "P1")
         val b = UnitData(1, 2, "P1")
 
-        assertEquals(a, b)
-        assertEquals(a.hashCode(), b.hashCode())
+        Assertions.assertEquals(a, b)
+        Assertions.assertEquals(a.hashCode(), b.hashCode())
     }
 
     @Test
@@ -29,6 +28,6 @@ class UnitDataTest {
         val a = UnitData(1, 2, "P1")
         val b = UnitData(2, 1, "P2")
 
-        assertNotEquals(a, b)
+        Assertions.assertNotEquals(a, b)
     }
 }

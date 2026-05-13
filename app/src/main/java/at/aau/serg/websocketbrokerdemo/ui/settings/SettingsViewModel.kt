@@ -19,13 +19,18 @@ import kotlinx.coroutines.launch
  * Beobachtet das Repository und propagiert Änderungen sofort an den
  * MusicManager. Auch die Sprach-Umschaltung wird hier angestoßen.
  */
-class SettingsViewModel(app: Application) : AndroidViewModel(app) {
+class SettingsViewModel(
+    app: Application,
+    private val repo: SettingsRepository
+) : AndroidViewModel(app) {
 
-    private val repo = SettingsRepository(app.settingsDataStore, app)
+    constructor(app: Application) : this(
+        app,
+        SettingsRepository(app.settingsDataStore, app)
+    )
 
     val settings: StateFlow<AppSettings> = repo.settings
         .onEach { s ->
-            // Audio-Settings unmittelbar anwenden
             MusicManager.applyMusicSettings(s.musicEnabled, s.musicVolume)
             MusicManager.applySfxSettings(s.sfxEnabled)
         }

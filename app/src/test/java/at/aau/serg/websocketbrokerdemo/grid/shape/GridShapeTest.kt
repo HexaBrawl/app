@@ -1,7 +1,6 @@
-package at.aau.serg.websocketbrokerdemo.grid
+package at.aau.serg.websocketbrokerdemo.grid.shape
 
-import at.aau.serg.websocketbrokerdemo.grid.shape.GridShape
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
 class GridShapeTest {
@@ -27,7 +26,7 @@ class GridShapeTest {
         val result = shape.allCells(width = 3, height = 2).toList()
 
         // 1) Schleifen müssen ALLE Zellen in row-major order durchlaufen
-        assertEquals(
+        Assertions.assertEquals(
             listOf(
                 0 to 0, 1 to 0, 2 to 0,
                 0 to 1, 1 to 1, 2 to 1
@@ -37,7 +36,7 @@ class GridShapeTest {
         )
 
         // 2) Nur Zellen yielden, bei denen inside == true (if-Bedingung)
-        assertEquals(
+        Assertions.assertEquals(
             listOf(
                 0 to 0, // 0+0 = 0 → true
                 2 to 0, // 2+0 = 2 → true
@@ -52,19 +51,36 @@ class GridShapeTest {
     fun `allCells returns empty and does not call isInside when width or height is zero`() {
         val shape = RecordingShape { _, _ -> true }
 
-        assertTrue(shape.allCells(0, 5).toList().isEmpty())
-        assertTrue(shape.allCells(5, 0).toList().isEmpty())
+        Assertions.assertTrue(shape.allCells(0, 5).toList().isEmpty())
+        Assertions.assertTrue(shape.allCells(5, 0).toList().isEmpty())
 
-        assertTrue(shape.calls.isEmpty(), "isInside must not be called when loops do not run")
+        Assertions.assertTrue(
+            shape.calls.isEmpty(),
+            "isInside must not be called when loops do not run"
+        )
     }
 
     @Test
     fun `allCells returns empty and does not call isInside when width or height is negative`() {
         val shape = RecordingShape { _, _ -> true }
 
-        assertTrue(shape.allCells(-1, 5).toList().isEmpty())
-        assertTrue(shape.allCells(5, -1).toList().isEmpty())
+        Assertions.assertTrue(shape.allCells(-1, 5).toList().isEmpty())
+        Assertions.assertTrue(shape.allCells(5, -1).toList().isEmpty())
 
-        assertTrue(shape.calls.isEmpty(), "isInside must not be called for negative dimensions")
+        Assertions.assertTrue(
+            shape.calls.isEmpty(),
+            "isInside must not be called for negative dimensions"
+        )
     }
+
+    @Test
+    fun `allCells works for a 1x1 grid`() {
+        val shape = RecordingShape { _, _ -> true }
+
+        val result = shape.allCells(1, 1).toList()
+
+        Assertions.assertEquals(listOf(0 to 0), result)
+        Assertions.assertEquals(listOf(0 to 0), shape.calls)
+    }
+
 }
