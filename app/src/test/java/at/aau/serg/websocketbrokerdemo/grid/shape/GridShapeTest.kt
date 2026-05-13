@@ -72,4 +72,15 @@ class GridShapeTest {
             "isInside must not be called for negative dimensions"
         )
     }
+
+    @Test
+    fun `allCells works for a 1x1 grid`() {
+        val shape = RecordingShape { _, _ -> true }
+
+        val result = shape.allCells(1, 1).toList()
+
+        Assertions.assertEquals(listOf(0 to 0), result)
+        Assertions.assertEquals(listOf(0 to 0), shape.calls)
+    }
+
 }
