@@ -1,11 +1,10 @@
-package at.aau.serg.websocketbrokerdemo.grid
+package at.aau.serg.websocketbrokerdemo.grid.input
 
-import at.aau.serg.websocketbrokerdemo.grid.input.HexInput
 import at.aau.serg.websocketbrokerdemo.grid.layout.GridLayout
 import at.aau.serg.websocketbrokerdemo.grid.model.GridModel
 import io.mockk.every
 import io.mockk.mockk
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
 class HexInputTest {
@@ -23,7 +22,7 @@ class HexInputTest {
         val result = HexInput.detect(100f, 200f, model)
 
         // Then
-        assertEquals(3 to 4, result)
+        Assertions.assertEquals(3 to 4, result)
     }
 
     @Test
@@ -39,6 +38,6 @@ class HexInputTest {
         val result = HexInput.detect(50f, 50f, model)
 
         // Then
-        assertNull(result)
+        Assertions.assertNull(result)
     }
 }

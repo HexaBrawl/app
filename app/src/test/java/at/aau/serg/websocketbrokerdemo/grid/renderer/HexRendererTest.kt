@@ -1,13 +1,13 @@
-package at.aau.serg.websocketbrokerdemo.grid
+package at.aau.serg.websocketbrokerdemo.grid.renderer
 
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import at.aau.serg.websocketbrokerdemo.grid.layout.GridLayout
 import at.aau.serg.websocketbrokerdemo.grid.model.GridModel
 import at.aau.serg.websocketbrokerdemo.grid.model.UnitData
-import at.aau.serg.websocketbrokerdemo.grid.renderer.HexDrawer
-import at.aau.serg.websocketbrokerdemo.grid.renderer.HexRenderer
 import at.aau.serg.websocketbrokerdemo.grid.shape.GridShape
-import io.mockk.*
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
 import org.junit.jupiter.api.Test
 
 class HexRendererTest {

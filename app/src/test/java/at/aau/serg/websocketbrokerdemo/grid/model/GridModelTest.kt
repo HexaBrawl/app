@@ -1,11 +1,9 @@
-package at.aau.serg.websocketbrokerdemo.grid
+package at.aau.serg.websocketbrokerdemo.grid.model
 
 import at.aau.serg.websocketbrokerdemo.grid.layout.GridLayout
-import at.aau.serg.websocketbrokerdemo.grid.model.GridModel
-import at.aau.serg.websocketbrokerdemo.grid.model.UnitData
 import at.aau.serg.websocketbrokerdemo.grid.shape.GridShape
 import io.mockk.mockk
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
 class GridModelTest {
@@ -27,11 +25,11 @@ class GridModelTest {
             units = units
         )
 
-        assertEquals(10, model.width)
-        assertEquals(12, model.height)
-        assertSame(shape, model.shape)
-        assertSame(layout, model.layout)
-        assertEquals(units, model.units)
+        Assertions.assertEquals(10, model.width)
+        Assertions.assertEquals(12, model.height)
+        Assertions.assertSame(shape, model.shape)
+        Assertions.assertSame(layout, model.layout)
+        Assertions.assertEquals(units, model.units)
     }
 
     @Test
@@ -43,8 +41,8 @@ class GridModelTest {
         val a = GridModel(10, 10, shape, layout, units)
         val b = GridModel(10, 10, shape, layout, units)
 
-        assertEquals(a, b)
-        assertEquals(a.hashCode(), b.hashCode())
+        Assertions.assertEquals(a, b)
+        Assertions.assertEquals(a.hashCode(), b.hashCode())
     }
 
     @Test
@@ -55,6 +53,6 @@ class GridModelTest {
         val a = GridModel(10, 10, shape, layout, emptyList())
         val b = GridModel(20, 20, shape, layout, emptyList())
 
-        assertNotEquals(a, b)
+        Assertions.assertNotEquals(a, b)
     }
 }
