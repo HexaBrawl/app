@@ -67,13 +67,42 @@ tasks.register<JacocoReport>("jacocoTestReport") {
         xml.outputLocation.set(file("${project.projectDir}/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml"))
     }
 
+    // Ausschluss-Pattern für Klassen-Files (Jacoco arbeitet auf .class-Ebene)
     val fileFilter = listOf(
+        // Standard Android-Müll
         "**/R.class",
         "**/R$*.class",
         "**/BuildConfig.*",
         "**/Manifest*.*",
         "**/*Test*.*",
-        "android/**/*.*"
+        "android/**/*.*",
+
+        // Compose-UI / Composable-Klassen (rein visuell, brauchen Compose-UI-Tests)
+        "**/ui/components/**",
+        "**/ui/game/GameScreen*.*",
+        "**/ui/lobby/HomeScreen*.*",
+        "**/ui/lobby_modes/ActionCard*.*",
+        "**/ui/lobby_modes/JoinByCodeDialog*.*",
+        "**/ui/lobby_modes/LobbyScreen*.*",
+        "**/ui/lobby_modes/RoundCoinButton*.*",
+        "**/ui/mainmenu/MainMenuScreen*.*",
+        "**/ui/navigation/AppNavHost*.*",
+        "**/ui/settings/SettingsScreen*.*",
+        "**/ui/theme/**",
+        "**/ui/waiting/WaitingLobbyComponents*.*",
+        "**/ui/waiting/WaitingLobbyScreen*.*",
+        "**/ui/waiting/WaitingLobbyState*.*",
+
+        // Grid-Rendering (Canvas-Drawing, kein sinnvoller Unit-Test möglich)
+        "**/grid/UniversalGrid*.*",
+        "**/grid/renderer/**",
+
+        // Lifecycle/Activity-Glue, Network-Layer
+        "**/MainActivity*.*",
+        "**/MyStomp*.*",
+
+        // AndroidViewModel (braucht echtes Application)
+        "**/SettingsViewModel*.*"
     )
 
     val debugTree =
@@ -99,18 +128,6 @@ tasks.register<JacocoReport>("jacocoTestReport") {
     })
 }
 
-sonar {
-    properties {
-        property("sonar.projectKey", "HexaBrawl_app")
-        property("sonar.organization", "hexabrawl")
-        property("sonar.host.url", "https://sonarcloud.io")
-        property("sonar.java.coveragePlugin", "jacoco")
-        property(
-            "sonar.coverage.jacoco.xmlReportPaths",
-            "${project.projectDir}/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml"
-        )
-    }
-}
 
 dependencies {
     implementation(libs.krossbow.websocket.okhttp)
@@ -138,14 +155,13 @@ dependencies {
     testImplementation(libs.mockk)
     testImplementation(libs.kotlinx.coroutines.test)
     testRuntimeOnly(libs.junit.jupiter.engine)
+    testRuntimeOnly(libs.junit.platform.launcher)
 
     // Instrumented Tests
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
-    androidTestImplementation(libs.junit.jupiter)
-
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 }

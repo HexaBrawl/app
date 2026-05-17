@@ -8,28 +8,62 @@ plugins {
 }
 
 sonar {
-    properties{
-        property("sonar.projectKey","HexaBrawl_app")
-        property("sonar.organization","hexabrawl")
+    properties {
+        property("sonar.projectKey", "HexaBrawl_app")
+        property("sonar.organization", "hexabrawl")
         property("sonar.host.url", "https://sonarcloud.io")
-        //Exclude UI folders from testing
+
+        // Coverage-Exclusions:
+        //
+        // Ausgeschlossen werden alle Files, die nicht sinnvoll im
+        // Unit-Test-Scope getestet werden können (Variante B = ohne Robolectric):
+        //
+        //  - Composables (UI-Screens): brauchen androidx.compose.ui.test
+        //  - Canvas-Drawing (Grid-Renderer): testet nur Pixel-Output
+        //  - Activity / Network (MainActivity, MyStomp): Lifecycle/Sockets
+        //  - AndroidViewModel: braucht echtes Application-Object
+        //  - Theme-Konstanten: reine Farb-/Font-Definitionen
         property(
             "sonar.coverage.exclusions",
-            """
-            app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/**,
-            app/src/main/java/at/aau/serg/websocketbrokerdemo/grid/HexGrid.kt,
-            app/src/main/java/at/aau/serg/websocketbrokerdemo/grid/GridRenderer.kt,
-            
-            app/src/main/java/at/aau/serg/websocketbrokerdemo/grid/UnitData.kt,
-            app/src/main/java/at/aau/serg/websocketbrokerdemo/grid/ShapeUtils.kt,
-            
-            app/src/main/java/MyStomp.kt,
-            app/src/main/java/at/aau/serg/websocketbrokerdemo/MainActivity.kt,
-            
-            app/src/main/java/at/aau/serg/websocketbrokerdemo/grid/HexGridOld.kt,
-            """.trimIndent()
+            listOf(
+                // Composables / UI-Screens
+                "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/components/**",
+                "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/game/GameScreen.kt",
+                "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/lobby/HomeScreen.kt",
+                "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/lobby_modes/ActionCard.kt",
+                "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/lobby_modes/JoinByCodeDialog.kt",
+                "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/lobby_modes/LobbyScreen.kt",
+                "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/lobby_modes/RoundCoinButton.kt",
+                "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/mainmenu/MainMenuScreen.kt",
+                "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/navigation/AppNavHost.kt",
+                "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/settings/SettingsScreen.kt",
+                "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/theme/**",
+                "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/waiting/WaitingLobbyComponents.kt",
+                "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/waiting/WaitingLobbyScreen.kt",
+                "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/waiting/WaitingLobbyState.kt",
+
+                // Grid-Rendering (Canvas)
+                "app/src/main/java/at/aau/serg/websocketbrokerdemo/grid/UniversalGrid.kt",
+                "app/src/main/java/at/aau/serg/websocketbrokerdemo/grid/renderer/**",
+
+                // Lifecycle / Network
+                "app/src/main/java/at/aau/serg/websocketbrokerdemo/MainActivity.kt",
+                "app/src/main/java/MyStomp.kt",
+
+                // AndroidViewModel (braucht Robolectric)
+                "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/settings/SettingsViewModel.kt"
+            ).joinToString(",")
         )
 
-        property("sonar.cpd.exclusions", "app/src/main/java/at/aau/serg/websocketbrokerdemo/grid/HexGridOld.kt")
+        // Aus der Code-Duplication-Analyse: Composables und Grid-Renderer
+        // haben strukturell ähnliche Boilerplate (Brushes, Modifiers, etc.),
+        // das gäbe False-Positives.
+        property(
+            "sonar.cpd.exclusions",
+            listOf(
+                "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/**",
+                "app/src/main/java/at/aau/serg/websocketbrokerdemo/grid/renderer/**"
+            ).joinToString(",")
+        )
     }
-}        
+}
