@@ -20,6 +20,7 @@ lifecycleViewmodelCompose = "2.8.7"
 mockk = "1.13.13"
 coroutinesTest = "1.7.3"
 junitJupiter = "5.14.0"
+gson = "2.8.2"
 
 [libraries]
 junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junitJupiterApi" }
