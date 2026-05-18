@@ -24,6 +24,7 @@ sonar {
             app/src/main/java/at/aau/serg/websocketbrokerdemo/grid/ShapeUtils.kt,
             
             app/src/main/java/MyStomp.kt,
+            app/src/main/java/at/aau/serg/websocketbrokerdemo/network/Stomp.kt
             app/src/main/java/at/aau/serg/websocketbrokerdemo/MainActivity.kt,
             
             app/src/main/java/at/aau/serg/websocketbrokerdemo/grid/HexGridOld.kt,
