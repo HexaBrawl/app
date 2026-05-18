@@ -24,21 +24,6 @@ sonar {
         //  - AndroidViewModel: braucht echtes Application-Object
         //  - Theme-Konstanten: reine Farb-/Font-Definitionen
         property(
-            "sonar.coverage.exclusions",
-            """
-            app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/**,
-            app/src/main/java/at/aau/serg/websocketbrokerdemo/grid/HexGrid.kt,
-            app/src/main/java/at/aau/serg/websocketbrokerdemo/grid/GridRenderer.kt,
-            
-            app/src/main/java/at/aau/serg/websocketbrokerdemo/grid/UnitData.kt,
-            app/src/main/java/at/aau/serg/websocketbrokerdemo/grid/ShapeUtils.kt,
-            
-            app/src/main/java/MyStomp.kt,
-            app/src/main/java/at/aau/serg/websocketbrokerdemo/network/Stomp.kt
-            app/src/main/java/at/aau/serg/websocketbrokerdemo/MainActivity.kt,
-            
-            app/src/main/java/at/aau/serg/websocketbrokerdemo/grid/HexGridOld.kt,
-            """.trimIndent()
             listOf(
                 // Composables / UI-Screens
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/components/**",
@@ -62,6 +47,7 @@ sonar {
 
                 // Lifecycle / Network
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/MainActivity.kt",
+                "app/src/main/java/at/aau/serg/websocketbrokerdemo/network/Stomp.kt",
                 "app/src/main/java/MyStomp.kt",
 
                 // AndroidViewModel (braucht Robolectric)
