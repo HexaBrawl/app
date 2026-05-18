@@ -24,6 +24,7 @@ sonar {
         //  - AndroidViewModel: braucht echtes Application-Object
         //  - Theme-Konstanten: reine Farb-/Font-Definitionen
         property(
+            "sonar.coverage.exclusions",
             listOf(
                 // Composables / UI-Screens
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/components/**",
