@@ -1,7 +1,6 @@
 package at.aau.serg.websocketbrokerdemo.network
 
 import android.util.Log
-import at.aau.serg.websocketbrokerdemo.Stomp
 import at.aau.serg.websocketbrokerdemo.data.serverside.GameState
 import at.aau.serg.websocketbrokerdemo.data.serverside.Move
 import com.google.gson.Gson

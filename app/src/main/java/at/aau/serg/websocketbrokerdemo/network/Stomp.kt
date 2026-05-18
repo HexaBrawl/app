@@ -1,4 +1,4 @@
-package at.aau.serg.websocketbrokerdemo
+package at.aau.serg.websocketbrokerdemo.network
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -12,6 +12,10 @@ import org.hildan.krossbow.websocket.okhttp.OkHttpWebSocketClient
 
 private const val WEBSOCKET_URI = "ws://10.0.2.2:8080/websocket-example-broker"
 
+/*
+* New Stomp class to enable a more generalized use and limited complexity.
+* Endpoint classes can register here which allows for a more untangled network logic.
+* */
 class Stomp {
     private lateinit var client: StompClient
     private var session: StompSession? = null
