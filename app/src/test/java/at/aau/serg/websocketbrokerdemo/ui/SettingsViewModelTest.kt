@@ -27,7 +27,6 @@ class SettingsViewModelTest {
     fun setup() {
         // Mock Repository + Application
         repo = mockk(relaxed = true)
-        every { repo.settings } returns MutableStateFlow(AppSettings())
         app = mockk(relaxed = true)
 
         // Fake Flow für Settings
