@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "at.aau.serg.websocketbrokerdemo"
+    namespace = "com.example.myapplication"
     compileSdk {
         version = release(36) {
             minorApiLevel = 1
@@ -64,11 +64,7 @@ tasks.register<JacocoReport>("jacocoTestReport") {
 
     reports {
         xml.required.set(true)
-        xml.outputLocation.set(
-            layout.buildDirectory.file(
-                "reports/jacoco/jacocoTestReport/jacocoTestReport.xml"
-            )
-        )
+        xml.outputLocation.set(file("${project.projectDir}/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml"))
     }
 
     // Ausschluss-Pattern für Klassen-Files (Jacoco arbeitet auf .class-Ebene)
@@ -109,7 +105,10 @@ tasks.register<JacocoReport>("jacocoTestReport") {
         "**/SettingsViewModel*.*"
     )
 
-    val debugTree = fileTree("${project.layout.buildDirectory.get().asFile}/tmp/kotlin-classes/debug")
+    val debugTree =
+        fileTree("${project.layout.buildDirectory.get().asFile}/tmp/kotlin-classes/debug") {
+            exclude(fileFilter)
+        }
 
     val javaDebugTree =
         fileTree("${project.layout.buildDirectory.get().asFile}/intermediates/javac/debug") {
@@ -123,14 +122,10 @@ tasks.register<JacocoReport>("jacocoTestReport") {
 
     sourceDirectories.setFrom(files(mainSrc))
     classDirectories.setFrom(files(debugTree, javaDebugTree))
-    executionData.setFrom(
-        fileTree(buildDir) {
-            include(
-                "jacoco/testDebugUnitTest.exec",
-                "outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec"
-            )
-        }
-    )
+    executionData.setFrom(fileTree(project.layout.buildDirectory.get().asFile) {
+        include("jacoco/testDebugUnitTest.exec")
+        include("outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec")
+    })
 }
 
 
