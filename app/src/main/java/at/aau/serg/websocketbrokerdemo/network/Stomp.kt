@@ -10,7 +10,7 @@ import org.hildan.krossbow.stomp.sendText
 import org.hildan.krossbow.stomp.subscribeText
 import org.hildan.krossbow.websocket.okhttp.OkHttpWebSocketClient
 
-private const val WEBSOCKET_URI = "ws://10.0.2.2:8080/websocket-example-broker"
+private const val WEBSOCKET_URI = "https://hexabrawl-server-fkcdhrf9avdbebh5.germanywestcentral-01.azurewebsites.net/"
 
 /*
 * New Stomp class to enable a more generalized use and limited complexity.

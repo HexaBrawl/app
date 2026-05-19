@@ -38,7 +38,6 @@ class UnitMoveEndpointTest {
             stomp.send(eq("/app/move"), any())
         }
 
-        // optional: ensure JSON is actually produced
         assert(slot.isCaptured)
         assert(slot.captured.contains("\"player\":\"Alice\""))
     }
