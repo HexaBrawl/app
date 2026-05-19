@@ -57,6 +57,15 @@ kotlin {
     jvmToolchain(17)
 }
 
+sonar {
+    properties {
+        property(
+            "sonar.coverage.jacoco.xmlReportPaths",
+            "${project.layout.buildDirectory.get().asFile}/reports/jacoco/jacocoTestReport/jacocoTestReport.xml"
+        )
+    }
+}
+
 tasks.register<JacocoReport>("jacocoTestReport") {
     group = "verification"
     description = "Generates code coverage report for the test task."
@@ -64,7 +73,11 @@ tasks.register<JacocoReport>("jacocoTestReport") {
 
     reports {
         xml.required.set(true)
-        xml.outputLocation.set(file("${project.projectDir}/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml"))
+        xml.outputLocation.set(
+            layout.buildDirectory.file(
+                "reports/jacoco/jacocoTestReport/jacocoTestReport.xml"
+            )
+        )
     }
 
     // Ausschluss-Pattern für Klassen-Files (Jacoco arbeitet auf .class-Ebene)
@@ -111,7 +124,7 @@ tasks.register<JacocoReport>("jacocoTestReport") {
         }
 
     val javaDebugTree =
-        fileTree("${project.layout.buildDirectory.get().asFile}/intermediates/javac/debug") {
+        fileTree("${project.layout.buildDirectory.get().asFile}/intermediates/javac/debug/classes") {
             exclude(fileFilter)
         }
 
