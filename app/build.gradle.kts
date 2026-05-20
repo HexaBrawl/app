@@ -25,6 +25,10 @@ android {
     }
 
     buildTypes {
+        debug {
+            // Wichtig: Jacoco braucht Instrumentation auf den Debug-Klassen
+            enableUnitTestCoverage = true
+        }
         release {
             isMinifyEnabled = true
             proguardFiles(
@@ -47,7 +51,6 @@ android {
         unitTests {
             all {
                 it.useJUnitPlatform()
-                it.finalizedBy(tasks.named("jacocoTestReport"))
             }
         }
     }
@@ -57,19 +60,32 @@ kotlin {
     jvmToolchain(17)
 }
 
+// Jacoco-Konfig
+jacoco {
+    toolVersion = "0.8.12"
+}
+
+// Jacoco-Report-Task. Wird automatisch nach den Unit-Tests ausgeführt.
 tasks.register<JacocoReport>("jacocoTestReport") {
     group = "verification"
-    description = "Generates code coverage report for the test task."
+    description = "Generates code coverage report for the unit tests."
+
+    // testDebugUnitTest muss zuerst laufen, damit die .exec-Datei da ist.
     dependsOn("testDebugUnitTest")
 
     reports {
         xml.required.set(true)
-        xml.outputLocation.set(file("${project.projectDir}/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml"))
+        html.required.set(true)
+        xml.outputLocation.set(
+            file("${project.projectDir}/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml")
+        )
+        html.outputLocation.set(
+            file("${project.projectDir}/build/reports/jacoco/jacocoTestReport/html")
+        )
     }
 
-    // Ausschluss-Pattern für Klassen-Files (Jacoco arbeitet auf .class-Ebene)
     val fileFilter = listOf(
-        // Standard Android-Müll
+        // Android-Generated
         "**/R.class",
         "**/R$*.class",
         "**/BuildConfig.*",
@@ -77,7 +93,7 @@ tasks.register<JacocoReport>("jacocoTestReport") {
         "**/*Test*.*",
         "android/**/*.*",
 
-        // Compose-UI / Composable-Klassen (rein visuell, brauchen Compose-UI-Tests)
+        // Composables / UI-Screens
         "**/ui/components/**",
         "**/ui/game/GameScreen*.*",
         "**/ui/lobby/HomeScreen*.*",
@@ -93,15 +109,15 @@ tasks.register<JacocoReport>("jacocoTestReport") {
         "**/ui/waiting/WaitingLobbyScreen*.*",
         "**/ui/waiting/WaitingLobbyState*.*",
 
-        // Grid-Rendering (Canvas-Drawing, kein sinnvoller Unit-Test möglich)
+        // Canvas-Drawing
         "**/grid/UniversalGrid*.*",
         "**/grid/renderer/**",
 
-        // Lifecycle/Activity-Glue, Network-Layer
+        // Lifecycle / Network
         "**/MainActivity*.*",
         "**/MyStomp*.*",
 
-        // AndroidViewModel (braucht echtes Application)
+        // AndroidViewModel
         "**/SettingsViewModel*.*"
     )
 
@@ -128,6 +144,13 @@ tasks.register<JacocoReport>("jacocoTestReport") {
     })
 }
 
+// Sicherstellen, dass nach jedem Unit-Test der Report generiert wird.
+// (afterEvaluate, damit der Task garantiert schon registriert ist.)
+afterEvaluate {
+    tasks.named("testDebugUnitTest").configure {
+        finalizedBy(tasks.named("jacocoTestReport"))
+    }
+}
 
 dependencies {
     implementation(libs.krossbow.websocket.okhttp)
