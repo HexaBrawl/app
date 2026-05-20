@@ -3,8 +3,7 @@ plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.kotlin.android) apply false
     alias(libs.plugins.kotlin.compose) apply false
-    //noinspection NewerVersionAvailable - Do not mark this as a warning
-    id("org.sonarqube") version "5.1.0.4882"
+    id("org.sonarqube") version "7.3.0.8198"
 }
 
 sonar {
@@ -20,7 +19,7 @@ sonar {
         //
         //  - Composables (UI-Screens): brauchen androidx.compose.ui.test
         //  - Canvas-Drawing (Grid-Renderer): testet nur Pixel-Output
-        //  - Activity / Network (MainActivity, MyStomp): Lifecycle/Sockets
+        //  - Activity / Network (MainActivity, Stomp): Lifecycle/Sockets
         //  - AndroidViewModel: braucht echtes Application-Object
         //  - Theme-Konstanten: reine Farb-/Font-Definitionen
         property(
@@ -48,7 +47,8 @@ sonar {
 
                 // Lifecycle / Network
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/MainActivity.kt",
-                "app/src/main/java/MyStomp.kt",
+                "app/src/main/java/at/aau/serg/websocketbrokerdemo/network/Stomp.kt",
+                "app/src/main/java/at/aau/serg/websocketbrokerdemo/network/GameSession.kt",
 
                 // AndroidViewModel (braucht Robolectric)
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/settings/SettingsViewModel.kt"

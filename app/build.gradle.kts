@@ -3,7 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("jacoco")
-    id("org.sonarqube") version "5.1.0.4882"
+    id("org.sonarqube") version "7.3.0.8198"
 }
 
 android {
@@ -49,6 +49,10 @@ android {
 
     testOptions {
         unitTests {
+            // Make android.util.Log (and other framework stubs) return defaults
+            // instead of throwing in JVM unit tests. Required because the
+            // network layer (UnitMoveEndpoint) emits Log.d/w/e for diagnostics.
+            isReturnDefaultValues = true
             all {
                 it.useJUnitPlatform()
             }
@@ -60,22 +64,15 @@ kotlin {
     jvmToolchain(17)
 }
 
-// Sonar-Konfiguration für SonarCloud
 sonar {
     properties {
         property(
             "sonar.coverage.jacoco.xmlReportPaths",
-            "${layout.buildDirectory.get().asFile}/reports/jacoco/jacocoTestReport/jacocoTestReport.xml"
+            "${project.layout.buildDirectory.get().asFile}/reports/jacoco/jacocoTestReport/jacocoTestReport.xml"
         )
     }
 }
 
-// Jacoco-Konfig
-jacoco {
-    toolVersion = "0.8.12"
-}
-
-// Jacoco-Report-Task. Wird automatisch nach den Unit-Tests ausgeführt.
 tasks.register<JacocoReport>("jacocoTestReport") {
     group = "verification"
     description = "Generates code coverage report for the unit tests."
@@ -85,13 +82,10 @@ tasks.register<JacocoReport>("jacocoTestReport") {
 
     reports {
         xml.required.set(true)
-        html.required.set(true)
-
         xml.outputLocation.set(
-            layout.buildDirectory.file("reports/jacoco/jacocoTestReport/jacocoTestReport.xml")
-        )
-        html.outputLocation.set(
-            layout.buildDirectory.dir("reports/jacoco/jacocoTestReport/html")
+            layout.buildDirectory.file(
+                "reports/jacoco/jacocoTestReport/jacocoTestReport.xml"
+            )
         )
     }
 
@@ -126,7 +120,6 @@ tasks.register<JacocoReport>("jacocoTestReport") {
 
         // Lifecycle / Network
         "**/MainActivity*.*",
-        "**/MyStomp*.*",
 
         // AndroidViewModel
         "**/SettingsViewModel*.*"
@@ -138,7 +131,7 @@ tasks.register<JacocoReport>("jacocoTestReport") {
         }
 
     val javaDebugTree =
-        fileTree("${project.layout.buildDirectory.get().asFile}/intermediates/javac/debug") {
+        fileTree("${project.layout.buildDirectory.get().asFile}/intermediates/javac/debug/classes") {
             exclude(fileFilter)
         }
 
@@ -182,6 +175,7 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.gson)
 
     // Unit-Tests
     testImplementation(libs.junit.jupiter.api)

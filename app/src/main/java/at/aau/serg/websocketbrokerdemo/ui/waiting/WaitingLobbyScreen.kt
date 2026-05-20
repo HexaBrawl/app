@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import at.aau.serg.websocketbrokerdemo.audio.MusicManager
+import at.aau.serg.websocketbrokerdemo.network.GameSession
 import at.aau.serg.websocketbrokerdemo.ui.components.PlayerCountBadge
 import at.aau.serg.websocketbrokerdemo.ui.mainmenu.GameMode
 import at.aau.serg.websocketbrokerdemo.ui.theme.*
@@ -38,7 +39,8 @@ import com.example.myapplication.R
 @Composable
 fun WaitingLobbyScreen(
     mode: GameMode,
-    navController: NavController
+    navController: NavController,
+    session: GameSession
 ) {
 
     val context = LocalContext.current
@@ -52,7 +54,7 @@ fun WaitingLobbyScreen(
     val allReady = rememberAllReady(slots)
     val countdown = rememberCountdown(allReady, navController)
 
-    AutoFillLobbySlots(slots)
+    SyncLobbyWithServer(session, slots, navController)
 
     // --- UI ---
     Box(modifier = Modifier.fillMaxSize()) {

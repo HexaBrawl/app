@@ -1,11 +1,10 @@
 package at.aau.serg.websocketbrokerdemo
 
-import MyStomp
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.rememberNavController
 import at.aau.serg.websocketbrokerdemo.audio.MusicManager
@@ -13,19 +12,19 @@ import at.aau.serg.websocketbrokerdemo.data.LocaleCache
 import at.aau.serg.websocketbrokerdemo.data.LocaleHelper
 import at.aau.serg.websocketbrokerdemo.data.SettingsRepository
 import at.aau.serg.websocketbrokerdemo.data.settingsDataStore
+import at.aau.serg.websocketbrokerdemo.network.GameSession
+import at.aau.serg.websocketbrokerdemo.network.Stomp
+import at.aau.serg.websocketbrokerdemo.network.UnitMoveEndpoint
 import at.aau.serg.websocketbrokerdemo.ui.navigation.AppNavHost
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
-class MainActivity : ComponentActivity(), Callbacks {
+class MainActivity : ComponentActivity() {
 
-    lateinit var myStomp: MyStomp
-    private val responseState = mutableStateOf("")
+    private val stomp = Stomp()
+    private val endpoint = UnitMoveEndpoint(stomp)
+    private val session = GameSession(endpoint)
 
-    /**
-     * WICHTIG: Hier wird die Sprache angewandt, BEVOR die Activity richtig
-     * hochgefahren ist. Compose & alle Resources nutzen dann die korrekte Locale.
-     */
     override fun attachBaseContext(newBase: Context) {
         val lang = LocaleCache.get(newBase)
         val wrapped = LocaleHelper.updateLocale(newBase, lang)
@@ -35,21 +34,39 @@ class MainActivity : ComponentActivity(), Callbacks {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        myStomp = MyStomp(this)
-
-        // Audio-System initialisieren
         MusicManager.init(applicationContext)
 
-        // Persistierte Audio-Settings einmalig anwenden
         lifecycleScope.launch {
-            val s = SettingsRepository(applicationContext.settingsDataStore, applicationContext).settings.first()
+            val s = SettingsRepository(
+                applicationContext.settingsDataStore,
+                applicationContext
+            ).settings.first()
             MusicManager.applyMusicSettings(s.musicEnabled, s.musicVolume)
             MusicManager.applySfxSettings(s.sfxEnabled)
         }
 
+        // Connect STOMP once for the whole app session; then wire the two
+        // server-side streams into the shared GameSession state.
+        lifecycleScope.launch {
+            try {
+                stomp.connect()
+                endpoint.subscribeToGameState { state ->
+                    session.gameState.value = state
+                    session.gameStateReceivedCount.intValue += 1
+                }
+                endpoint.subscribeToErrors { err ->
+                    Log.w(TAG, "Server error: ${err.errorCode} - ${err.message}")
+                    session.lastError.value = err
+                    session.errorReceivedCount.intValue += 1
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "STOMP connect failed", e)
+            }
+        }
+
         setContent {
             val navController = rememberNavController()
-            AppNavHost(navController, myStomp, responseState)
+            AppNavHost(navController, session)
         }
     }
 
@@ -63,13 +80,13 @@ class MainActivity : ComponentActivity(), Callbacks {
         MusicManager.resume()
     }
 
-    override fun onResponse(res: String) {
-        responseState.value = res
-    }
-
     override fun onDestroy() {
         super.onDestroy()
-        myStomp.disconnect()
+        stomp.disconnect()
         MusicManager.release()
+    }
+
+    companion object {
+        private const val TAG = "MainActivity"
     }
 }
