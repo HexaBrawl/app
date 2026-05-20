@@ -112,7 +112,6 @@ tasks.register<JacocoReport>("jacocoTestReport") {
 
         // Lifecycle/Activity-Glue, Network-Layer
         "**/MainActivity*.*",
-        "**/MyStomp*.*",
 
         // AndroidViewModel (braucht echtes Application)
         "**/SettingsViewModel*.*"
