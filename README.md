@@ -22,8 +22,5 @@ Standard-Endpoint für lokale Entwicklung: `ws://10.0.2.2:8080/ws` (Android Emul
 Mit Doco-CD am Uni Server 
 Microsoft AzureApp Service mit einem Linux Container
 
-## Link zum Wiki
-https://github.com/HexaBrawl/server/wiki
-
 ## Backend Repo
 https://github.com/HexaBrawl/server
