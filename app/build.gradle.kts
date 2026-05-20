@@ -25,6 +25,10 @@ android {
     }
 
     buildTypes {
+        debug {
+            // Wichtig: Jacoco braucht Instrumentation auf den Debug-Klassen
+            enableUnitTestCoverage = true
+        }
         release {
             isMinifyEnabled = true
             proguardFiles(
@@ -51,7 +55,6 @@ android {
             isReturnDefaultValues = true
             all {
                 it.useJUnitPlatform()
-                it.finalizedBy(tasks.named("jacocoTestReport"))
             }
         }
     }
@@ -72,7 +75,9 @@ sonar {
 
 tasks.register<JacocoReport>("jacocoTestReport") {
     group = "verification"
-    description = "Generates code coverage report for the test task."
+    description = "Generates code coverage report for the unit tests."
+
+    // testDebugUnitTest muss zuerst laufen, damit die .exec-Datei da ist.
     dependsOn("testDebugUnitTest")
 
     reports {
@@ -84,9 +89,8 @@ tasks.register<JacocoReport>("jacocoTestReport") {
         )
     }
 
-    // Ausschluss-Pattern für Klassen-Files (Jacoco arbeitet auf .class-Ebene)
     val fileFilter = listOf(
-        // Standard Android-Müll
+        // Android-Generated
         "**/R.class",
         "**/R$*.class",
         "**/BuildConfig.*",
@@ -94,7 +98,7 @@ tasks.register<JacocoReport>("jacocoTestReport") {
         "**/*Test*.*",
         "android/**/*.*",
 
-        // Compose-UI / Composable-Klassen (rein visuell, brauchen Compose-UI-Tests)
+        // Composables / UI-Screens
         "**/ui/components/**",
         "**/ui/game/GameScreen*.*",
         "**/ui/lobby/HomeScreen*.*",
@@ -110,14 +114,14 @@ tasks.register<JacocoReport>("jacocoTestReport") {
         "**/ui/waiting/WaitingLobbyScreen*.*",
         "**/ui/waiting/WaitingLobbyState*.*",
 
-        // Grid-Rendering (Canvas-Drawing, kein sinnvoller Unit-Test möglich)
+        // Canvas-Drawing
         "**/grid/UniversalGrid*.*",
         "**/grid/renderer/**",
 
-        // Lifecycle/Activity-Glue, Network-Layer
+        // Lifecycle / Network
         "**/MainActivity*.*",
 
-        // AndroidViewModel (braucht echtes Application)
+        // AndroidViewModel
         "**/SettingsViewModel*.*"
     )
 
@@ -144,6 +148,13 @@ tasks.register<JacocoReport>("jacocoTestReport") {
     })
 }
 
+// Sicherstellen, dass nach jedem Unit-Test der Report generiert wird.
+// (afterEvaluate, damit der Task garantiert schon registriert ist.)
+afterEvaluate {
+    tasks.named("testDebugUnitTest").configure {
+        finalizedBy(tasks.named("jacocoTestReport"))
+    }
+}
 
 dependencies {
     implementation(libs.krossbow.websocket.okhttp)

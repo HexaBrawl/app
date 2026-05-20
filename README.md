@@ -14,17 +14,13 @@ Die mobile Anwendung für das Hexagon-Strategieduell. Diese App wird mit **Kotli
 * **Sprache:** Kotlin
 * **Netzwerk:** STOMP-Protokoll für WebSockets
 
-
-## 🎨 UI/UX & Design (In Arbeit)
-Die ersten Mockups und Screens für die Lobby und das Spielfeld werden aktuell erstellt. Details zum Design-Konzept findest du im Wiki unter "UI-Skizzen".
-
-
 ## 📡 Kommunikation
 Die App verbindet sich beim Start mit dem Game-Server via WebSockets. 
 Standard-Endpoint für lokale Entwicklung: `ws://10.0.2.2:8080/ws` (Android Emulator Adresse für localhost).
 
-# Link zum Wiki
-https://github.com/HexaBrawl/server/wiki
+## ⌯⌲ Deployment
+Mit Doco-CD am Uni Server 
+Microsoft AzureApp Service mit einem Linux Container
 
 ## Backend Repo
 https://github.com/HexaBrawl/server
