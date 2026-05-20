@@ -60,6 +60,16 @@ kotlin {
     jvmToolchain(17)
 }
 
+// Sonar-Konfiguration für SonarCloud
+sonar {
+    properties {
+        property(
+            "sonar.coverage.jacoco.xmlReportPaths",
+            "${layout.buildDirectory.get().asFile}/reports/jacoco/jacocoTestReport/jacocoTestReport.xml"
+        )
+    }
+}
+
 // Jacoco-Konfig
 jacoco {
     toolVersion = "0.8.12"
@@ -76,11 +86,12 @@ tasks.register<JacocoReport>("jacocoTestReport") {
     reports {
         xml.required.set(true)
         html.required.set(true)
+
         xml.outputLocation.set(
-            file("${project.projectDir}/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml")
+            layout.buildDirectory.file("reports/jacoco/jacocoTestReport/jacocoTestReport.xml")
         )
         html.outputLocation.set(
-            file("${project.projectDir}/build/reports/jacoco/jacocoTestReport/html")
+            layout.buildDirectory.dir("reports/jacoco/jacocoTestReport/html")
         )
     }
 
@@ -93,7 +104,7 @@ tasks.register<JacocoReport>("jacocoTestReport") {
         "**/*Test*.*",
         "android/**/*.*",
 
-        // Composables / UI-Screens
+        // Composables / UI-Screens (HexaBrawl UI)
         "**/ui/components/**",
         "**/ui/game/GameScreen*.*",
         "**/ui/lobby/HomeScreen*.*",
@@ -145,7 +156,6 @@ tasks.register<JacocoReport>("jacocoTestReport") {
 }
 
 // Sicherstellen, dass nach jedem Unit-Test der Report generiert wird.
-// (afterEvaluate, damit der Task garantiert schon registriert ist.)
 afterEvaluate {
     tasks.named("testDebugUnitTest").configure {
         finalizedBy(tasks.named("jacocoTestReport"))
