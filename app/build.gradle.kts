@@ -98,7 +98,7 @@ tasks.register<JacocoReport>("jacocoTestReport") {
         "**/*Test*.*",
         "android/**/*.*",
 
-        // Composables / UI-Screens
+        // Composables / UI-Screens (HexaBrawl UI)
         "**/ui/components/**",
         "**/ui/game/GameScreen*.*",
         "**/ui/lobby/HomeScreen*.*",
@@ -149,7 +149,6 @@ tasks.register<JacocoReport>("jacocoTestReport") {
 }
 
 // Sicherstellen, dass nach jedem Unit-Test der Report generiert wird.
-// (afterEvaluate, damit der Task garantiert schon registriert ist.)
 afterEvaluate {
     tasks.named("testDebugUnitTest").configure {
         finalizedBy(tasks.named("jacocoTestReport"))
