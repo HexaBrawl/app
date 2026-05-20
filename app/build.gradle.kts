@@ -45,6 +45,10 @@ android {
 
     testOptions {
         unitTests {
+            // Make android.util.Log (and other framework stubs) return defaults
+            // instead of throwing in JVM unit tests. Required because the
+            // network layer (UnitMoveEndpoint) emits Log.d/w/e for diagnostics.
+            isReturnDefaultValues = true
             all {
                 it.useJUnitPlatform()
                 it.finalizedBy(tasks.named("jacocoTestReport"))
