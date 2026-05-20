@@ -9,7 +9,7 @@ enum class ErrorCode {
 }
 
 //As per at.aau.hexabrawl.websocketserver.model
-data class ErrorMessage(
+data class ErorMessage(
     val errorCode: ErrorCode,
     val message: String
 )
