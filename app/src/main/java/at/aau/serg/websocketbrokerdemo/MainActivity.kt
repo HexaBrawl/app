@@ -50,7 +50,7 @@ class MainActivity : ComponentActivity() {
         lifecycleScope.launch {
             try {
                 stomp.connect()
-                endpoint.subscribeToGameState { state ->
+                endpoint.subscribeToGameState(session.roomId.value) { state ->
                     session.gameState.value = state
                     session.gameStateReceivedCount.intValue += 1
                 }
