@@ -1,7 +1,9 @@
 package at.aau.serg.websocketbrokerdemo.ui.navigation
 
+import MyStomp
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
@@ -9,7 +11,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import at.aau.serg.websocketbrokerdemo.audio.MusicManager
-import at.aau.serg.websocketbrokerdemo.network.GameSession
 import at.aau.serg.websocketbrokerdemo.ui.game.GameScreen
 import at.aau.serg.websocketbrokerdemo.ui.lobby.HomeScreen
 import at.aau.serg.websocketbrokerdemo.ui.lobby_modes.LobbyScreen
@@ -32,7 +33,8 @@ import at.aau.serg.websocketbrokerdemo.ui.waiting.WaitingLobbyScreen
 @Composable
 fun AppNavHost(
     navController: NavHostController,
-    session: GameSession
+    myStomp: MyStomp,
+    responseState: State<String>
 ) {
     val context = LocalContext.current
 
@@ -73,17 +75,17 @@ fun AppNavHost(
         }
 
         composable("waiting_dual") {
-            WaitingLobbyScreen(GameMode.DUAL_VALLEY, navController, session)
+            WaitingLobbyScreen(GameMode.DUAL_VALLEY, navController)
         }
         composable("waiting_triad") {
-            WaitingLobbyScreen(GameMode.TRIAD_OUTPOST, navController, session)
+            WaitingLobbyScreen(GameMode.TRIAD_OUTPOST, navController)
         }
         composable("waiting_battlefield") {
-            WaitingLobbyScreen(GameMode.BATTLEFIELD_PEAKS, navController, session)
+            WaitingLobbyScreen(GameMode.BATTLEFIELD_PEAKS, navController)
         }
 
         composable("game") {
-            GameScreen(session)
+            GameScreen(myStomp, responseState)
         }
     }
 }

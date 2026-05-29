@@ -1,5 +1,5 @@
 [versions]
-agp = "9.1.1"
+agp = "8.13.0"
 kotlin = "2.3.10"
 coreKtx = "1.18.0"
 junitJupiterApi = "5.10.2"
@@ -20,7 +20,6 @@ lifecycleViewmodelCompose = "2.8.7"
 mockk = "1.13.13"
 coroutinesTest = "1.7.3"
 junitJupiter = "5.14.0"
-gson = "2.8.2"
 
 
 [libraries]
@@ -54,7 +53,6 @@ androidx-lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lif
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutinesTest" }
 junit-jupiter = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junitJupiter" }
-gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 
 [plugins]
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }

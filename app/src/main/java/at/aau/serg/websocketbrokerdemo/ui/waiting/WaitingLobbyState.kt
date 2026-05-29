@@ -3,21 +3,10 @@ package at.aau.serg.websocketbrokerdemo.ui.waiting
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.navigation.NavController
-import at.aau.serg.websocketbrokerdemo.data.serverside.GameStatus
-import at.aau.serg.websocketbrokerdemo.network.GameSession
 import at.aau.serg.websocketbrokerdemo.ui.mainmenu.GameMode
 import kotlinx.coroutines.delay
 
-/**
- * Dev-only: when no second human player is available, auto-join a local "bot"
- * a few seconds after entering the lobby so the backend transitions to
- * IN_PROGRESS and the game can actually be played on one device.
- *
- * The bot is a real second STOMP join (so the server treats it as a normal
- * player); `GameScreen` watches for the bot's turn and sends moves for it.
- */
-private const val DEV_AUTO_JOIN_BOT = true
-private const val BOT_JOIN_DELAY_MS = 3000L
+private const val DEV_AUTO_FILL_SLOTS = true
 
 private val GENERAL_NAMES = listOf(
     "General Aldric", "General Borian", "General Cassia", "General Domitian",
@@ -92,73 +81,37 @@ fun rememberCountdown(
     return countdown
 }
 
-/**
- * Sends `/app/join` for the local slot, mirrors the server's `GameState` into the
- * visible slot list, and triggers navigation to "game" as soon as the server
- * reports `IN_PROGRESS`. Replaces the old `AutoFillLobbySlots` bot mock.
- */
 @Composable
-fun SyncLobbyWithServer(
-    session: GameSession,
-    slots: SnapshotStateList<PlayerSlot>,
-    navController: NavController
-) {
-    val localSlot = slots.firstOrNull { it.isLocal } ?: return
-    val localName = localSlot.name
+fun AutoFillLobbySlots(slots: SnapshotStateList<PlayerSlot>) {
 
-    LaunchedEffect(localName) {
-        session.localPlayerName.value = localName
-        session.endpoint.joinGame(localName)
-    }
+    if (!DEV_AUTO_FILL_SLOTS) return
 
-    // Dev shortcut: if after a few seconds the backend still only has us,
-    // join a second "bot" player so the game can start on a single device.
-    if (DEV_AUTO_JOIN_BOT) {
-        LaunchedEffect(localName) {
-            delay(BOT_JOIN_DELAY_MS)
-            val state = session.gameState.value
-            val alreadyHasPartner = state != null &&
-                    state.players.any { it.name != localName }
-            if (!alreadyHasPartner && session.botPlayerName.value == null) {
-                val botName = "Bot-" + GENERAL_NAMES.random().substringAfter(' ')
-                session.botPlayerName.value = botName
-                session.endpoint.joinGame(botName)
-            }
-        }
-    }
+    LaunchedEffect(Unit) {
 
-    val gameState by session.gameState
-    LaunchedEffect(gameState) {
-        val state = gameState ?: return@LaunchedEffect
+        delay(5000)
 
-        val remotePlayers = state.players.filter { it.name != localName }
-        val takenColors = mutableSetOf(localSlot.color)
+        slots.forEachIndexed { i, slot ->
 
-        slots.forEachIndexed { index, slot ->
-            if (slot.isLocal) return@forEachIndexed
+            if (slot.status == SlotStatus.Empty) {
 
-            val remoteIndex = index - 1
-            val remote = remotePlayers.getOrNull(remoteIndex)
-            slots[index] = if (remote == null) {
-                slot.copy(status = SlotStatus.Empty, name = "", ready = false)
-            } else {
-                val color = PlayerColor.entries
-                    .firstOrNull { it !in takenColors }
-                    ?: PlayerColor.Blue
-                takenColors += color
-                slot.copy(
-                    status = SlotStatus.Player,
-                    name = remote.name,
-                    color = color,
-                    ready = true,
-                    isLocal = false
+                val taken = slots
+                    .filter {
+                        it.id != slot.id &&
+                                it.status != SlotStatus.Empty
+                    }
+                    .map { it.color }
+                    .toSet()
+
+                val freeColor =
+                    PlayerColor.entries.firstOrNull { it !in taken }
+                        ?: PlayerColor.Red
+
+                slots[i] = slot.copy(
+                    status = SlotStatus.Bot,
+                    name = "Bot-${GENERAL_NAMES.random().substringAfter(' ')}",
+                    color = freeColor,
+                    ready = true
                 )
-            }
-        }
-
-        if (state.status == GameStatus.IN_PROGRESS) {
-            navController.navigate("game") {
-                popUpTo("home") { inclusive = false }
             }
         }
     }
