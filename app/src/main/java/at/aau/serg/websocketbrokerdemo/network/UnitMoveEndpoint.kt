@@ -36,8 +36,8 @@ class UnitMoveEndpoint(
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     fun subscribeToGameState(roomId: String, onGameState: (GameState) -> Unit): Job =
-        stomp.subscribe("/topic/game/$roomId") { msg ->
-            Log.d(TAG, "<- /topic/game/$roomId: $msg")
+        stomp.subscribe("/topic/rooms/$roomId/game") { msg ->
+            Log.d(TAG, "<- /topic/rooms/$roomId/game: $msg")
             try {
                 onGameState(gson.fromJson(msg, GameState::class.java))
             } catch (e: Exception) {
@@ -58,8 +58,8 @@ class UnitMoveEndpoint(
     fun sendMove(roomId: String, move: Move) {
         try {
             val json = gson.toJson(move)
-            Log.d(TAG, "-> /app/move/$roomId: $json")
-            stomp.sendJson("/app/move/$roomId", json)
+            Log.d(TAG, "-> /app/rooms/$roomId/move: $json")
+            stomp.sendJson("/app/rooms/$roomId/move", json)
 
             if (AZURE_MOVE_BROADCAST_WORKAROUND) {
                 scope.launch {
@@ -73,13 +73,13 @@ class UnitMoveEndpoint(
     }
 
     fun joinGame(roomId: String, playerName: String) {
-        Log.d(TAG, "-> /app/join/$roomId: $playerName")
-        stomp.sendText("/app/join/$roomId", playerName)
+        Log.d(TAG, "-> /app/rooms/$roomId/join: $playerName")
+        stomp.sendText("/app/rooms/$roomId/join", playerName)
     }
 
     fun requestInitialState(roomId: String) {
-        Log.d(TAG, "-> /app/init/$roomId")
-        stomp.sendText("/app/init/$roomId", "")
+        Log.d(TAG, "-> /app/rooms/$roomId/init/")
+        stomp.sendText("/app/rooms/$roomId/init/", "")
     }
 
     companion object {
