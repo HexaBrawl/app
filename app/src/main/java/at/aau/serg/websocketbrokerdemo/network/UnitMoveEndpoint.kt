@@ -36,8 +36,8 @@ class UnitMoveEndpoint(
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     fun subscribeToGameState(roomId: String, onGameState: (GameState) -> Unit): Job =
-        stomp.subscribe("/topic/rooms/$roomId/game") { msg ->
-            Log.d(TAG, "<- /topic/rooms/$roomId/game: $msg")
+        stomp.subscribe("/topic/rooms/$roomId/state") { msg ->
+            Log.d(TAG, "<- /topic/rooms/$roomId/state: $msg")
             try {
                 onGameState(gson.fromJson(msg, GameState::class.java))
             } catch (e: Exception) {

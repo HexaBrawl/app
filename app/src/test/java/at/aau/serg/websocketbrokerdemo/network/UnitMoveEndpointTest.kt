@@ -70,7 +70,7 @@ class UnitMoveEndpointTest {
         val slot = slot<(String) -> Unit>()
 
         every {
-            stomp.subscribe("/topic/rooms/game1/game", capture(slot))
+            stomp.subscribe("/topic/rooms/game1/state", capture(slot))
         } returns mockk(relaxed = true)
 
         var received: GameState? = null
