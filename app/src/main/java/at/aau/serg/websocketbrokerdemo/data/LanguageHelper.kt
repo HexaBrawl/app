@@ -2,8 +2,6 @@ package at.aau.serg.websocketbrokerdemo.data
 
 import android.content.Context
 import android.content.res.Configuration
-import androidx.appcompat.app.AppCompatDelegate
-import androidx.core.os.LocaleListCompat
 import java.util.Locale
 
 /**
@@ -22,7 +20,7 @@ import java.util.Locale
  *  - Kein localeConfig.xml im Manifest nötig
  *  - Funktioniert identisch auf allen Android-Versionen
  */
-object LocaleHelper {
+object LanguageHelper {
 
     /** Wrappt den gegebenen Context, sodass alle Resources die Ziel-Locale nutzen. */
     fun updateLocale(context: Context, language: String): Context {
