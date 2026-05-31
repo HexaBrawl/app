@@ -28,7 +28,7 @@ import java.util.Locale
  * das deckt die Sprach-Normalisierung vollständig ab, ohne dass wir auf
  * echte Android-APIs angewiesen sind.
  */
-class LocaleHelperTest {
+class LanguageHelperTest {
 
     private lateinit var context: Context
     private lateinit var resources: Resources
@@ -68,25 +68,25 @@ class LocaleHelperTest {
 
     @Test
     fun `updateLocale with de sets german locale`() {
-        LocaleHelper.updateLocale(context, "de")
+        LanguageHelper.updateLocale(context, "de")
         assertEquals("de", Locale.getDefault().language)
     }
 
     @Test
     fun `updateLocale with en sets english locale`() {
-        LocaleHelper.updateLocale(context, "en")
+        LanguageHelper.updateLocale(context, "en")
         assertEquals("en", Locale.getDefault().language)
     }
 
     @Test
     fun `updateLocale with unknown language falls back to en`() {
-        LocaleHelper.updateLocale(context, "fr")
+        LanguageHelper.updateLocale(context, "fr")
         assertEquals("en", Locale.getDefault().language)
     }
 
     @Test
     fun `updateLocale with empty string falls back to en`() {
-        LocaleHelper.updateLocale(context, "")
+        LanguageHelper.updateLocale(context, "")
         assertEquals("en", Locale.getDefault().language)
     }
 
@@ -96,13 +96,13 @@ class LocaleHelperTest {
 
     @Test
     fun `updateLocale returns the wrapped context`() {
-        val result = LocaleHelper.updateLocale(context, "de")
+        val result = LanguageHelper.updateLocale(context, "de")
         assertEquals(wrappedContext, result)
     }
 
     @Test
     fun `updateLocale invokes context createConfigurationContext exactly once`() {
-        LocaleHelper.updateLocale(context, "en")
+        LanguageHelper.updateLocale(context, "en")
         verify(exactly = 1) { context.createConfigurationContext(any()) }
     }
 
@@ -111,7 +111,7 @@ class LocaleHelperTest {
         val localeSlot = slot<Locale>()
         every { anyConstructed<Configuration>().setLocale(capture(localeSlot)) } returns Unit
 
-        LocaleHelper.updateLocale(context, "de")
+        LanguageHelper.updateLocale(context, "de")
 
         // Die übergebene Locale trägt die deutsche Sprache
         assertEquals("de", localeSlot.captured.language)
@@ -119,7 +119,7 @@ class LocaleHelperTest {
 
     @Test
     fun `updateLocale also sets layout direction`() {
-        LocaleHelper.updateLocale(context, "en")
+        LanguageHelper.updateLocale(context, "en")
         verify { anyConstructed<Configuration>().setLayoutDirection(any()) }
     }
 }

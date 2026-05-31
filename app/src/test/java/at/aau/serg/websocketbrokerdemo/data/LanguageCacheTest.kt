@@ -12,7 +12,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.util.Locale
 
-class LocaleCacheTest {
+class LanguageCacheTest {
 
     private lateinit var context: Context
     private lateinit var prefs: SharedPreferences
@@ -41,7 +41,7 @@ class LocaleCacheTest {
     fun `get returns stored value if present`() {
         every { prefs.getString("language", any()) } returns "de"
 
-        val result = LocaleCache.get(context)
+        val result = LanguageCache.get(context)
 
         assertEquals("de", result)
     }
@@ -53,7 +53,7 @@ class LocaleCacheTest {
         val defaultSlot = slot<String>()
         every { prefs.getString(eq("language"), capture(defaultSlot)) } answers { defaultSlot.captured }
 
-        val result = LocaleCache.get(context)
+        val result = LanguageCache.get(context)
 
         assertEquals("en", result)
     }
@@ -64,14 +64,14 @@ class LocaleCacheTest {
         val defaultSlot = slot<String>()
         every { prefs.getString(eq("language"), capture(defaultSlot)) } answers { defaultSlot.captured }
 
-        val result = LocaleCache.get(context)
+        val result = LanguageCache.get(context)
 
         assertEquals("de", result)
     }
 
     @Test
     fun `set writes language and applies`() {
-        LocaleCache.set(context, "de")
+        LanguageCache.set(context, "de")
 
         verify { editor.putString("language", "de") }
         verify { editor.apply() }
@@ -79,7 +79,7 @@ class LocaleCacheTest {
 
     @Test
     fun `set uses MODE_PRIVATE`() {
-        LocaleCache.set(context, "en")
+        LanguageCache.set(context, "en")
 
         verify { context.getSharedPreferences("hexabrawl_locale_cache", Context.MODE_PRIVATE) }
     }
@@ -88,7 +88,7 @@ class LocaleCacheTest {
     fun `get uses correct prefs name`() {
         every { prefs.getString(any(), any()) } returns null
 
-        LocaleCache.get(context)
+        LanguageCache.get(context)
 
         verify { context.getSharedPreferences("hexabrawl_locale_cache", Context.MODE_PRIVATE) }
     }
@@ -98,7 +98,7 @@ class LocaleCacheTest {
         Locale.setDefault(Locale.JAPAN)
         every { prefs.getString(any(), any()) } returns null
 
-        val result = LocaleCache.get(context)
+        val result = LanguageCache.get(context)
 
         assertEquals("en", result)
     }

@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.preferencesOf
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
@@ -12,12 +11,10 @@ import io.mockk.mockkStatic
 import io.mockk.unmockkAll
 import io.mockk.verify
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -57,13 +54,13 @@ class SettingsRepositoryTest {
         dataStore = PreferenceDataStoreFactory.create(produceFile = { file })
 
         // Context.dataStore-Extension umlenken auf unseren Test-DataStore
-        mockkStatic("at.aau.serg.websocketbrokerdemo.data.SettingsDataStoreKt")
+        mockkStatic("at.aau.serg.websocketbrokerdemo.data.SettingsDataStoreProviderKt")
         every { any<Context>().settingsDataStore } returns dataStore
 
         // LocaleCache als object mocken
-        mockkObject(LocaleCache)
-        every { LocaleCache.set(any(), any()) } returns Unit
-        every { LocaleCache.get(any()) } returns "en"
+        mockkObject(LanguageCache)
+        every { LanguageCache.set(any(), any()) } returns Unit
+        every { LanguageCache.get(any()) } returns "en"
     }
 
     @AfterEach
@@ -87,7 +84,7 @@ class SettingsRepositoryTest {
     fun `settings flow returns stored language`() = runTest {
         // Zuerst über das Repository den Wert schreiben
         val repo = SettingsRepository(dataStore, context)
-        repo.setLanguage("de")
+        repo.updateLanguage("de")
 
         // Dann lesen
         val result = repo.settings.first()
@@ -97,7 +94,7 @@ class SettingsRepositoryTest {
     @Test
     fun `settings flow returns stored musicEnabled false`() = runTest {
         val repo = SettingsRepository(dataStore, context)
-        repo.setMusicEnabled(false)
+        repo.updateMusicEnabled(false)
 
         val result = repo.settings.first()
         assertFalse(result.musicEnabled)
@@ -106,7 +103,7 @@ class SettingsRepositoryTest {
     @Test
     fun `settings flow returns stored musicVolume`() = runTest {
         val repo = SettingsRepository(dataStore, context)
-        repo.setMusicVolume(0.25f)
+        repo.updateMusicVolume(0.25f)
 
         val result = repo.settings.first()
         assertEquals(0.25f, result.musicVolume, 0.0001f)
@@ -115,7 +112,7 @@ class SettingsRepositoryTest {
     @Test
     fun `settings flow returns stored sfxEnabled false`() = runTest {
         val repo = SettingsRepository(dataStore, context)
-        repo.setSfxEnabled(false)
+        repo.updateSfxEnabled(false)
 
         val result = repo.settings.first()
         assertFalse(result.sfxEnabled)
@@ -124,10 +121,10 @@ class SettingsRepositoryTest {
     @Test
     fun `settings flow returns all stored values together`() = runTest {
         val repo = SettingsRepository(dataStore, context)
-        repo.setLanguage("de")
-        repo.setMusicEnabled(false)
-        repo.setMusicVolume(0.3f)
-        repo.setSfxEnabled(false)
+        repo.updateLanguage("de")
+        repo.updateMusicEnabled(false)
+        repo.updateMusicVolume(0.3f)
+        repo.updateSfxEnabled(false)
 
         val result = repo.settings.first()
         assertEquals("de", result.language)
@@ -138,13 +135,13 @@ class SettingsRepositoryTest {
 
     @Test
     fun `settings flow language falls back to LocaleCache when not stored`() = runTest {
-        every { LocaleCache.get(any()) } returns "de"
+        every { LanguageCache.get(any()) } returns "de"
 
         // DataStore ist leer -> Fallback auf LocaleCache
         val result = SettingsRepository(dataStore, context).settings.first()
 
         assertEquals("de", result.language)
-        verify { LocaleCache.get(any()) }
+        verify { LanguageCache.get(any()) }
     }
 
     // ---- setLanguage ----------------------------------------------------
@@ -153,7 +150,7 @@ class SettingsRepositoryTest {
     fun `setLanguage persists value to DataStore`() = runTest {
         val repo = SettingsRepository(dataStore, context)
 
-        repo.setLanguage("de")
+        repo.updateLanguage("de")
 
         // Nach setLanguage muss der Wert im DataStore stehen
         val prefs = dataStore.data.first()
@@ -162,14 +159,14 @@ class SettingsRepositoryTest {
 
     @Test
     fun `setLanguage also updates LocaleCache`() = runTest {
-        SettingsRepository(dataStore, context).setLanguage("de")
+        SettingsRepository(dataStore, context).updateLanguage("de")
 
-        verify { LocaleCache.set(context, "de") }
+        verify { LanguageCache.set(context, "de") }
     }
 
     @Test
     fun `setLanguage stores correct value in preferences`() = runTest {
-        SettingsRepository(dataStore, context).setLanguage("de")
+        SettingsRepository(dataStore, context).updateLanguage("de")
 
         val prefs = dataStore.data.first()
         assertEquals("de", prefs[SettingsKeys.LANGUAGE])
@@ -179,7 +176,7 @@ class SettingsRepositoryTest {
 
     @Test
     fun `setMusicEnabled writes value to preferences`() = runTest {
-        SettingsRepository(dataStore, context).setMusicEnabled(false)
+        SettingsRepository(dataStore, context).updateMusicEnabled(false)
 
         val prefs = dataStore.data.first()
         assertEquals(false, prefs[SettingsKeys.MUSIC_ENABLED])
@@ -189,7 +186,7 @@ class SettingsRepositoryTest {
 
     @Test
     fun `setMusicVolume stores value within range`() = runTest {
-        SettingsRepository(dataStore, context).setMusicVolume(0.42f)
+        SettingsRepository(dataStore, context).updateMusicVolume(0.42f)
 
         val prefs = dataStore.data.first()
         assertEquals(0.42f, prefs[SettingsKeys.MUSIC_VOLUME])
@@ -197,7 +194,7 @@ class SettingsRepositoryTest {
 
     @Test
     fun `setMusicVolume coerces values above 1 down to 1`() = runTest {
-        SettingsRepository(dataStore, context).setMusicVolume(1.5f)
+        SettingsRepository(dataStore, context).updateMusicVolume(1.5f)
 
         val prefs = dataStore.data.first()
         assertEquals(1.0f, prefs[SettingsKeys.MUSIC_VOLUME])
@@ -205,7 +202,7 @@ class SettingsRepositoryTest {
 
     @Test
     fun `setMusicVolume coerces negative values up to 0`() = runTest {
-        SettingsRepository(dataStore, context).setMusicVolume(-0.5f)
+        SettingsRepository(dataStore, context).updateMusicVolume(-0.5f)
 
         val prefs = dataStore.data.first()
         assertEquals(0.0f, prefs[SettingsKeys.MUSIC_VOLUME])
@@ -213,7 +210,7 @@ class SettingsRepositoryTest {
 
     @Test
     fun `setMusicVolume accepts boundary 0`() = runTest {
-        SettingsRepository(dataStore, context).setMusicVolume(0f)
+        SettingsRepository(dataStore, context).updateMusicVolume(0f)
 
         val prefs = dataStore.data.first()
         assertEquals(0.0f, prefs[SettingsKeys.MUSIC_VOLUME])
@@ -221,7 +218,7 @@ class SettingsRepositoryTest {
 
     @Test
     fun `setMusicVolume accepts boundary 1`() = runTest {
-        SettingsRepository(dataStore, context).setMusicVolume(1f)
+        SettingsRepository(dataStore, context).updateMusicVolume(1f)
 
         val prefs = dataStore.data.first()
         assertEquals(1.0f, prefs[SettingsKeys.MUSIC_VOLUME])
@@ -231,7 +228,7 @@ class SettingsRepositoryTest {
 
     @Test
     fun `setSfxEnabled writes value to preferences`() = runTest {
-        SettingsRepository(dataStore, context).setSfxEnabled(false)
+        SettingsRepository(dataStore, context).updateSfxEnabled(false)
 
         val prefs = dataStore.data.first()
         assertEquals(false, prefs[SettingsKeys.SFX_ENABLED])
