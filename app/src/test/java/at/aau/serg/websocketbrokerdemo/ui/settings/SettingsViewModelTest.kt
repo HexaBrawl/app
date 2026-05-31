@@ -4,7 +4,7 @@ import android.app.Activity
 import android.app.Application
 import at.aau.serg.websocketbrokerdemo.audio.MusicManager
 import at.aau.serg.websocketbrokerdemo.data.AppSettings
-import at.aau.serg.websocketbrokerdemo.data.LocaleCache
+import at.aau.serg.websocketbrokerdemo.data.LanguageCache
 import at.aau.serg.websocketbrokerdemo.data.SettingsRepository
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -16,6 +16,7 @@ import io.mockk.unmockkAll
 import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -24,7 +25,7 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -54,6 +55,8 @@ class SettingsViewModelTest {
 
     private lateinit var repo: SettingsRepository
     private lateinit var app: Application
+
+    private lateinit var logic: SettingsLogic
     private lateinit var activity: Activity
     private lateinit var viewModel: SettingsViewModel
 
@@ -67,11 +70,12 @@ class SettingsViewModelTest {
 
         // Singletons, die SettingsLogic intern aufruft, neutralisieren
         mockkObject(MusicManager)
-        mockkObject(LocaleCache)
-        every { LocaleCache.set(any(), any()) } returns Unit
+        mockkObject(LanguageCache)
+        every { LanguageCache.set(any(), any()) } returns Unit
 
         repo = mockk(relaxed = true)
         app = mockk(relaxed = true)
+        logic = SettingsLogic(app)
         activity = mockk(relaxed = true)
         justRun { activity.recreate() }
 
@@ -102,9 +106,9 @@ class SettingsViewModelTest {
         // StateFlow tatsächlich beobachtet.)
         val state = viewModel.state.value
 
-        assertEquals("en", state.language)
-        assertEquals(true, state.musicEnabled)
-        assertEquals(true, state.sfxEnabled)
+        Assertions.assertEquals("en", state.language)
+        Assertions.assertEquals(true, state.musicEnabled)
+        Assertions.assertEquals(true, state.sfxEnabled)
     }
 
     // -------------------------------------------------------------------------
@@ -117,7 +121,7 @@ class SettingsViewModelTest {
         // dass das ViewModel sie korrekt nach SettingsState mappt.
         // Wichtig: state muss aktiv collected werden, sonst bleibt es
         // beim initialValue stehen (WhileSubscribed-Verhalten).
-        val collectJob = kotlinx.coroutines.GlobalScope.launch(testDispatcher) {
+        val collectJob = GlobalScope.launch(testDispatcher) {
             viewModel.state.collect { /* aktiv halten */ }
         }
         advanceUntilIdle()
@@ -131,11 +135,11 @@ class SettingsViewModelTest {
         advanceUntilIdle()
 
         val state = viewModel.state.value
-        assertEquals("de", state.language)
-        assertEquals(false, state.musicEnabled)
-        assertEquals(0.3f, state.musicVolume, 0.0001f)
-        assertEquals(30, state.musicVolumePercent)
-        assertEquals(false, state.sfxEnabled)
+        Assertions.assertEquals("de", state.language)
+        Assertions.assertEquals(false, state.musicEnabled)
+        Assertions.assertEquals(0.3f, state.musicVolume, 0.0001f)
+        Assertions.assertEquals(30, state.musicVolumePercent)
+        Assertions.assertEquals(false, state.sfxEnabled)
 
         collectJob.cancel()
     }
@@ -144,22 +148,22 @@ class SettingsViewModelTest {
     fun `musicVolumePercent is computed correctly from volume`() = runTest {
         // Edge-Cases der percent-Berechnung: 0% / 100% / krummer Wert.
         // Wichtig weil die UI das Prozent-Label direkt aus dem State nimmt.
-        val collectJob = kotlinx.coroutines.GlobalScope.launch(testDispatcher) {
+        val collectJob = GlobalScope.launch(testDispatcher) {
             viewModel.state.collect { }
         }
 
         settingsFlow.value = AppSettings(musicVolume = 0f)
         advanceUntilIdle()
-        assertEquals(0, viewModel.state.value.musicVolumePercent)
+        Assertions.assertEquals(0, viewModel.state.value.musicVolumePercent)
 
         settingsFlow.value = AppSettings(musicVolume = 1f)
         advanceUntilIdle()
-        assertEquals(100, viewModel.state.value.musicVolumePercent)
+        Assertions.assertEquals(100, viewModel.state.value.musicVolumePercent)
 
         settingsFlow.value = AppSettings(musicVolume = 0.42f)
         advanceUntilIdle()
         // (0.42 * 100).toInt() = 42
-        assertEquals(42, viewModel.state.value.musicVolumePercent)
+        Assertions.assertEquals(42, viewModel.state.value.musicVolumePercent)
 
         collectJob.cancel()
     }
@@ -170,12 +174,12 @@ class SettingsViewModelTest {
 
     @Test
     fun `onLanguageSelected persists language to repository`() = runTest {
-        coEvery { repo.setLanguage("de") } returns Unit
+        coEvery { repo.updateLanguage("de") } returns Unit
 
         viewModel.onLanguageSelected("de", activity)
         advanceUntilIdle()
 
-        coVerify { repo.setLanguage("de") }
+        coVerify { repo.updateLanguage("de") }
     }
 
     @Test
@@ -186,7 +190,7 @@ class SettingsViewModelTest {
         viewModel.onLanguageSelected("de", activity)
         advanceUntilIdle()
 
-        verify { LocaleCache.set(app, "de") }
+        verify { LanguageCache.set(app, "de") }
         verify { activity.recreate() }
     }
 
@@ -206,12 +210,12 @@ class SettingsViewModelTest {
 
     @Test
     fun `onMusicToggle persists music enabled to repository`() = runTest {
-        coEvery { repo.setMusicEnabled(false) } returns Unit
+        coEvery { repo.updateMusicEnabled(false) } returns Unit
 
         viewModel.onMusicToggle(false)
         advanceUntilIdle()
 
-        coVerify { repo.setMusicEnabled(false) }
+        coVerify { repo.updateMusicEnabled(false) }
     }
 
     @Test
@@ -230,12 +234,12 @@ class SettingsViewModelTest {
 
     @Test
     fun `onVolumeChanged persists volume to repository`() = runTest {
-        coEvery { repo.setMusicVolume(0.7f) } returns Unit
+        coEvery { repo.updateMusicVolume(0.7f) } returns Unit
 
         viewModel.onVolumeChanged(0.7f)
         advanceUntilIdle()
 
-        coVerify { repo.setMusicVolume(0.7f) }
+        coVerify { repo.updateMusicVolume(0.7f) }
     }
 
     @Test
@@ -254,12 +258,12 @@ class SettingsViewModelTest {
 
     @Test
     fun `onSfxToggle persists sfx setting to repository`() = runTest {
-        coEvery { repo.setSfxEnabled(false) } returns Unit
+        coEvery { repo.updateSfxEnabled(false) } returns Unit
 
         viewModel.onSfxToggle(false)
         advanceUntilIdle()
 
-        coVerify { repo.setSfxEnabled(false) }
+        coVerify { repo.updateSfxEnabled(false) }
     }
 
     @Test

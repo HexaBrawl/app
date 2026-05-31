@@ -5,6 +5,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import at.aau.serg.websocketbrokerdemo.data.SettingsRepository
+import at.aau.serg.websocketbrokerdemo.data.settingsDataStore
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
@@ -17,12 +18,14 @@ import kotlinx.coroutines.launch
  * Beobachtet das Repository und propagiert Änderungen sofort an den
  * MusicManager. Auch die Sprach-Umschaltung wird hier angestoßen.
  */
-class SettingsViewModel(
-    app: Application,
-    private val repo: SettingsRepository
-) : AndroidViewModel(app) {
+class SettingsViewModel(app: Application, private val repo: SettingsRepository) : AndroidViewModel(app) {
 
     private val logic = SettingsLogic(app)
+
+    constructor(app: Application) : this(
+        app,
+        SettingsRepository(app.settingsDataStore, app)
+    )
 
     val state: StateFlow<SettingsState> = repo.settings
         .map { s ->
@@ -40,28 +43,24 @@ class SettingsViewModel(
             initialValue = SettingsState()
         )
 
-    // Sprache ändern
     fun onLanguageSelected(lang: String, activity: Activity?) {
         val current = state.value.language
         logic.changeLanguage(current, lang, activity)
-        viewModelScope.launch { repo.setLanguage(lang) }
+        viewModelScope.launch { repo.updateLanguage(lang) }
     }
 
-    // Musik an/aus
     fun onMusicToggle(enabled: Boolean) {
-        viewModelScope.launch { repo.setMusicEnabled(enabled) }
+        viewModelScope.launch { repo.updateMusicEnabled(enabled) }
         logic.applyMusicSettings(enabled, state.value.musicVolume)
     }
 
-    // Musiklautstärke
     fun onVolumeChanged(volume: Float) {
-        viewModelScope.launch { repo.setMusicVolume(volume) }
+        viewModelScope.launch { repo.updateMusicVolume(volume) }
         logic.applyMusicSettings(state.value.musicEnabled, volume)
     }
 
-    // SFX an/aus
     fun onSfxToggle(enabled: Boolean) {
-        viewModelScope.launch { repo.setSfxEnabled(enabled) }
+        viewModelScope.launch { repo.updateSfxEnabled(enabled) }
         logic.applySfxSettings(enabled)
         logic.playSfxIfEnabled(enabled)
     }
