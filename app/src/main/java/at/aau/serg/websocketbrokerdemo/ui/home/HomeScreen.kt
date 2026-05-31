@@ -1,4 +1,4 @@
-package at.aau.serg.websocketbrokerdemo.ui.lobby
+package at.aau.serg.websocketbrokerdemo.ui.home
 
 import android.app.Activity
 import androidx.compose.foundation.Image
@@ -9,32 +9,25 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.AbsoluteRoundedCornerShape
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cancel
-import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -46,26 +39,27 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import at.aau.serg.websocketbrokerdemo.audio.MusicManager
-import at.aau.serg.websocketbrokerdemo.ui.theme.GoldCoin
 import at.aau.serg.websocketbrokerdemo.ui.theme.GoldCoinDark
 import at.aau.serg.websocketbrokerdemo.ui.theme.GoldCoinLight
-import at.aau.serg.websocketbrokerdemo.ui.theme.InkBlack
-import at.aau.serg.websocketbrokerdemo.ui.theme.ParchmentBase
-import at.aau.serg.websocketbrokerdemo.ui.theme.ParchmentDark
 import at.aau.serg.websocketbrokerdemo.ui.theme.ParchmentLight
 import at.aau.serg.websocketbrokerdemo.ui.theme.WoodDark
 import at.aau.serg.websocketbrokerdemo.ui.theme.WoodLight
 import at.aau.serg.websocketbrokerdemo.ui.theme.WoodMedium
 import com.example.myapplication.R
 
+/**
+ * HomeScreen -- der Startbildschirm der App.
+ *
+ * Reine UI-Schicht. Sämtliche Logik (Musik starten, Navigation, Exit)
+ * liegt in [HomeScreenLogic] und ist dort getestet.
+ */
 @Composable
 fun HomeScreen(navController: NavController) {
     val context = LocalContext.current
     val activity = context as? Activity
 
     LaunchedEffect(Unit) {
-        MusicManager.playMenuMusic(context)
+        HomeScreenLogic.startMenuMusic(context)
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -87,9 +81,7 @@ fun HomeScreen(navController: NavController) {
             painter = painterResource(id = R.drawable.bg_homescreen),
             contentDescription = null,
             contentScale = ContentScale.FillBounds,
-            modifier = Modifier
-                .fillMaxSize()
-
+            modifier = Modifier.fillMaxSize()
         )
 
         // 3) Sanfte Vignette
@@ -109,7 +101,7 @@ fun HomeScreen(navController: NavController) {
 
         // 4) Settings-Button oben
         IconButton(
-            onClick = { navController.navigate("settings") },
+            onClick = { HomeScreenLogic.onSettingsClicked(navController) },
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .padding(156.dp)
@@ -135,30 +127,24 @@ fun HomeScreen(navController: NavController) {
             modifier = Modifier
                 .align(Alignment.Center)
                 .padding(bottom = 10.dp)
-                //.offset(x = 20.dp)
                 .size(300.dp)
         ) {
             Button(
-                onClick = {
-                    navigateSafe(navController, primary = "mainmenu", fallback = "game")
-                },
+                onClick = { HomeScreenLogic.onPlayClicked(navController) },
                 shape = CircleShape,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.Transparent,
                     contentColor = Color.Unspecified
                 ),
-                modifier = Modifier.fillMaxSize() ,
+                modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(0.dp)
             ) {
-
-                    // 2. Das eigentliche Icon
-                    Icon(
-                        painter = painterResource(id = R.drawable.playbutton),
-                        contentDescription = "Play",
-                        modifier = Modifier.fillMaxSize(),
-                        tint = Color.Unspecified
-                    )
-               // }
+                Icon(
+                    painter = painterResource(id = R.drawable.playbutton),
+                    contentDescription = "Play",
+                    modifier = Modifier.fillMaxSize(),
+                    tint = Color.Unspecified
+                )
             }
         }
 
@@ -178,7 +164,7 @@ fun HomeScreen(navController: NavController) {
                 .border(2.dp, GoldCoinDark, RoundedCornerShape(8.dp))
         ) {
             Button(
-                onClick = { activity?.finish() },
+                onClick = { HomeScreenLogic.exitApp(activity) },
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.Transparent,
@@ -205,10 +191,4 @@ fun HomeScreen(navController: NavController) {
             }
         }
     }
-}
-
-private fun navigateSafe(navController: NavController, primary: String, fallback: String) {
-    val graph = navController.graph
-    val hasPrimary = graph.any { it.route == primary }
-    navController.navigate(if (hasPrimary) primary else fallback)
 }

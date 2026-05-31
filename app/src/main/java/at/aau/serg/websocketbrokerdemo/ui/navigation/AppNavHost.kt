@@ -11,7 +11,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import at.aau.serg.websocketbrokerdemo.audio.MusicManager
 import at.aau.serg.websocketbrokerdemo.network.GameSession
 import at.aau.serg.websocketbrokerdemo.ui.game.GameScreen
-import at.aau.serg.websocketbrokerdemo.ui.lobby.HomeScreen
+import at.aau.serg.websocketbrokerdemo.ui.home.HomeScreen
 import at.aau.serg.websocketbrokerdemo.ui.lobby_modes.LobbyScreen
 import at.aau.serg.websocketbrokerdemo.ui.mainmenu.GameMode
 import at.aau.serg.websocketbrokerdemo.ui.mainmenu.MainMenuScreen
