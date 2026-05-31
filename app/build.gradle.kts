@@ -109,6 +109,7 @@ tasks.register<JacocoReport>("jacocoTestReport") {
         "**/ui/mainmenu/MainMenuScreen*.*",
         "**/ui/navigation/AppNavHost*.*",
         "**/ui/settings/SettingsScreen*.*",
+        "**/ui/settings/components/**",
         "**/ui/theme/**",
         "**/ui/waiting/WaitingLobbyComponents*.*",
         "**/ui/waiting/WaitingLobbyScreen*.*",
