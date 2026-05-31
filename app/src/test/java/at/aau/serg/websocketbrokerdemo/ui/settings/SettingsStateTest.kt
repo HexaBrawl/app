@@ -1,9 +1,6 @@
 package at.aau.serg.websocketbrokerdemo.ui.settings
 
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertNotEquals
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
 /**
@@ -24,11 +21,11 @@ class SettingsStateTest {
         // dieser Test fängt versehentliche Änderungen.
         val state = SettingsState()
 
-        assertEquals("en", state.language)
-        assertTrue(state.musicEnabled)
-        assertEquals(1f, state.musicVolume, 0.0001f)
-        assertEquals(100, state.musicVolumePercent)
-        assertTrue(state.sfxEnabled)
+        Assertions.assertEquals("en", state.language)
+        Assertions.assertTrue(state.musicEnabled)
+        Assertions.assertEquals(1f, state.musicVolume, 0.0001f)
+        Assertions.assertEquals(100, state.musicVolumePercent)
+        Assertions.assertTrue(state.sfxEnabled)
     }
 
     @Test
@@ -38,10 +35,10 @@ class SettingsStateTest {
         val original = SettingsState(language = "de", musicVolume = 0.4f)
         val updated = original.copy(musicEnabled = false)
 
-        assertEquals("de", updated.language)
-        assertEquals(0.4f, updated.musicVolume, 0.0001f)
-        assertFalse(updated.musicEnabled)
-        assertTrue(updated.sfxEnabled)
+        Assertions.assertEquals("de", updated.language)
+        Assertions.assertEquals(0.4f, updated.musicVolume, 0.0001f)
+        Assertions.assertFalse(updated.musicEnabled)
+        Assertions.assertTrue(updated.sfxEnabled)
     }
 
     @Test
@@ -51,8 +48,8 @@ class SettingsStateTest {
         val a = SettingsState(language = "de", musicEnabled = false, musicVolume = 0.5f, musicVolumePercent = 50, sfxEnabled = false)
         val b = SettingsState(language = "de", musicEnabled = false, musicVolume = 0.5f, musicVolumePercent = 50, sfxEnabled = false)
 
-        assertEquals(a, b)
-        assertEquals(a.hashCode(), b.hashCode())
+        Assertions.assertEquals(a, b)
+        Assertions.assertEquals(a.hashCode(), b.hashCode())
     }
 
     @Test
@@ -61,7 +58,7 @@ class SettingsStateTest {
         val a = SettingsState(language = "de")
         val b = SettingsState(language = "en")
 
-        assertNotEquals(a, b)
+        Assertions.assertNotEquals(a, b)
     }
 
     @Test
@@ -72,7 +69,7 @@ class SettingsStateTest {
         // keine Konsistenz zwischen volume und percent.
         val state = SettingsState(musicVolume = 0.3f, musicVolumePercent = 99)
 
-        assertEquals(0.3f, state.musicVolume, 0.0001f)
-        assertEquals(99, state.musicVolumePercent)
+        Assertions.assertEquals(0.3f, state.musicVolume, 0.0001f)
+        Assertions.assertEquals(99, state.musicVolumePercent)
     }
 }
