@@ -3,7 +3,7 @@ package at.aau.serg.websocketbrokerdemo.ui.settings
 import android.app.Activity
 import android.app.Application
 import at.aau.serg.websocketbrokerdemo.audio.MusicManager
-import at.aau.serg.websocketbrokerdemo.data.LocaleCache
+import at.aau.serg.websocketbrokerdemo.data.LanguageCache
 import io.mockk.every
 import io.mockk.justRun
 import io.mockk.mockk
@@ -39,10 +39,10 @@ class SettingsLogicTest {
         app = mockk(relaxed = true)
         activity = mockk(relaxed = true)
 
-        mockkObject(LocaleCache)
+        mockkObject(LanguageCache)
         mockkObject(MusicManager)
 
-        every { LocaleCache.set(any(), any()) } returns Unit
+        every { LanguageCache.set(any(), any()) } returns Unit
         justRun { activity.recreate() }
 
         logic = SettingsLogic(app)
@@ -63,7 +63,7 @@ class SettingsLogicTest {
         // und Activity neu starten, damit Compose die neuen Strings zieht.
         logic.changeLanguage(currentLang = "en", newLang = "de", activity = activity)
 
-        verify { LocaleCache.set(app, "de") }
+        verify { LanguageCache.set(app, "de") }
         verify { activity.recreate() }
     }
 
@@ -73,7 +73,7 @@ class SettingsLogicTest {
         // Activity neu starten (sonst gibt's Flackern und Backstack-Verlust).
         logic.changeLanguage(currentLang = "de", newLang = "de", activity = activity)
 
-        verify(exactly = 0) { LocaleCache.set(any(), any()) }
+        verify(exactly = 0) { LanguageCache.set(any(), any()) }
         verify(exactly = 0) { activity.recreate() }
     }
 
@@ -84,7 +84,7 @@ class SettingsLogicTest {
         // Cache wird trotzdem geschrieben, recreate() entfällt einfach.
         logic.changeLanguage(currentLang = "en", newLang = "de", activity = null)
 
-        verify { LocaleCache.set(app, "de") }
+        verify { LanguageCache.set(app, "de") }
         // Kein verify auf recreate() -- es gibt keine Activity dafür.
     }
 
