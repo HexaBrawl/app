@@ -65,7 +65,7 @@ fun GameScreen(
     var lastMove by remember { mutableStateOf<String>("-") }
 
     LaunchedEffect(Unit) {
-        if (gameState == null) session.endpoint.requestInitialState()
+        if (gameState == null) session.endpoint.requestInitialState(session.roomId.value)
     }
 
     LaunchedEffect(gameState?.currentTurn, gameState?.status, botName) {
@@ -76,7 +76,7 @@ fun GameScreen(
 
         delay(800)
         val move = pickBotMove(state, bot)
-        if (move != null) session.endpoint.sendMove(move)
+        if (move != null) session.endpoint.sendMove(session.roomId.value, move)
     }
 
     val units: List<GameUnit> = gameState?.units.orEmpty()
@@ -136,7 +136,7 @@ fun GameScreen(
                 )
                 lastMove = "${current.type} (${current.x},${current.y}) -> ($col,$row)"
                 session.lastError.value = null
-                session.endpoint.sendMove(move)
+                session.endpoint.sendMove(session.roomId.value, move)
                 selected = null
             }
         }
@@ -250,7 +250,7 @@ fun GameScreen(
                 modifier = Modifier.padding(top = 4.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Button(onClick = { session.endpoint.requestInitialState() }) {
+                Button(onClick = { session.endpoint.requestInitialState(session.roomId.value) }) {
                     Text("Refresh /app/init")
                 }
                 Button(onClick = { session.lastError.value = null }) {
