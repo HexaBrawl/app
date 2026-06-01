@@ -106,6 +106,16 @@ fun SyncLobbyWithServer(
     val localSlot = slots.firstOrNull { it.isLocal } ?: return
     val localName = localSlot.name
 
+    DisposableEffect(session.activeRoomId.value) {
+        val job = session.endpoint.subscribeToGameState(session.activeRoomId.value) { state ->
+            session.gameState.value = state
+            session.gameStateReceivedCount.intValue += 1
+        }
+        onDispose {
+            job.cancel()
+        }
+    }
+
     LaunchedEffect(localName) {
         session.localPlayerName.value = localName
         session.endpoint.joinGame(session.activeRoomId.value, localName)
