@@ -48,11 +48,6 @@ class UnitMoveEndpoint(
         stomp.sendText("/app/rooms/$roomId/join", playerName)
     }
 
-    fun requestInitialState(roomId: String) {
-        Log.d(TAG, "-> /app/rooms/$roomId/init/")
-        stomp.sendText("/app/rooms/$roomId/init/", "")
-    }
-
     companion object {
         private const val TAG = "UnitMoveEndpoint"
     }
