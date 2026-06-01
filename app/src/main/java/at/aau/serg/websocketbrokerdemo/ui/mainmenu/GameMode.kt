@@ -12,13 +12,16 @@ import com.example.myapplication.R
  *
  * Wird auch als Navigationsargument zwischen MainMenu und Lobby-Screens
  * übergeben (über die Route).
+ *
+ * Routen-Lookup (vorher `fromRoute()`) liegt jetzt in [GameModeLogic],
+ * damit der Enum keine eigene Logik mehr trägt.
  */
 enum class GameMode(
     val route: String,
     val playerCount: Int,
-    @StringRes val nameRes: Int,
-    @StringRes val taglineRes: Int,
-    @DrawableRes val backgroundRes: Int
+    @param:StringRes val nameRes: Int,
+    @param:StringRes val taglineRes: Int,
+    @param:DrawableRes val backgroundRes: Int
 ) {
     DUAL_VALLEY(
         route = "lobby_dual",
@@ -40,10 +43,5 @@ enum class GameMode(
         nameRes = R.string.mode_battlefield_peaks,
         taglineRes = R.string.mode_battlefield_peaks_tagline,
         backgroundRes = R.drawable.bg_battlefield_peaks
-    );
-
-    companion object {
-        fun fromRoute(route: String?): GameMode? =
-            entries.firstOrNull { it.route == route }
-    }
+    )
 }

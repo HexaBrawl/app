@@ -1,21 +1,21 @@
 package at.aau.serg.websocketbrokerdemo.ui.mainmenu
 
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Assertions.assertNull
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 /**
- * Reine Daten-Tests für GameMode.
+ * Reine Daten-Tests für den GameMode-Enum.
  *
- * Wir prüfen die statische Konfiguration des Enums (Routes, Spieleranzahlen)
- * und die fromRoute-Lookup-Logik. Resource-IDs (R.string.*, R.drawable.*)
- * werden NICHT auf konkrete Werte geprüft, weil die im Test-Classpath nicht
- * generiert werden – stattdessen verifizieren wir nur, dass sie überhaupt
- * gesetzt wurden (Wert != 0 wäre üblich, aber im Unit-Test ist R nicht
- * verfügbar; wir verlassen uns auf Kompilierfähigkeit).
+ * Hier prüfen wir nur die statische Konfiguration: Routen-Namen,
+ * Spieleranzahlen, eindeutige Resource-IDs und dass valueOf funktioniert.
+ *
+ * Die fromRoute-Lookup-Logik ist seit dem Refactoring in GameModeLogic
+ * ausgelagert -- die wird in GameModeLogicTest abgedeckt.
+ *
+ * Resource-IDs (R.string.*, R.drawable.*) werden NICHT auf konkrete Werte
+ * geprüft, weil die im Unit-Test-Classpath nicht generiert werden --
+ * stattdessen verifizieren wir nur, dass sie überhaupt unterschiedlich
+ * pro Modus sind (Konfliktschutz beim Erweitern).
  */
 class GameModeTest {
 
@@ -42,24 +42,6 @@ class GameModeTest {
         assertEquals("lobby_dual", GameMode.DUAL_VALLEY.route)
         assertEquals("lobby_triad", GameMode.TRIAD_OUTPOST.route)
         assertEquals("lobby_battlefield", GameMode.BATTLEFIELD_PEAKS.route)
-    }
-
-    @Test
-    fun `fromRoute returns matching mode`() {
-        assertEquals(GameMode.DUAL_VALLEY, GameMode.fromRoute("lobby_dual"))
-        assertEquals(GameMode.TRIAD_OUTPOST, GameMode.fromRoute("lobby_triad"))
-        assertEquals(GameMode.BATTLEFIELD_PEAKS, GameMode.fromRoute("lobby_battlefield"))
-    }
-
-    @Test
-    fun `fromRoute returns null for unknown route`() {
-        assertNull(GameMode.fromRoute("lobby_unknown"))
-        assertNull(GameMode.fromRoute(""))
-    }
-
-    @Test
-    fun `fromRoute handles null input`() {
-        assertNull(GameMode.fromRoute(null))
     }
 
     @Test

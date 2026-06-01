@@ -1,7 +1,6 @@
-package at.aau.serg.websocketbrokerdemo.ui
+package at.aau.serg.websocketbrokerdemo.ui.mainmenu
 
-import at.aau.serg.websocketbrokerdemo.ui.mainmenu.HotspotCalculator
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
 class HotspotCalculatorTest {
@@ -15,8 +14,8 @@ class HotspotCalculatorTest {
             yPct = 0.5f
         )
 
-        assertTrue(x > 0f)
-        assertTrue(y > 0f)
+        Assertions.assertTrue(x > 0f)
+        Assertions.assertTrue(y > 0f)
     }
 
     @Test
@@ -28,8 +27,8 @@ class HotspotCalculatorTest {
             yPct = 0.7f
         )
 
-        assertTrue(x > 0f)
-        assertTrue(y > 0f)
+        Assertions.assertTrue(x > 0f)
+        Assertions.assertTrue(y > 0f)
     }
 
     @Test
@@ -37,6 +36,6 @@ class HotspotCalculatorTest {
         val (x1, _) = HotspotCalculator.computeCenter(1000f, 2000f, 0.1f, 0.5f)
         val (x2, _) = HotspotCalculator.computeCenter(1000f, 2000f, 0.9f, 0.5f)
 
-        assertTrue(x2 > x1)
+        Assertions.assertTrue(x2 > x1)
     }
 }

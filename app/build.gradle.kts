@@ -107,6 +107,7 @@ tasks.register<JacocoReport>("jacocoTestReport") {
         "**/ui/lobby_modes/LobbyScreen*.*",
         "**/ui/lobby_modes/RoundCoinButton*.*",
         "**/ui/mainmenu/MainMenuScreen*.*",
+        "**/ui/mainmenu/components/**",
         "**/ui/navigation/AppNavHost*.*",
         "**/ui/settings/SettingsScreen*.*",
         "**/ui/settings/components/**",
