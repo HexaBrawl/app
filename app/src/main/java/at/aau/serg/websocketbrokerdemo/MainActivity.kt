@@ -45,15 +45,10 @@ class MainActivity : ComponentActivity() {
             MusicManager.applySfxSettings(s.sfxEnabled)
         }
 
-        // Connect STOMP once for the whole app session; then wire the two
-        // server-side streams into the shared GameSession state.
+        // Connect STOMP once for the whole app session; then wire the error stream.
         lifecycleScope.launch {
             try {
                 stomp.connect()
-                endpoint.subscribeToGameState(session.roomId.value) { state ->
-                    session.gameState.value = state
-                    session.gameStateReceivedCount.intValue += 1
-                }
                 endpoint.subscribeToErrors { err ->
                     Log.w(TAG, "Server error: ${err.errorCode} - ${err.message}")
                     session.lastError.value = err
