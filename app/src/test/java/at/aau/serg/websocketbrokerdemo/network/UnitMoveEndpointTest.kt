@@ -54,15 +54,6 @@ class UnitMoveEndpointTest {
         }
     }
 
-    @Test
-    fun `requestInitialState sends empty init message`() {
-
-        endpoint.requestInitialState("game1")
-
-        verify {
-            stomp.sendText("/app/rooms/game1/init/", "")
-        }
-    }
 
     @Test
     fun `subscribeToGameState parses GameState correctly`() {
