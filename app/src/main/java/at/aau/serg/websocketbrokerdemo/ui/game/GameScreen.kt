@@ -74,9 +74,6 @@ fun GameScreen(
         }
     }
 
-    LaunchedEffect(Unit) {
-        if (gameState == null) session.endpoint.requestInitialState(session.activeRoomId.value)
-    }
 
     LaunchedEffect(gameState?.currentTurn, gameState?.status, botName) {
         val state = gameState ?: return@LaunchedEffect
@@ -260,9 +257,6 @@ fun GameScreen(
                 modifier = Modifier.padding(top = 4.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Button(onClick = { session.endpoint.requestInitialState(session.activeRoomId.value) }) {
-                    Text("Refresh /app/init")
-                }
                 Button(onClick = { session.lastError.value = null }) {
                     Text("Clear error")
                 }
