@@ -18,7 +18,7 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import at.aau.serg.websocketbrokerdemo.ui.mainmenu.DialogButton
+import at.aau.serg.websocketbrokerdemo.ui.mainmenu.components.DialogButton
 import com.example.myapplication.R
 import at.aau.serg.websocketbrokerdemo.ui.theme.*
 
@@ -97,7 +97,7 @@ fun JoinByCodeDialog(
                         primary = false,
                         onClick = onDismiss
                     )
-                    DialogButton(
+                    DialogButton (
                         text = stringResource(R.string.dialog_join),
                         primary = canJoin,
                         onClick = { if (canJoin) onJoin(code) }
