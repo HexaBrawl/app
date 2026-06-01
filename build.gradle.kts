@@ -34,6 +34,7 @@ sonar {
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/lobby_modes/LobbyScreen.kt",
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/lobby_modes/RoundCoinButton.kt",
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/mainmenu/MainMenuScreen.kt",
+                "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/mainmenu/components/**",
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/navigation/AppNavHost.kt",
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/settings/SettingsScreen.kt",
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/settings/components/**",
