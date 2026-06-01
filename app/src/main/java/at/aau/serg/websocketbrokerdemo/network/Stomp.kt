@@ -17,7 +17,7 @@ import org.hildan.krossbow.websocket.okhttp.OkHttpWebSocketClient
  * Single STOMP entry-point for the whole app.
  *
  * NOTE on content-type:
- *  - sendText  -> "text/plain"        (for /app/join, /app/init)
+ *  - sendText  -> "text/plain"        (for /app/join)
  *  - sendJson  -> "application/json"  (for /app/move - Spring deserializes to DTO)
  * The default `sendText` extension of Krossbow would send everything as text/plain,
  * which prevents Spring's Jackson converter from mapping the payload to a `Move` DTO.
