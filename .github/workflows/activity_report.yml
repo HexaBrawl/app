@@ -48,7 +48,7 @@ jobs:
             | awk '{print "| 📅 " $2 " | " $1 " |"}')
 
           gh issue create \
-            --title "📊 Weekly Activity Report — KW ${{ steps.kw.outputs.value }} [Backend]" \
+            --title "📊 Weekly Activity Report — KW ${{ steps.kw.outputs.value }} [FrontEnd]" \
             --body "## 📊 Weekly Activity Report — KW ${{ steps.kw.outputs.value }}
           > Automatisch generiert am $(date '+%d.%m.%Y um %H:%M Uhr') · Zeitraum: letzte 7 Tage
 
