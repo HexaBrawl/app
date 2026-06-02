@@ -6,7 +6,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.NavGraph
 import at.aau.serg.websocketbrokerdemo.audio.MusicManager
-import at.aau.serg.websocketbrokerdemo.ui.home.HomeScreenLogic
+import at.aau.serg.websocketbrokerdemo.ui.navigation.Screen
 import io.mockk.every
 import io.mockk.justRun
 import io.mockk.mockk
@@ -14,7 +14,6 @@ import io.mockk.mockkObject
 import io.mockk.unmockkAll
 import io.mockk.verify
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -23,17 +22,9 @@ import org.junit.jupiter.api.Test
 /**
  * Tests für HomeScreenLogic.
  *
- * HomeScreenLogic ist ein object ohne eigenen State -- jeder Aufruf
- * delegiert direkt an MusicManager bzw. NavController. Wir testen vor allem:
- *
- *  - Routing-Verzweigungen (hasRoute, navigateSafe mit Fallback)
- *  - Korrekte Forwards an die Singletons / NavController
- *  - Null-Safety bei der Activity (exitApp)
- *
- * Mocking:
- *  - NavController + NavGraph -> normale Mocks. Den NavGraph müssen wir
- *    sorgfältig nachbilden, weil hasRoute() darüber iteriert.
- *  - MusicManager ist ein object -> mockkObject
+ * Forwarding-Tests gegen MusicManager und NavController. Der NavGraph
+ * wird in jedem Test minimal mit den nötigen Destinationen bestückt,
+ * um die Verzweigung "Route vorhanden / fehlt" sauber abdecken zu können.
  */
 class HomeScreenLogicTest {
 
@@ -53,14 +44,8 @@ class HomeScreenLogicTest {
         unmockkAll()
     }
 
-    // -------------------------------------------------------------------------
-    // startMenuMusic()
-    // -------------------------------------------------------------------------
-
     @Test
     fun `startMenuMusic delegates to MusicManager`() {
-        // Reines Forwarding: HomeScreen.LaunchedEffect ruft das auf, hier
-        // prüfen wir nur dass der MusicManager wirklich angestoßen wird.
         val context = mockk<Context>(relaxed = true)
 
         HomeScreenLogic.startMenuMusic(context)
@@ -68,78 +53,57 @@ class HomeScreenLogicTest {
         verify { MusicManager.playMenuMusic(context) }
     }
 
-    // -------------------------------------------------------------------------
-    // hasRoute()
-    // -------------------------------------------------------------------------
-
     @Test
-    fun `hasRoute returns true when route exists in graph`() {
-        // hasRoute() iteriert über den NavGraph und sucht nach destination.route.
-        // Wir bauen einen NavGraph mit einem Eintrag und prüfen das Matching.
+    fun `hasRoute returns true when screen is registered`() {
         val destination = mockk<NavDestination>()
-        every { destination.route } returns "settings"
+        every { destination.route } returns Screen.Settings.route
         every { navGraph.iterator() } returns mutableListOf(destination).iterator()
 
-        assertTrue(HomeScreenLogic.hasRoute(navController, "settings"))
+        assertTrue(HomeScreenLogic.hasRoute(navController, Screen.Settings))
     }
 
     @Test
-    fun `hasRoute returns false when route is missing`() {
-        // Edge-Case: NavGraph enthält andere Routen, aber nicht die gesuchte.
+    fun `hasRoute returns false when screen is missing`() {
         val destination = mockk<NavDestination>()
-        every { destination.route } returns "home"
+        every { destination.route } returns Screen.Home.route
         every { navGraph.iterator() } returns mutableListOf(destination).iterator()
 
-        assertFalse(HomeScreenLogic.hasRoute(navController, "settings"))
+        assertFalse(HomeScreenLogic.hasRoute(navController, Screen.Settings))
     }
 
     @Test
     fun `hasRoute returns false for empty navigation graph`() {
-        // Robustheit: leerer Graph darf nicht crashen.
         every { navGraph.iterator() } returns mutableListOf<NavDestination>().iterator()
 
-        assertFalse(HomeScreenLogic.hasRoute(navController, "anything"))
+        assertFalse(HomeScreenLogic.hasRoute(navController, Screen.Home))
     }
 
-    // -------------------------------------------------------------------------
-    // navigateSafe()
-    // -------------------------------------------------------------------------
-
     @Test
-    fun `navigateSafe uses primary route when it exists`() {
-        // Happy-Path: primary ist im NavGraph registriert -> dahin navigieren.
+    fun `navigateSafe navigates to primary when available`() {
         val destination = mockk<NavDestination>()
-        every { destination.route } returns "mainmenu"
+        every { destination.route } returns Screen.MainMenu.route
         every { navGraph.iterator() } returns mutableListOf(destination).iterator()
 
-        HomeScreenLogic.navigateSafe(navController, primary = "mainmenu", fallback = "game")
+        HomeScreenLogic.navigateSafe(navController, primary = Screen.MainMenu, fallback = Screen.Game)
 
-        verify { navController.navigate("mainmenu") }
-        verify(exactly = 0) { navController.navigate("game") }
+        verify { navController.navigate(Screen.MainMenu.route) }
+        verify(exactly = 0) { navController.navigate(Screen.Game.route) }
     }
 
     @Test
-    fun `navigateSafe falls back when primary route is missing`() {
-        // Während der Entwicklung kann das Hauptmenü-Composable noch fehlen --
-        // dann soll der Fallback (z. B. direkt "game") greifen, damit der
-        // PLAY-Button nicht crasht.
+    fun `navigateSafe falls back when primary is missing`() {
         val destination = mockk<NavDestination>()
-        every { destination.route } returns "game"  // nur "game" registriert
+        every { destination.route } returns Screen.Game.route
         every { navGraph.iterator() } returns mutableListOf(destination).iterator()
 
-        HomeScreenLogic.navigateSafe(navController, primary = "mainmenu", fallback = "game")
+        HomeScreenLogic.navigateSafe(navController, primary = Screen.MainMenu, fallback = Screen.Game)
 
-        verify { navController.navigate("game") }
-        verify(exactly = 0) { navController.navigate("mainmenu") }
+        verify { navController.navigate(Screen.Game.route) }
+        verify(exactly = 0) { navController.navigate(Screen.MainMenu.route) }
     }
 
-    // -------------------------------------------------------------------------
-    // exitApp()
-    // -------------------------------------------------------------------------
-
     @Test
-    fun `exitApp calls finish on the activity`() {
-        // Normalfall: User drückt Exit -> Activity wird beendet.
+    fun `exitApp calls finish on activity`() {
         val activity = mockk<Activity>(relaxed = true)
         justRun { activity.finish() }
 
@@ -150,47 +114,36 @@ class HomeScreenLogicTest {
 
     @Test
     fun `exitApp handles null activity gracefully`() {
-        // Wichtig: in Compose-Previews oder Tests ist der LocalContext
-        // manchmal keine Activity -> activity ist null. Darf NICHT crashen.
         HomeScreenLogic.exitApp(null)
         // Kein verify -- der Test prüft nur dass keine Exception fliegt.
     }
 
-    // -------------------------------------------------------------------------
-    // Convenience: onPlayClicked / onSettingsClicked
-    // -------------------------------------------------------------------------
-
     @Test
-    fun `onPlayClicked navigates to mainmenu when available`() {
+    fun `onPlayClicked navigates to MainMenu when available`() {
         val destination = mockk<NavDestination>()
-        every { destination.route } returns "mainmenu"
+        every { destination.route } returns Screen.MainMenu.route
         every { navGraph.iterator() } returns mutableListOf(destination).iterator()
 
         HomeScreenLogic.onPlayClicked(navController)
 
-        verify { navController.navigate("mainmenu") }
+        verify { navController.navigate(Screen.MainMenu.route) }
     }
 
     @Test
-    fun `onPlayClicked falls back to game when mainmenu missing`() {
-        // Dokumentiert den Fallback-Pfad für den PLAY-Button:
-        // Wenn das Hauptmenü-Composable noch nicht da ist, springt der Spieler
-        // direkt ins Spiel statt zu crashen.
+    fun `onPlayClicked falls back to Game when MainMenu missing`() {
         val destination = mockk<NavDestination>()
-        every { destination.route } returns "game"
+        every { destination.route } returns Screen.Game.route
         every { navGraph.iterator() } returns mutableListOf(destination).iterator()
 
         HomeScreenLogic.onPlayClicked(navController)
 
-        verify { navController.navigate("game") }
+        verify { navController.navigate(Screen.Game.route) }
     }
 
     @Test
-    fun `onSettingsClicked navigates to settings route`() {
-        // Settings-Route existiert immer (kein Fallback nötig), daher
-        // direkter navigate-Aufruf.
+    fun `onSettingsClicked navigates to Settings`() {
         HomeScreenLogic.onSettingsClicked(navController)
 
-        verify { navController.navigate("settings") }
+        verify { navController.navigate(Screen.Settings.route) }
     }
 }

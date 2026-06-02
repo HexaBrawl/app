@@ -4,17 +4,18 @@ import android.app.Activity
 import android.content.Context
 import androidx.navigation.NavController
 import at.aau.serg.websocketbrokerdemo.audio.MusicManager
+import at.aau.serg.websocketbrokerdemo.ui.navigation.Screen
 
 /**
  * Bündelt die Logik des HomeScreens.
  *
  * Hält keinen eigenen State -- der HomeScreen ist stateless, deshalb keine
- * ViewModel-Anbindung. Diese Klasse extrahiert nur die Side-Effects und
+ * ViewModel-Anbindung. Diese Klasse extrahiert die Side-Effects und
  * Navigation-Logik aus dem Composable, damit sie testbar wird.
  *
  * Verantwortungen:
  *  - Menü-Musik starten
- *  - Sichere Navigation zum Hauptmenü (mit Fallback)
+ *  - Navigation zum Hauptmenü (mit Fallback)
  *  - App beenden
  */
 object HomeScreenLogic {
@@ -25,21 +26,18 @@ object HomeScreenLogic {
     }
 
     /**
-     * Versucht zur primären Route zu navigieren. Falls die noch nicht im
-     * NavGraph registriert ist (z. B. weil das Hauptmenü-Composable in
+     * Versucht zur primären Route zu navigieren. Falls diese noch nicht
+     * im NavGraph registriert ist (z. B. weil das Hauptmenü-Composable in
      * einem späteren Task hinzukommt), wird der Fallback genutzt.
-     *
-     * Zentrale Stelle für diese Logik -- vorher war sie als private fun
-     * im HomeScreen-File und nicht testbar.
      */
-    fun navigateSafe(navController: NavController, primary: String, fallback: String) {
+    fun navigateSafe(navController: NavController, primary: Screen, fallback: Screen) {
         val target = if (hasRoute(navController, primary)) primary else fallback
-        navController.navigate(target)
+        navController.navigate(target.route)
     }
 
-    /** Prüft ob eine Route im NavGraph existiert. */
-    fun hasRoute(navController: NavController, route: String): Boolean =
-        navController.graph.any { it.route == route }
+    /** Prüft ob ein Screen im NavGraph registriert ist. */
+    fun hasRoute(navController: NavController, screen: Screen): Boolean =
+        navController.graph.any { it.route == screen.route }
 
     /**
      * Beendet die App. Wenn der Context keine Activity ist (z. B. Preview-
@@ -49,15 +47,13 @@ object HomeScreenLogic {
         activity?.finish()
     }
 
-    /**
-     * Convenience: Klick auf PLAY -> ins Hauptmenü, sonst Fallback auf "game".
-     */
+    /** Convenience: Klick auf PLAY -> ins Hauptmenü, sonst Fallback ins Spiel. */
     fun onPlayClicked(navController: NavController) {
-        navigateSafe(navController, primary = "mainmenu", fallback = "game")
+        navigateSafe(navController, primary = Screen.MainMenu, fallback = Screen.Game)
     }
 
     /** Convenience: Klick auf Settings. */
     fun onSettingsClicked(navController: NavController) {
-        navController.navigate("settings")
+        navController.navigate(Screen.Settings.route)
     }
 }
