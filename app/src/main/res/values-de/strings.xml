@@ -37,8 +37,8 @@
     <string name="info_economy">Jedes verbundene Feld bringt 1 Gold pro Runde. Truppenunterhalt beginnt bei 3 und steigt um +1 pro weiterer Einheit. Farmen erhöhen dein Einkommen.</string>
     <string name="info_supply_label">🏰 VERSORGUNGSLINIE</string>
     <string name="info_supply">Wird ein Feld vom Hauptgebäude abgeschnitten, wird es inaktiv — alle dortigen Truppen sterben dabei und werden zu Grabsteine.</string>
-    <string name="info_terrain_label">🌲 GELÄNDE</string>
-    <string name="info_terrain">Felder mit Bäumen oder Grabsteinen geben kein Geld, können aber entfernt werden. Steine blockieren das ganze Feld.</string>
+    <string name="info_terrain_label">🪦 GELÄNDE</string>
+    <string name="info_terrain">Grabsteine entstehen auch, wenn jemand in Insolvenz geht. Felder mit Grabsteinen geben kein Geld, können aber entfernt werden.</string>
 
     <!-- Dialog-Buttons -->
     <string name="dialog_cancel">Abbrechen</string>

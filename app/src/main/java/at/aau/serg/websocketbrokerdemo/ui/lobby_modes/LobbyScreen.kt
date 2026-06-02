@@ -2,15 +2,22 @@ package at.aau.serg.websocketbrokerdemo.ui.lobby_modes
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Casino
 import androidx.compose.material.icons.filled.GroupAdd
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -21,12 +28,22 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import at.aau.serg.websocketbrokerdemo.ui.components.PlayerCountBadge
+import at.aau.serg.websocketbrokerdemo.ui.components.RoundCoinIconButton
 import at.aau.serg.websocketbrokerdemo.ui.mainmenu.GameMode
-import at.aau.serg.websocketbrokerdemo.ui.theme.GoldCoinLight
 import at.aau.serg.websocketbrokerdemo.ui.theme.WoodDark
 import at.aau.serg.websocketbrokerdemo.ui.theme.WoodMedium
 import com.example.myapplication.R
 
+/**
+ * Modus-Lobby: Auswahl zwischen "Privates Spiel erstellen", "Mit Code
+ * beitreten" und "Zufaelliges Spiel".
+ *
+ * Der Composable ist auf reine UI reduziert:
+ *  - Navigations-Routen kommen aus [LobbyLogic]
+ *  - Der Dialog-State (`showJoinDialog`) wird lokal mit `remember`
+ *    gehalten -- ein dediziertes ViewModel waere fuer dieses einzelne
+ *    Boolean ueberdimensioniert (kein Repository, keine Persistierung).
+ */
 @Composable
 fun LobbyScreen(
     mode: GameMode,
@@ -38,7 +55,6 @@ fun LobbyScreen(
 
     Box(modifier = Modifier.fillMaxSize()) {
 
-        // Hintergrund
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -50,7 +66,6 @@ fun LobbyScreen(
                 )
         )
 
-        // Hintergrundbild
         Image(
             painter = painterResource(id = mode.backgroundRes),
             contentDescription = null,
@@ -58,7 +73,6 @@ fun LobbyScreen(
             modifier = Modifier.fillMaxSize()
         )
 
-        // Vignette
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -73,22 +87,15 @@ fun LobbyScreen(
                 )
         )
 
-        // Back Button
-        IconButton(
+        RoundCoinIconButton(
+            icon = Icons.AutoMirrored.Filled.ArrowBack,
+            contentDescription = stringResource(R.string.settings_back),
             onClick = { navController.popBackStack() },
             modifier = Modifier
                 .align(Alignment.TopStart)
                 .padding(16.dp)
-                .roundCoinButton()
-        ) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = stringResource(R.string.settings_back),
-                tint = GoldCoinLight
-            )
-        }
+        )
 
-        // Player Count Badge
         PlayerCountBadge(
             count = mode.playerCount,
             modifier = Modifier
@@ -96,7 +103,6 @@ fun LobbyScreen(
                 .padding(16.dp)
         )
 
-        // Action Cards
         Column(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
