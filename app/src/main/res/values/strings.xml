@@ -37,8 +37,8 @@
     <string name="info_economy">Each connected tile yields 1 gold per round. Troop upkeep starts at 3 and rises by 1 per additional unit. Farms increase your income.</string>
     <string name="info_supply_label">🏰 SUPPLY LINE</string>
     <string name="info_supply">If a tile is cut off from your main hold, it falls inactive — your troops there fall with it and become gravestones.</string>
-    <string name="info_terrain_label">🌲 TERRAIN</string>
-    <string name="info_terrain">Fields with trees or gravestones do not yield any money, but can be removed. Stones block the entire field.</string>
+    <string name="info_terrain_label">🪦 TERRAIN</string>
+    <string name="info_terrain">Gravestones also appear when someone goes bankrupt. Fields with gravestones do not generate any money, but they can be removed.</string>
 
     <!-- Dialog buttons -->
     <string name="dialog_cancel">Cancel</string>
