@@ -106,9 +106,19 @@ fun SyncLobbyWithServer(
     val localSlot = slots.firstOrNull { it.isLocal } ?: return
     val localName = localSlot.name
 
+    DisposableEffect(session.activeRoomId.value) {
+        val job = session.endpoint.subscribeToGameState(session.activeRoomId.value) { state ->
+            session.gameState.value = state
+            session.gameStateReceivedCount.intValue += 1
+        }
+        onDispose {
+            job.cancel()
+        }
+    }
+
     LaunchedEffect(localName) {
         session.localPlayerName.value = localName
-        session.endpoint.joinGame(session.roomId.value, localName)
+        session.endpoint.joinGame(session.activeRoomId.value, localName)
     }
 
     // Dev shortcut: if after a few seconds the backend still only has us,
@@ -122,7 +132,7 @@ fun SyncLobbyWithServer(
             if (!alreadyHasPartner && session.botPlayerName.value == null) {
                 val botName = "Bot-" + GENERAL_NAMES.random().substringAfter(' ')
                 session.botPlayerName.value = botName
-                session.endpoint.joinGame(session.roomId.value, botName)
+                session.endpoint.joinGame(session.activeRoomId.value, botName)
             }
         }
     }
