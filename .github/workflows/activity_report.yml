@@ -78,7 +78,7 @@ jobs:
 
           ---
           📁 Repo: \${{ github.repository }}
-          🔗 [Alle Commits](https://github.com/\${{ github.repository }}/commits/main) · [Alle PRs](https://github.com/\${{ github.repository }}/pulls) · [Alle Issues](https://github.com/\${{ github.repository }}/issues)" \
+          🔗 [Alle Commits](https://github.com/\${{ github.repository }}/commits/main) · [Alle PRs](https://github.com/${{ github.repository }}/pulls) · [Alle Issues](https://github.com/${{ github.repository }}/issues)" \
             --label "report,weekly,planning"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
