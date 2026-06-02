@@ -1,27 +1,25 @@
 package at.aau.serg.websocketbrokerdemo.ui.mainmenu
 
 /**
- * Helfer-Klasse für Lookups rund um den [GameMode]-Enum.
+ * Helfer-Klasse fuer Lookups rund um den [GameMode]-Enum.
  *
- * Vorher saß `fromRoute()` als `companion object` direkt im Enum -- das
- * macht den Enum unnötig fett und schlecht testbar (Enums sind im Kotlin-
- * Compiler-Output ein bisschen Magic). Mit der Extraktion ist:
- *  - Der Enum schlank
- *  - Die Lookup-Logik in einem testbaren `object`
- *  - Erweiterbar für künftige Lookups (z. B. byPlayerCount, byBackground)
+ * Hier liegen ausschliesslich Lookup-Operationen, die der Enum selbst
+ * nicht ausfuehren soll, damit die Daten-Definition (siehe GameMode)
+ * frei von Logik bleibt.
+ *
+ * Routen-Mapping (GameMode -> Screen) ist NICHT hier, sondern lebt
+ * in den jeweiligen Logic-Klassen der nutzenden Features
+ * (MainMenuLogic, LobbyLogic) -- jede Funktion an genau einer
+ * passenden Stelle.
  */
 object GameModeLogic {
 
     /**
-     * Sucht den GameMode anhand einer Navigation-Route.
+     * Lookup nach Spieleranzahl.
      *
-     * @return passender Modus oder `null` wenn keine Route matched (z. B.
-     *         für "home" oder "settings").
+     * @return passender Modus oder null, wenn keine Variante diese
+     *         Spielerzahl unterstuetzt (z. B. Solo oder mehr als 4).
      */
-    fun fromRoute(route: String?): GameMode? =
-        GameMode.entries.firstOrNull { it.route == route }
-
-    /** Lookup nach Spieleranzahl (kleines Bonus-Helfer für Tests/Tools). */
     fun byPlayerCount(count: Int): GameMode? =
         GameMode.entries.firstOrNull { it.playerCount == count }
 }
