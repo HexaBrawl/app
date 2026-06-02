@@ -38,11 +38,10 @@ import com.example.myapplication.R
  * Modus-Lobby: Auswahl zwischen "Privates Spiel erstellen", "Mit Code
  * beitreten" und "Zufaelliges Spiel".
  *
- * Der Composable ist auf reine UI reduziert:
- *  - Navigations-Routen kommen aus [LobbyLogic]
- *  - Der Dialog-State (`showJoinDialog`) wird lokal mit `remember`
- *    gehalten -- ein dediziertes ViewModel waere fuer dieses einzelne
- *    Boolean ueberdimensioniert (kein Repository, keine Persistierung).
+ * Reine UI-Schicht. Sammelt nur den `showJoinDialog`-State lokal
+ * (kein dediziertes ViewModel, weil es um genau ein Boolean ohne
+ * Persistierung geht). Navigation laeuft ueber [LobbyLogic.toWaitingScreen]
+ * und das type-safe [Screen]-Konstrukt.
  */
 @Composable
 fun LobbyScreen(
@@ -51,7 +50,7 @@ fun LobbyScreen(
 ) {
     var showJoinDialog by remember { mutableStateOf(false) }
 
-    val waitingRoute = LobbyLogic.toWaitingRoute(mode)
+    val waitingScreen = LobbyLogic.toWaitingScreen(mode)
 
     Box(modifier = Modifier.fillMaxSize()) {
 
@@ -115,7 +114,7 @@ fun LobbyScreen(
                 title = stringResource(R.string.lobby_create_private),
                 subtitle = stringResource(R.string.lobby_create_private_sub),
                 sealColor = SealColor.Red,
-                onClick = { navController.navigate(waitingRoute) }
+                onClick = { navController.navigate(waitingScreen.route) }
             )
             ActionCard(
                 icon = Icons.Filled.GroupAdd,
@@ -129,7 +128,7 @@ fun LobbyScreen(
                 title = stringResource(R.string.lobby_join_random),
                 subtitle = stringResource(R.string.lobby_join_random_sub),
                 sealColor = SealColor.Gold,
-                onClick = { navController.navigate(waitingRoute) }
+                onClick = { navController.navigate(waitingScreen.route) }
             )
         }
     }
@@ -139,7 +138,7 @@ fun LobbyScreen(
             onDismiss = { showJoinDialog = false },
             onJoin = {
                 showJoinDialog = false
-                navController.navigate(waitingRoute)
+                navController.navigate(waitingScreen.route)
             }
         )
     }

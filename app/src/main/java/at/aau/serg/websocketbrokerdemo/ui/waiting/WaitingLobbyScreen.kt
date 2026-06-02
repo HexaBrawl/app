@@ -3,15 +3,17 @@ package at.aau.serg.websocketbrokerdemo.ui.waiting
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -32,10 +34,25 @@ import androidx.navigation.NavController
 import at.aau.serg.websocketbrokerdemo.audio.MusicManager
 import at.aau.serg.websocketbrokerdemo.network.GameSession
 import at.aau.serg.websocketbrokerdemo.ui.components.PlayerCountBadge
+import at.aau.serg.websocketbrokerdemo.ui.components.RoundCoinIconButton
 import at.aau.serg.websocketbrokerdemo.ui.mainmenu.GameMode
-import at.aau.serg.websocketbrokerdemo.ui.theme.*
+import at.aau.serg.websocketbrokerdemo.ui.theme.GoldCoinLight
+import at.aau.serg.websocketbrokerdemo.ui.theme.ParchmentLight
+import at.aau.serg.websocketbrokerdemo.ui.theme.WoodDark
 import com.example.myapplication.R
 
+/**
+ * Wartelobby -- "Versammlung der Generaele".
+ *
+ * Zeigt die Spieler-Slots, ermoeglicht Namens-/Farbwahl und startet
+ * einen 3-Sekunden-Countdown, sobald alle Slots besetzt und bereit
+ * sind.
+ *
+ * Hinweis: Diese Datei wird im Network-Refactor-Zuge umgebaut (echte
+ * Server-Slots statt lokalem State, ggf. ViewModel-Anbindung). Hier
+ * wurden nur Navigations- und Button-Aufrufe an das type-safe
+ * Screen-Konstrukt angepasst.
+ */
 @Composable
 fun WaitingLobbyScreen(
     mode: GameMode,
@@ -87,19 +104,14 @@ fun WaitingLobbyScreen(
                 )
         )
 
-        IconButton(
+        RoundCoinIconButton(
+            icon = Icons.AutoMirrored.Filled.ArrowBack,
+            contentDescription = stringResource(R.string.settings_back),
             onClick = { navController.popBackStack() },
             modifier = Modifier
                 .align(Alignment.TopStart)
                 .padding(16.dp)
-                .roundCoinButton()
-        ) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = stringResource(R.string.settings_back),
-                tint = GoldCoinLight
-            )
-        }
+        )
 
         PlayerCountBadge(
             count = mode.playerCount,
@@ -196,13 +208,3 @@ fun WaitingLobbyScreen(
         }
     }
 }
-
-private fun Modifier.roundCoinButton(): Modifier = this
-    .size(48.dp)
-    .background(
-        brush = Brush.radialGradient(
-            listOf(WoodLight, WoodDark)
-        ),
-        shape = CircleShape
-    )
-    .border(2.dp, GoldCoinDark, CircleShape)
