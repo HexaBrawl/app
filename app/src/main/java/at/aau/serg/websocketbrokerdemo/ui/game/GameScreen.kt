@@ -64,9 +64,16 @@ fun GameScreen(
     var lastTap by remember { mutableStateOf<String>("-") }
     var lastMove by remember { mutableStateOf<String>("-") }
 
-    LaunchedEffect(Unit) {
-        if (gameState == null) session.endpoint.requestInitialState()
+    DisposableEffect(session.activeRoomId.value) {
+        val job = session.endpoint.subscribeToGameState(session.activeRoomId.value) { state ->
+            session.gameState.value = state
+            session.gameStateReceivedCount.intValue += 1
+        }
+        onDispose {
+            job.cancel()
+        }
     }
+
 
     LaunchedEffect(gameState?.currentTurn, gameState?.status, botName) {
         val state = gameState ?: return@LaunchedEffect
@@ -76,7 +83,7 @@ fun GameScreen(
 
         delay(800)
         val move = pickBotMove(state, bot)
-        if (move != null) session.endpoint.sendMove(move)
+        if (move != null) session.endpoint.sendMove(session.activeRoomId.value, move)
     }
 
     val units: List<GameUnit> = gameState?.units.orEmpty()
@@ -136,7 +143,7 @@ fun GameScreen(
                 )
                 lastMove = "${current.type} (${current.x},${current.y}) -> ($col,$row)"
                 session.lastError.value = null
-                session.endpoint.sendMove(move)
+                session.endpoint.sendMove(session.activeRoomId.value, move)
                 selected = null
             }
         }
@@ -250,9 +257,6 @@ fun GameScreen(
                 modifier = Modifier.padding(top = 4.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Button(onClick = { session.endpoint.requestInitialState() }) {
-                    Text("Refresh /app/init")
-                }
                 Button(onClick = { session.lastError.value = null }) {
                     Text("Clear error")
                 }

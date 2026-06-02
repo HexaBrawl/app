@@ -32,12 +32,12 @@ class UnitMoveEndpointTest {
 
         val slot = slot<String>()
 
-        every { stomp.sendJson("/app/move", capture(slot)) } just Runs
+        every { stomp.sendJson("/app/rooms/game1/move", capture(slot)) } just Runs
 
-        endpoint.sendMove(move)
+        endpoint.sendMove("game1", move)
 
         verify {
-            stomp.sendJson(eq("/app/move"), any())
+            stomp.sendJson(eq("/app/rooms/game1/move"), any())
         }
 
         assert(slot.isCaptured)
@@ -47,22 +47,13 @@ class UnitMoveEndpointTest {
     @Test
     fun `joinGame sends player name as text`() {
 
-        endpoint.joinGame("Max")
+        endpoint.joinGame("game1", "Max")
 
         verify {
-            stomp.sendText("/app/join", "Max")
+            stomp.sendText("/app/rooms/game1/join", "Max")
         }
     }
 
-    @Test
-    fun `requestInitialState sends empty init message`() {
-
-        endpoint.requestInitialState()
-
-        verify {
-            stomp.sendText("/app/init", "")
-        }
-    }
 
     @Test
     fun `subscribeToGameState parses GameState correctly`() {
@@ -70,12 +61,12 @@ class UnitMoveEndpointTest {
         val slot = slot<(String) -> Unit>()
 
         every {
-            stomp.subscribe("/topic/game", capture(slot))
+            stomp.subscribe("/topic/rooms/game1/state", capture(slot))
         } returns mockk(relaxed = true)
 
         var received: GameState? = null
 
-        endpoint.subscribeToGameState {
+        endpoint.subscribeToGameState("game1") {
             received = it
         }
 
