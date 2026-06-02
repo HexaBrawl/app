@@ -2,11 +2,24 @@ package at.aau.serg.websocketbrokerdemo.ui.lobby_modes
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -18,17 +31,31 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import at.aau.serg.websocketbrokerdemo.ui.mainmenu.DialogButton
+import at.aau.serg.websocketbrokerdemo.ui.mainmenu.components.DialogButton
+import at.aau.serg.websocketbrokerdemo.ui.theme.GoldCoinDark
+import at.aau.serg.websocketbrokerdemo.ui.theme.InkBlack
+import at.aau.serg.websocketbrokerdemo.ui.theme.InkBrown
+import at.aau.serg.websocketbrokerdemo.ui.theme.ParchmentDark
+import at.aau.serg.websocketbrokerdemo.ui.theme.ParchmentLight
+import at.aau.serg.websocketbrokerdemo.ui.theme.WoodMedium
 import com.example.myapplication.R
-import at.aau.serg.websocketbrokerdemo.ui.theme.*
 
+/**
+ * Pergament-Dialog zum Beitreten einer Lobby per Code.
+ *
+ * Der Composable ist auf reine UI reduziert -- die Logik (Eingabe-
+ * Normalisierung und Gueltigkeits-Pruefung) liegt in [JoinByCodeLogic]
+ * und ist dort unit-getestet. Hier wird die normalize-Funktion bei
+ * jedem Tastendruck angewandt, damit der TextField-Inhalt stets in
+ * einem gueltigen Format ist.
+ */
 @Composable
 fun JoinByCodeDialog(
     onDismiss: () -> Unit,
     onJoin: (String) -> Unit
 ) {
     var code by remember { mutableStateOf("") }
-    val canJoin = code.length in 4..8
+    val canJoin = JoinByCodeLogic.isValid(code)
 
     Dialog(onDismissRequest = onDismiss) {
         Box(
@@ -64,9 +91,7 @@ fun JoinByCodeDialog(
                 OutlinedTextField(
                     value = code,
                     onValueChange = { input ->
-                        code = input.filter { it.isLetterOrDigit() }
-                            .take(8)
-                            .uppercase()
+                        code = JoinByCodeLogic.normalize(input)
                     },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(

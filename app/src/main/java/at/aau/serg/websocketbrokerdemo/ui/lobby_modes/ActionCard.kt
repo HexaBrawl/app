@@ -3,7 +3,14 @@ package at.aau.serg.websocketbrokerdemo.ui.lobby_modes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
@@ -13,20 +20,25 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import at.aau.serg.websocketbrokerdemo.ui.theme.*
+import at.aau.serg.websocketbrokerdemo.ui.theme.GoldCoinDark
+import at.aau.serg.websocketbrokerdemo.ui.theme.InkBlack
+import at.aau.serg.websocketbrokerdemo.ui.theme.InkBrown
+import at.aau.serg.websocketbrokerdemo.ui.theme.ParchmentDark
+import at.aau.serg.websocketbrokerdemo.ui.theme.ParchmentLight
 
-enum class SealColor(val main: Color, val dark: Color) {
-    Red(Color(0xFF8B1A1A), Color(0xFF5A0F0F)),
-    Blue(Color(0xFF1F3A6B), Color(0xFF13264A)),
-    Gold(Color(0xFFD4A24C), Color(0xFF9C6F22))
-}
-
+/**
+ * Aktionskarte im Pergament-Look mit Wachs-Siegel.
+ *
+ * Wird in der Modus-Lobby als grosse, antippbare Karte fuer die drei
+ * Lobby-Aktionen verwendet (Privates Spiel, mit Code beitreten,
+ * zufaelliges Spiel). Das Wachs-Siegel links zeigt das Icon der Aktion
+ * in einer fuer die Aktion charakteristischen Farbe (siehe [SealColor]).
+ */
 @Composable
 fun ActionCard(
     icon: ImageVector,

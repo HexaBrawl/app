@@ -8,8 +8,8 @@ import androidx.activity.compose.setContent
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.rememberNavController
 import at.aau.serg.websocketbrokerdemo.audio.MusicManager
-import at.aau.serg.websocketbrokerdemo.data.LocaleCache
-import at.aau.serg.websocketbrokerdemo.data.LocaleHelper
+import at.aau.serg.websocketbrokerdemo.data.LanguageCache
+import at.aau.serg.websocketbrokerdemo.data.LanguageHelper
 import at.aau.serg.websocketbrokerdemo.data.SettingsRepository
 import at.aau.serg.websocketbrokerdemo.data.settingsDataStore
 import at.aau.serg.websocketbrokerdemo.network.GameSession
@@ -26,8 +26,8 @@ class MainActivity : ComponentActivity() {
     private val session = GameSession(endpoint)
 
     override fun attachBaseContext(newBase: Context) {
-        val lang = LocaleCache.get(newBase)
-        val wrapped = LocaleHelper.updateLocale(newBase, lang)
+        val lang = LanguageCache.get(newBase)
+        val wrapped = LanguageHelper.updateLocale(newBase, lang)
         super.attachBaseContext(wrapped)
     }
 

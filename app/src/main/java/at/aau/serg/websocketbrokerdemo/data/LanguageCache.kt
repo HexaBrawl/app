@@ -13,7 +13,7 @@ import androidx.core.content.edit
  * Lösung: Wir spiegeln die Sprache zusätzlich in SharedPreferences,
  * was synchron lesbar ist. Die Single-Source-of-Truth bleibt DataStore.
  */
-object LocaleCache {
+object LanguageCache {
     private const val PREFS = "hexabrawl_locale_cache"
     private const val KEY_LANG = "language"
 
