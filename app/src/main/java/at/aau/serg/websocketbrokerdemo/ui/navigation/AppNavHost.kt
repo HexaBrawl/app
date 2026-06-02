@@ -19,15 +19,16 @@ import at.aau.serg.websocketbrokerdemo.ui.settings.SettingsScreen
 import at.aau.serg.websocketbrokerdemo.ui.waiting.WaitingLobbyScreen
 
 /**
- * Welcher Track gehört zu welcher Route.
+ * Hauptnavigation der App.
  *
- * - waiting_*  -> Turnier-Track
- * - game       -> Kampf-Track
- * - sonst      -> Menü-Track (Home, MainMenu, Mode-Lobbys, Settings)
+ * Registriert für jedes [Screen] genau einen Composable-Eintrag und
+ * beobachtet zusätzlich die aktive Route, um beim Wechsel automatisch
+ * die passende Hintergrundmusik anzustoßen.
  *
- * So passt sich die Musik automatisch an, egal über welchen Weg der
- * Spieler den Screen erreicht (z. B. Zurück-Button aus der Wartelobby
- * zur Mode-Lobby -> Menü-Track läuft sofort wieder).
+ * Sämtliche Routen werden über die [Screen]-sealed-class adressiert --
+ * String-Literale für Routen sind ausschließlich in [Screen] erlaubt.
+ * Die "Route -> Musik-Track"-Logik liegt in [NavigationLogic] und ist
+ * dort unit-getestet.
  */
 @Composable
 fun AppNavHost(
@@ -48,41 +49,41 @@ fun AppNavHost(
         }
     }
 
-    NavHost(navController, startDestination = "home") {
+    NavHost(navController, startDestination = Screen.Home.route) {
 
-        composable("home") {
+        composable(Screen.Home.route) {
             HomeScreen(navController)
         }
 
-        composable("settings") {
+        composable(Screen.Settings.route) {
             SettingsScreen(navController)
         }
 
-        composable("mainmenu") {
+        composable(Screen.MainMenu.route) {
             MainMenuScreen(navController)
         }
 
-        composable(GameMode.DUAL_VALLEY.route) {
+        composable(Screen.LobbyDual.route) {
             LobbyScreen(GameMode.DUAL_VALLEY, navController)
         }
-        composable(GameMode.TRIAD_OUTPOST.route) {
+        composable(Screen.LobbyTriad.route) {
             LobbyScreen(GameMode.TRIAD_OUTPOST, navController)
         }
-        composable(GameMode.BATTLEFIELD_PEAKS.route) {
+        composable(Screen.LobbyBattlefield.route) {
             LobbyScreen(GameMode.BATTLEFIELD_PEAKS, navController)
         }
 
-        composable("waiting_dual") {
+        composable(Screen.WaitingDual.route) {
             WaitingLobbyScreen(GameMode.DUAL_VALLEY, navController, session)
         }
-        composable("waiting_triad") {
+        composable(Screen.WaitingTriad.route) {
             WaitingLobbyScreen(GameMode.TRIAD_OUTPOST, navController, session)
         }
-        composable("waiting_battlefield") {
+        composable(Screen.WaitingBattlefield.route) {
             WaitingLobbyScreen(GameMode.BATTLEFIELD_PEAKS, navController, session)
         }
 
-        composable("game") {
+        composable(Screen.Game.route) {
             GameScreen(session)
         }
     }
