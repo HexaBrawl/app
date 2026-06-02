@@ -21,26 +21,27 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import at.aau.serg.websocketbrokerdemo.ui.components.RoundCoinIconButton
 import at.aau.serg.websocketbrokerdemo.ui.mainmenu.components.HotspotMarker
 import at.aau.serg.websocketbrokerdemo.ui.mainmenu.components.InfoDialog
 import at.aau.serg.websocketbrokerdemo.ui.mainmenu.components.ModeConfirmDialog
-import at.aau.serg.websocketbrokerdemo.ui.mainmenu.components.RoundCoinIconButton
 import at.aau.serg.websocketbrokerdemo.ui.theme.WoodDark
 import at.aau.serg.websocketbrokerdemo.ui.theme.WoodMedium
 import com.example.myapplication.R
 
 /**
- * MainMenuScreen — der "Kriegstisch".
+ * MainMenuScreen -- der "Kriegstisch".
  *
- * Reine UI-Schicht. Verantwortlich nur für:
+ * Reine UI-Schicht. Verantwortlich nur fuer:
  *  - Hintergrund + Vignette rendern
  *  - Hotspots positionieren (BoxWithConstraints + HotspotCalculator)
- *  - Top-Bar-Buttons (Zurück / Info)
+ *  - Top-Bar-Buttons (Zurueck / Info)
  *  - Dialoge anzeigen, wenn der State sagt "ja"
  *
- * Sämtliche State-Verwaltung läuft im [MainMenuViewModel], sämtliche
+ * Saemtliche State-Verwaltung laeuft im [MainMenuViewModel], saemtliche
  * Navigation in [MainMenuLogic]. Einzelne Composable-Bausteine
- * (Hotspots, Dialoge, Buttons) liegen in `components/`.
+ * (Hotspots, Dialoge) liegen in `components/`. Der wiederverwendbare
+ * RoundCoinIconButton lebt in `ui/components/`.
  */
 @Composable
 fun MainMenuScreen(
@@ -51,7 +52,6 @@ fun MainMenuScreen(
 
     Box(modifier = Modifier.fillMaxSize()) {
 
-        // Holz-Hintergrund (sichtbar an den Rändern, falls Bild kleiner ist)
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -63,7 +63,6 @@ fun MainMenuScreen(
                 )
         )
 
-        // Karte + Hotspots
         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
             val w = maxWidth
             val h = maxHeight
@@ -89,7 +88,6 @@ fun MainMenuScreen(
             )
         }
 
-        // Zurück-Button
         RoundCoinIconButton(
             icon = Icons.AutoMirrored.Filled.ArrowBack,
             contentDescription = stringResource(R.string.settings_back),
@@ -99,7 +97,6 @@ fun MainMenuScreen(
                 .padding(16.dp)
         )
 
-        // Info-Button
         RoundCoinIconButton(
             icon = Icons.Filled.Info,
             contentDescription = stringResource(R.string.menu_info),
@@ -110,7 +107,6 @@ fun MainMenuScreen(
         )
     }
 
-    // Bestätigungs-Popup
     state.pendingMode?.let { mode ->
         ModeConfirmDialog(
             mode = mode,
@@ -122,7 +118,6 @@ fun MainMenuScreen(
         )
     }
 
-    // Info-Dialog
     if (state.showInfo) {
         InfoDialog(onDismiss = { viewModel.onDismissInfo() })
     }
