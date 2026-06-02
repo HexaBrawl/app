@@ -1,4 +1,4 @@
-package at.aau.serg.websocketbrokerdemo.ui.mainmenu.components
+package at.aau.serg.websocketbrokerdemo.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -18,10 +18,12 @@ import at.aau.serg.websocketbrokerdemo.ui.theme.WoodDark
 import at.aau.serg.websocketbrokerdemo.ui.theme.WoodLight
 
 /**
- * Runder Holz-mit-Goldrand-Button für die Top-Bar im Hauptmenü
- * (Zurück + Info). Vorher als private Modifier-Extension im
- * MainMenuScreen, jetzt eigenständig wiederverwendbar.
- * Das ist der Hintergrund bei jedem Button.
+ * Runder Holz-mit-Goldrand-Button im Wachs-Siegel-Stil.
+ *
+ * Wird in der Top-Bar von MainMenu, LobbyScreen und WaitingLobby
+ * fuer Zurueck-/Info-Aktionen verwendet. Hier zentral als
+ * wiederverwendbarer Composable, damit das Design konsistent bleibt
+ * und nicht in jedem Screen erneut definiert werden muss.
  */
 @Composable
 fun RoundCoinIconButton(
