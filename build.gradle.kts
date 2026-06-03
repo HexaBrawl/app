@@ -46,8 +46,7 @@ sonar {
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/waiting/WaitingLobbyScreen.kt",
 
                 // Grid-Rendering (Canvas)
-                "app/src/main/java/at/aau/serg/websocketbrokerdemo/grid/UniversalGrid.kt",
-                "app/src/main/java/at/aau/serg/websocketbrokerdemo/grid/renderer/**",
+                "app/src/main/java/at/aau/serg/websocketbrokerdemo/grid/HexGrid.kt",
 
                 // Lifecycle / Network
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/MainActivity.kt",

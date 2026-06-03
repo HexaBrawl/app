@@ -9,16 +9,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import androidx.compose.ui.Modifier
-import at.aau.serg.websocketbrokerdemo.grid.library.GridLibrary
+import at.aau.serg.websocketbrokerdemo.grid.MapLayouts
 import at.aau.serg.websocketbrokerdemo.network.GameSession
 import at.aau.serg.websocketbrokerdemo.ui.game.camera.CameraState
 import at.aau.serg.websocketbrokerdemo.ui.game.components.DebugStatusPanel
 import at.aau.serg.websocketbrokerdemo.ui.game.components.GameMap
+import at.aau.serg.websocketbrokerdemo.ui.mainmenu.GameMode
 
 /**
  * GameScreen -- der eigentliche Spielbildschirm.
@@ -29,15 +30,14 @@ import at.aau.serg.websocketbrokerdemo.ui.game.components.GameMap
  *  - Optional Debug-Statusleiste einblenden (siehe [DebugStatusPanel],
  *    nur wenn [DEBUG_HUD] aktiv ist)
  *
- * Server-Kommunikation (GameState-Subscription) wird ueber das ViewModel
- * der Lobby beim Eintritt aufgebaut; der GameScreen selbst aboniert
- * waehrend seiner Sichtbarkeit nochmal, um auch nach einem Recomposition-
- * Cycle aktuell zu bleiben.
+ * Erhaelt den Spielmodus per Parameter, weil der Server bisher keine
+ * Map-Konfiguration zurueck schickt -- das Frontend leitet das Brett
+ * aus dem in der Wartelobby gewaehlten Modus ab.
  */
 @Composable
 fun GameScreen(
     session: GameSession,
-    playerCount: Int = 2
+    mode: GameMode = GameMode.DUAL_VALLEY
 ) {
     val viewModel: GameViewModel = viewModel(
         factory = viewModelFactory {
@@ -50,11 +50,9 @@ fun GameScreen(
     val lastError by session.lastError
     val localName = session.localPlayerName.value
 
-    val spec = remember(playerCount) { GridLibrary.forPlayers(playerCount) }
+    val layout = remember(mode) { MapLayouts.forMode(mode) }
     val camera = remember { CameraState(mapSizeFactor = 1.0f) }
 
-    // Server-Subscription verwalten: aktivieren wenn der Screen sichtbar
-    // wird, beim Verlassen wieder abmelden.
     DisposableEffect(session.activeRoomId.value) {
         val job = session.endpoint.subscribeToGameState(session.activeRoomId.value) { state ->
             session.gameState.value = state
@@ -66,7 +64,7 @@ fun GameScreen(
 
     Box(modifier = Modifier.fillMaxSize()) {
         GameMap(
-            spec = spec,
+            layout = layout,
             units = units,
             camera = camera,
             onCellTapped = { tapX, tapY, pixelToCell ->
