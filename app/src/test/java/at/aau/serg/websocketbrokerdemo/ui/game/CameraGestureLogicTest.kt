@@ -1,14 +1,15 @@
-package at.aau.serg.websocketbrokerdemo.ui
+package at.aau.serg.websocketbrokerdemo.ui.game
 
 import at.aau.serg.websocketbrokerdemo.ui.game.camera.CameraGestureLogic
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.Assertions.assertEquals
+
 class CameraGestureLogicTest {
 
     @Test
     fun `computeNewScale multiplies and clamps correctly`() {
         // normal scaling
-        assertEquals(
+        Assertions.assertEquals(
             2f,
             CameraGestureLogic.computeNewScale(
                 oldScale = 1f,
@@ -19,7 +20,7 @@ class CameraGestureLogicTest {
         )
 
         // clamp to max
-        assertEquals(
+        Assertions.assertEquals(
             4f,
             CameraGestureLogic.computeNewScale(
                 oldScale = 2f,
@@ -30,7 +31,7 @@ class CameraGestureLogicTest {
         )
 
         // clamp to min
-        assertEquals(
+        Assertions.assertEquals(
             1f,
             CameraGestureLogic.computeNewScale(
                 oldScale = 2f,
@@ -52,7 +53,7 @@ class CameraGestureLogicTest {
 
         // Erwarteter Wert: (10 + 5) - (20 - 10) * (1.5 - 1)
         // = 15 - 10 * 0.5 = 15 - 5 = 10
-        assertEquals(10f, result, 0.0001f)
+        Assertions.assertEquals(10f, result, 0.0001f)
     }
 
     @Test
@@ -66,7 +67,7 @@ class CameraGestureLogicTest {
 
         // = (0 - 3) - (10 - 0) * 0.2
         // = -3 - 2 = -5
-        assertEquals(-5f, result, 0.0001f)
+        Assertions.assertEquals(-5f, result, 0.0001f)
     }
 
     @Test
@@ -79,6 +80,6 @@ class CameraGestureLogicTest {
         )
 
         // Kein Zoom → nur Pan
-        assertEquals(7f, result, 0.0001f)
+        Assertions.assertEquals(7f, result, 0.0001f)
     }
 }
