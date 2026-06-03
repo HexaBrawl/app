@@ -7,6 +7,21 @@ import at.aau.serg.websocketbrokerdemo.data.serverside.Move
 import com.google.gson.Gson
 import kotlinx.coroutines.Job
 
+/**
+ * Network abstraction for game-related STOMP operations.
+ *
+ * This class handles the serialization/deserialization of game actions (Moves)
+ * and joining logic, as well as subscribing to live updates from the backend.
+ *
+ * Lifecycle is managed by `MainActivity`, which provides the underlying Stomp instance.
+ * It serves as the low-level messaging interface for GameSession.
+ *
+ * `subscribeToGameState` / `subscribeToErrors` are used to listen for updates and
+ * errors broadcast by the server, while `sendMove` and `joinGame` transmit
+ * player actions to specific room endpoints.
+ *
+ * It uses [Gson] for mapping between Kotlin data objects and JSON strings.
+ */
 class UnitMoveEndpoint(
     private val stomp: Stomp
 ) {
