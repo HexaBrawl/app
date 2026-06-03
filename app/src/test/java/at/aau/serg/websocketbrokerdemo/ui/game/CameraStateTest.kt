@@ -1,8 +1,8 @@
-package at.aau.serg.websocketbrokerdemo.ui
+package at.aau.serg.websocketbrokerdemo.ui.game
 
 import androidx.compose.ui.unit.IntSize
 import at.aau.serg.websocketbrokerdemo.ui.game.camera.CameraState
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
 class CameraStateTest {
@@ -10,11 +10,11 @@ class CameraStateTest {
     @Test
     fun `clampOffset returns original values when viewport is zero`() {
         val camera = CameraState()
-        camera.viewportSize.value = IntSize.Zero
+        camera.viewportSize.value = IntSize.Companion.Zero
 
         val result = camera.clampOffset(50f, -30f)
 
-        assertEquals(50f to -30f, result)
+        Assertions.assertEquals(50f to -30f, result)
     }
 
     @Test
@@ -29,8 +29,8 @@ class CameraStateTest {
 
         val result = camera.clampOffset(600f, -500f)
 
-        assertEquals(500f, result.first)   // maxX
-        assertEquals(-400f, result.second) // -maxY
+        Assertions.assertEquals(500f, result.first)   // maxX
+        Assertions.assertEquals(-400f, result.second) // -maxY
     }
 
     @Test
@@ -41,8 +41,8 @@ class CameraStateTest {
 
         val result = camera.clampOffset(100f, -50f)
 
-        assertEquals(100f, result.first)
-        assertEquals(-50f, result.second)
+        Assertions.assertEquals(100f, result.first)
+        Assertions.assertEquals(-50f, result.second)
     }
 
     @Test
@@ -56,7 +56,7 @@ class CameraStateTest {
 
         val result = camera.clampOffset(-600f, 500f)
 
-        assertEquals(-500f, result.first)
-        assertEquals(400f, result.second)
+        Assertions.assertEquals(-500f, result.first)
+        Assertions.assertEquals(400f, result.second)
     }
 }
