@@ -52,7 +52,6 @@ class MainActivity : ComponentActivity() {
                 endpoint.subscribeToErrors { err ->
                     Log.w(TAG, "Server error: ${err.errorCode} - ${err.message}")
                     session.lastError.value = err
-                    session.errorReceivedCount.intValue += 1
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "STOMP connect failed", e)
