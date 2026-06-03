@@ -119,8 +119,7 @@ tasks.register<JacocoReport>("jacocoTestReport") {
         "**/ui/waiting/WaitingLobbyScreen*.*",
 
         // Canvas-Drawing
-        "**/grid/UniversalGrid*.*",
-        "**/grid/renderer/**",
+        "**/grid/HexGrid.kt",
 
         // Lifecycle / Network
         "**/MainActivity*.*",
