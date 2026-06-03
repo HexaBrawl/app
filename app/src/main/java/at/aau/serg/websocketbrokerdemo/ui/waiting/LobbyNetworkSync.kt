@@ -32,7 +32,6 @@ fun LobbyNetworkSync(
     DisposableEffect(session.activeRoomId.value) {
         val job = session.endpoint.subscribeToGameState(session.activeRoomId.value) { state ->
             session.gameState.value = state
-            session.gameStateReceivedCount.intValue += 1
         }
         onDispose { job.cancel() }
     }

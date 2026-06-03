@@ -100,7 +100,10 @@ tasks.register<JacocoReport>("jacocoTestReport") {
 
         // Composables / UI-Screens (HexaBrawl UI)
         "**/ui/components/**",
-        "**/ui/game/GameScreen*.*",
+        "**/ui/game/components/**",
+        "**/ui/game/GameScreen.kt",
+        "**/ui/game/GameDebugConfig*.*",
+        "**/ui/game/camera/CameraModifier*.*",
         "**/ui/home/HomeScreen.kt",
         "**/ui/lobby_modes/ActionCard*.*",
         "**/ui/lobby_modes/JoinByCodeDialog*.*",
