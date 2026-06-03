@@ -16,10 +16,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -43,20 +39,18 @@ import com.example.myapplication.R
 /**
  * Pergament-Dialog zum Beitreten einer Lobby per Code.
  *
- * Der Composable ist auf reine UI reduziert -- die Logik (Eingabe-
- * Normalisierung und Gueltigkeits-Pruefung) liegt in [JoinByCodeLogic]
- * und ist dort unit-getestet. Hier wird die normalize-Funktion bei
- * jedem Tastendruck angewandt, damit der TextField-Inhalt stets in
- * einem gueltigen Format ist.
+ * Stateless: code, canJoin und alle Handler kommen von aussen (aus dem
+ * [LobbyViewModel]). Damit haelt der Dialog selbst nichts und ist
+ * komplett von der UI-Schicht abgekoppelt.
  */
 @Composable
 fun JoinByCodeDialog(
+    code: String,
+    canJoin: Boolean,
+    onCodeChange: (String) -> Unit,
     onDismiss: () -> Unit,
-    onJoin: (String) -> Unit
+    onJoin: () -> Unit
 ) {
-    var code by remember { mutableStateOf("") }
-    val canJoin = JoinByCodeLogic.isValid(code)
-
     Dialog(onDismissRequest = onDismiss) {
         Box(
             modifier = Modifier
@@ -90,9 +84,7 @@ fun JoinByCodeDialog(
 
                 OutlinedTextField(
                     value = code,
-                    onValueChange = { input ->
-                        code = JoinByCodeLogic.normalize(input)
-                    },
+                    onValueChange = onCodeChange,
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(
                         capitalization = KeyboardCapitalization.Characters
@@ -125,7 +117,7 @@ fun JoinByCodeDialog(
                     DialogButton(
                         text = stringResource(R.string.dialog_join),
                         primary = canJoin,
-                        onClick = { if (canJoin) onJoin(code) }
+                        onClick = onJoin
                     )
                 }
             }
