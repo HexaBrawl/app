@@ -16,13 +16,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -30,8 +29,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.NavController
-import at.aau.serg.websocketbrokerdemo.audio.MusicManager
 import at.aau.serg.websocketbrokerdemo.network.GameSession
 import at.aau.serg.websocketbrokerdemo.ui.components.PlayerCountBadge
 import at.aau.serg.websocketbrokerdemo.ui.components.RoundCoinIconButton
@@ -39,11 +41,20 @@ import at.aau.serg.websocketbrokerdemo.ui.mainmenu.GameMode
 import at.aau.serg.websocketbrokerdemo.ui.theme.GoldCoinLight
 import at.aau.serg.websocketbrokerdemo.ui.theme.ParchmentLight
 import at.aau.serg.websocketbrokerdemo.ui.theme.WoodDark
+import at.aau.serg.websocketbrokerdemo.ui.waiting.components.CountdownOverlay
+import at.aau.serg.websocketbrokerdemo.ui.waiting.components.EmptySlotCard
+import at.aau.serg.websocketbrokerdemo.ui.waiting.components.LocalPlayerSlotCard
+import at.aau.serg.websocketbrokerdemo.ui.waiting.components.RemotePlayerSlotCard
+import at.aau.serg.websocketbrokerdemo.ui.waiting.model.SlotStatus
 import com.example.myapplication.R
 
 /**
  * Wartelobby -- "Versammlung der Generaele".
  *
+ * Reine UI-Schicht. Die Slot-Verwaltung, Countdown-Logik und remote-
+ * State-Anwendung liegt im [WaitingLobbyViewModel]; Netzwerk-Side-
+ * Effects (Server-Subscription, Spielstart-Navigation) in
+ * [LobbyNetworkSync].
  * Zeigt die Spieler-Slots, ermoeglicht Namens-/Farbwahl und startet
  * einen 3-Sekunden-Countdown, sobald alle Slots besetzt und bereit
  * sind.
@@ -57,23 +68,21 @@ import com.example.myapplication.R
 fun WaitingLobbyScreen(
     mode: GameMode,
     navController: NavController,
-    session: GameSession
+    session: GameSession,
+    viewModel: WaitingLobbyViewModel = viewModel(
+        factory = viewModelFactory {
+            initializer { WaitingLobbyViewModel(mode) }
+        }
+    )
 ) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
 
-    val context = LocalContext.current
+    LobbyNetworkSync(
+        session = session,
+        viewModel = viewModel,
+        navController = navController
+    )
 
-    LaunchedEffect(Unit) {
-        MusicManager.playTournamentMusic(context)
-    }
-
-    // --- STATE ---
-    val slots = rememberLobbySlots(mode)
-    val allReady = rememberAllReady(slots)
-    val countdown = rememberCountdown(allReady, navController)
-
-    SyncLobbyWithServer(session, slots, navController)
-
-    // --- UI ---
     Box(modifier = Modifier.fillMaxSize()) {
 
         Box(
@@ -123,12 +132,7 @@ fun WaitingLobbyScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(
-                    top = 80.dp,
-                    start = 16.dp,
-                    end = 16.dp,
-                    bottom = 24.dp
-                )
+                .padding(top = 80.dp, start = 16.dp, end = 16.dp, bottom = 24.dp)
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(12.dp),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -157,54 +161,27 @@ fun WaitingLobbyScreen(
 
             Spacer(Modifier.height(4.dp))
 
-            slots.forEachIndexed { index, slot ->
-
-                val takenColors = slots
-                    .filter {
-                        it.id != slot.id &&
-                                it.status != SlotStatus.Empty
-                    }
-                    .map { it.color }
-                    .toSet()
-
+            state.slots.forEach { slot ->
+                val takenColors = WaitingLobbyLogic.takenColorsExcept(state.slots, slot.id)
                 when {
-
-                    slot.status == SlotStatus.Empty -> {
-                        EmptySlotCard()
-                    }
-
-                    slot.isLocal -> {
-                        LocalPlayerSlotCard(
-                            slot = slot,
-                            takenColors = takenColors,
-
-                            onNameChange = { newName ->
-                                slots[index] = slot.copy(name = newName)
-                            },
-
-                            onColorChange = { newColor ->
-                                slots[index] = slot.copy(color = newColor)
-                            },
-
-                            onReadyToggle = {
-                                slots[index] =
-                                    slot.copy(ready = !slot.ready)
-                            }
-                        )
-                    }
-
-                    else -> {
-                        RemotePlayerSlotCard(slot)
-                    }
+                    slot.status == SlotStatus.Empty -> EmptySlotCard()
+                    slot.isLocal -> LocalPlayerSlotCard(
+                        slot = slot,
+                        takenColors = takenColors,
+                        onNameChange = { viewModel.onNameChange(slot.id, it) },
+                        onColorChange = { viewModel.onColorChange(slot.id, it) },
+                        onReadyToggle = { viewModel.onReadyToggle(slot.id) }
+                    )
+                    else -> RemotePlayerSlotCard(slot)
                 }
             }
         }
 
         AnimatedVisibility(
-            visible = countdown > 0,
+            visible = state.isCountdownActive,
             modifier = Modifier.align(Alignment.Center)
         ) {
-            CountdownOverlay(seconds = countdown)
+            CountdownOverlay(seconds = state.countdown)
         }
     }
 }

@@ -32,16 +32,15 @@ sonar {
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/lobby_modes/ActionCard.kt",
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/lobby_modes/JoinByCodeDialog.kt",
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/lobby_modes/LobbyScreen.kt",
-                "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/lobby_modes/RoundCoinButton.kt",
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/mainmenu/MainMenuScreen.kt",
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/mainmenu/components/**",
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/navigation/AppNavHost.kt",
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/settings/SettingsScreen.kt",
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/settings/components/**",
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/theme/**",
-                "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/waiting/WaitingLobbyComponents.kt",
+                "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/waiting/components/**",
+                "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/waiting/LobbyNetworkSync.kt",
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/waiting/WaitingLobbyScreen.kt",
-                "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/waiting/WaitingLobbyState.kt",
 
                 // Grid-Rendering (Canvas)
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/grid/UniversalGrid.kt",
