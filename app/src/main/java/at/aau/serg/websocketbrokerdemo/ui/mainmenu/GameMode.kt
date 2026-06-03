@@ -7,38 +7,33 @@ import com.example.myapplication.R
 /**
  * Spielmodi.
  *
- * Jeder Modus weiß selbst, wie viele Spieler er hat, welcher Hintergrund
- * für seine Lobby gerendert wird und wie er in der UI heißt.
+ * Jeder Modus weiss selbst, wie viele Spieler er hat, welcher
+ * Hintergrund fuer seine Lobby gerendert wird und wie er in der UI
+ * heisst.
  *
- * Wird auch als Navigationsargument zwischen MainMenu und Lobby-Screens
- * übergeben (über die Route).
- *
- * Routen-Lookup (vorher `fromRoute()`) liegt jetzt in [GameModeLogic],
- * damit der Enum keine eigene Logik mehr trägt.
+ * Die Verknuepfung zu Compose Navigation lebt in [MainMenuLogic.screenForMode]
+ * bzw. [at.aau.serg.websocketbrokerdemo.ui.lobby_modes.LobbyLogic.toWaitingScreen] --
+ * der Enum selbst kennt keine Routen-Strings mehr.
  */
 enum class GameMode(
-    val route: String,
     val playerCount: Int,
     @param:StringRes val nameRes: Int,
     @param:StringRes val taglineRes: Int,
     @param:DrawableRes val backgroundRes: Int
 ) {
     DUAL_VALLEY(
-        route = "lobby_dual",
         playerCount = 2,
         nameRes = R.string.mode_dual_valley,
         taglineRes = R.string.mode_dual_valley_tagline,
         backgroundRes = R.drawable.bg_dual_valley
     ),
     TRIAD_OUTPOST(
-        route = "lobby_triad",
         playerCount = 3,
         nameRes = R.string.mode_triad_outpost,
         taglineRes = R.string.mode_triad_outpost_tagline,
         backgroundRes = R.drawable.bg_triad_outpost
     ),
     BATTLEFIELD_PEAKS(
-        route = "lobby_battlefield",
         playerCount = 4,
         nameRes = R.string.mode_battlefield_peaks,
         taglineRes = R.string.mode_battlefield_peaks_tagline,

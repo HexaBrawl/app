@@ -1,18 +1,32 @@
 package at.aau.serg.websocketbrokerdemo.ui.lobby_modes
 
 import at.aau.serg.websocketbrokerdemo.ui.mainmenu.GameMode
-import org.junit.jupiter.api.Assertions
+import at.aau.serg.websocketbrokerdemo.ui.navigation.Screen
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
+/**
+ * Tests fuer LobbyLogic.
+ *
+ * Reines Mapping-Test: pro GameMode der passende Wartelobby-Screen.
+ * Wenn ein neuer Modus dazukommt, muss hier ein neuer Eintrag her,
+ * sonst kompiliert das when in LobbyLogic nicht mehr (sealed sub-
+ * types in Screen sind genau drei Stueck).
+ */
 class LobbyLogicTest {
 
     @Test
-    fun `toWaitingRoute returns correct route for each mode`() {
-        Assertions.assertEquals("waiting_dual", LobbyLogic.toWaitingRoute(GameMode.DUAL_VALLEY))
-        Assertions.assertEquals("waiting_triad", LobbyLogic.toWaitingRoute(GameMode.TRIAD_OUTPOST))
-        Assertions.assertEquals(
-            "waiting_battlefield",
-            LobbyLogic.toWaitingRoute(GameMode.BATTLEFIELD_PEAKS)
-        )
+    fun `DUAL_VALLEY maps to WaitingDual`() {
+        assertEquals(Screen.WaitingDual, LobbyLogic.toWaitingScreen(GameMode.DUAL_VALLEY))
+    }
+
+    @Test
+    fun `TRIAD_OUTPOST maps to WaitingTriad`() {
+        assertEquals(Screen.WaitingTriad, LobbyLogic.toWaitingScreen(GameMode.TRIAD_OUTPOST))
+    }
+
+    @Test
+    fun `BATTLEFIELD_PEAKS maps to WaitingBattlefield`() {
+        assertEquals(Screen.WaitingBattlefield, LobbyLogic.toWaitingScreen(GameMode.BATTLEFIELD_PEAKS))
     }
 }

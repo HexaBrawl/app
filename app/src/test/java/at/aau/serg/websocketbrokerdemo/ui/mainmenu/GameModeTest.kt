@@ -4,30 +4,25 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 /**
- * Reine Daten-Tests für den GameMode-Enum.
+ * Reine Daten-Tests fuer den GameMode-Enum.
  *
- * Hier prüfen wir nur die statische Konfiguration: Routen-Namen,
- * Spieleranzahlen, eindeutige Resource-IDs und dass valueOf funktioniert.
+ * Wir pruefen die statische Konfiguration des Enums (Spieleranzahlen,
+ * Resource-Eindeutigkeit) und dass valueOf funktioniert. Routen sind
+ * nicht mehr im Enum -- das Mapping GameMode -> Lobby-Screen lebt in
+ * [MainMenuLogic.screenForMode] und wird dort getestet, das Mapping
+ * GameMode -> Wartelobby-Screen in
+ * [at.aau.serg.websocketbrokerdemo.ui.lobby_modes.LobbyLogic.toWaitingScreen].
  *
- * Die fromRoute-Lookup-Logik ist seit dem Refactoring in GameModeLogic
- * ausgelagert -- die wird in GameModeLogicTest abgedeckt.
- *
- * Resource-IDs (R.string.*, R.drawable.*) werden NICHT auf konkrete Werte
- * geprüft, weil die im Unit-Test-Classpath nicht generiert werden --
- * stattdessen verifizieren wir nur, dass sie überhaupt unterschiedlich
- * pro Modus sind (Konfliktschutz beim Erweitern).
+ * Resource-IDs (R.string.*, R.drawable.*) werden NICHT auf konkrete
+ * Werte geprueft, weil die im Unit-Test-Classpath nicht generiert
+ * werden -- stattdessen verifizieren wir nur, dass sie ueberhaupt
+ * unterschiedlich pro Modus sind (Konfliktschutz beim Erweitern).
  */
 class GameModeTest {
 
     @Test
     fun `there are exactly three game modes`() {
         assertEquals(3, GameMode.entries.size)
-    }
-
-    @Test
-    fun `each mode has a unique route`() {
-        val routes = GameMode.entries.map { it.route }
-        assertEquals(routes.size, routes.toSet().size, "Routes must be unique")
     }
 
     @Test
@@ -38,16 +33,7 @@ class GameModeTest {
     }
 
     @Test
-    fun `routes match expected naming`() {
-        assertEquals("lobby_dual", GameMode.DUAL_VALLEY.route)
-        assertEquals("lobby_triad", GameMode.TRIAD_OUTPOST.route)
-        assertEquals("lobby_battlefield", GameMode.BATTLEFIELD_PEAKS.route)
-    }
-
-    @Test
     fun `each mode references string and drawable resources`() {
-        // Resource-IDs sind Ints; der genaue Wert ist nicht relevant,
-        // aber sie sollten unterschiedlich pro Modus sein.
         val nameIds = GameMode.entries.map { it.nameRes }.toSet()
         val taglineIds = GameMode.entries.map { it.taglineRes }.toSet()
         val drawableIds = GameMode.entries.map { it.backgroundRes }.toSet()
@@ -59,7 +45,6 @@ class GameModeTest {
 
     @Test
     fun `mode count matches max player count`() {
-        // Sanity check: dual=2, triad=3, battlefield=4
         val maxPlayers = GameMode.entries.maxOf { it.playerCount }
         val minPlayers = GameMode.entries.minOf { it.playerCount }
         assertEquals(4, maxPlayers)

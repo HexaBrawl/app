@@ -55,6 +55,14 @@ import com.example.myapplication.R
  * State-Anwendung liegt im [WaitingLobbyViewModel]; Netzwerk-Side-
  * Effects (Server-Subscription, Spielstart-Navigation) in
  * [LobbyNetworkSync].
+ * Zeigt die Spieler-Slots, ermoeglicht Namens-/Farbwahl und startet
+ * einen 3-Sekunden-Countdown, sobald alle Slots besetzt und bereit
+ * sind.
+ *
+ * Hinweis: Diese Datei wird im Network-Refactor-Zuge umgebaut (echte
+ * Server-Slots statt lokalem State, ggf. ViewModel-Anbindung). Hier
+ * wurden nur Navigations- und Button-Aufrufe an das type-safe
+ * Screen-Konstrukt angepasst.
  */
 @Composable
 fun WaitingLobbyScreen(
