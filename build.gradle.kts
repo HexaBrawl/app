@@ -28,8 +28,9 @@ sonar {
                 // Composables / UI-Screens
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/components/**",
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/game/tophud/components/**",
-                "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/game/TopHud.kt",
+                "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/game/tophud/TopHud.kt",
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/game/GameScreen.kt",
+                "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/game/GameMap.kt",
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/game/camera/CameraModifier.kt",
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/home/HomeScreen.kt",
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/lobby_modes/ActionCard.kt",
