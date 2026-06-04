@@ -38,7 +38,7 @@ import com.example.myapplication.R
  * Karte fuer einen remote-Spieler (anderes Geraet).
  *
  * Read-only: zeigt Name + Spielerfarbe + Bereit-Badge an. Die remote-
- * Slots werden via [LobbyNetworkSync] aus dem Server-State befuellt.
+ * Slots werden via LobbyNetworkSync aus dem Server-State befuellt.
  */
 @Composable
 fun RemotePlayerSlotCard(slot: PlayerSlot) {

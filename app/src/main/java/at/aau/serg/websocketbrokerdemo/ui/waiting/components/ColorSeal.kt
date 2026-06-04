@@ -15,10 +15,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.unit.dp
+import at.aau.serg.websocketbrokerdemo.data.serverside.PlayerColor
 import at.aau.serg.websocketbrokerdemo.ui.theme.GoldCoinDark
 import at.aau.serg.websocketbrokerdemo.ui.theme.GoldCoinLight
 import at.aau.serg.websocketbrokerdemo.ui.theme.ParchmentLight
-import at.aau.serg.websocketbrokerdemo.ui.waiting.model.PlayerColor
 
 /**
  * Klickbares Farb-Wachssiegel zur Spielerfarbe-Auswahl.

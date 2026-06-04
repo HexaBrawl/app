@@ -32,13 +32,13 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import at.aau.serg.websocketbrokerdemo.data.serverside.PlayerColor
 import at.aau.serg.websocketbrokerdemo.ui.theme.GoldCoinDark
 import at.aau.serg.websocketbrokerdemo.ui.theme.InkBlack
 import at.aau.serg.websocketbrokerdemo.ui.theme.InkBrown
 import at.aau.serg.websocketbrokerdemo.ui.theme.ParchmentDark
 import at.aau.serg.websocketbrokerdemo.ui.theme.ParchmentLight
 import at.aau.serg.websocketbrokerdemo.ui.theme.WoodMedium
-import at.aau.serg.websocketbrokerdemo.ui.waiting.model.PlayerColor
 import at.aau.serg.websocketbrokerdemo.ui.waiting.model.PlayerSlot
 import com.example.myapplication.R
 
@@ -47,15 +47,7 @@ import com.example.myapplication.R
  *
  * Erlaubt das Aendern von Name, Farbe und Bereit-Status. Sobald der
  * Spieler "bereit" tippt, werden die Eingabefelder gesperrt und die
- * Farbsiegel ausgegraut -- ein Spieler kann sich also nicht
- * "halb-bereit" erklaeren.
- *
- * @param slot der lokale Slot (typischerweise Slot 0)
- * @param takenColors die von anderen Slots belegten Farben (zum
- *                    Ausgrauen)
- * @param onNameChange Callback, wenn der Spieler den Namen aendert
- * @param onColorChange Callback bei Auswahl einer Farbe
- * @param onReadyToggle Callback beim Tap auf den Ready-Button
+ * Farbsiegel ausgegraut.
  */
 @Composable
 fun LocalPlayerSlotCard(
