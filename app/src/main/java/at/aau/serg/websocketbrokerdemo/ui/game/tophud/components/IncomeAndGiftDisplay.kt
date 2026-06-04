@@ -14,6 +14,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -30,18 +31,18 @@ import at.aau.serg.websocketbrokerdemo.ui.theme.ParchmentLight
 import com.example.myapplication.R
 
 /**
- * Mittlere HUD-Box: Einkommen pro Runde plus Geschenk-Button.
+ * Mittlere HUD-Box: Einkommen pro Runde + Geschenk-Button.
  *
- * Layout: "+120 / Runde  🎁"
- *
- * Das Geschenk-Icon ist Teil derselben Pergament-Box, damit der
- * Bildschirm-Platz reicht und der Menue-Button rechts noch sichtbar
- * ist. Klick auf das Geschenk loest [onGiftClick] aus (Mechanik
- * kommt in PR 2).
+ *  - [income]        Goldeinkommen pro Runde
+ *  - [giftEnabled]   false = Spieler hat sein Geschenk bereits benutzt
+ *                    (Server-Truth via Player.hasUsedGift); das Icon
+ *                    wird dann grayed out und nicht mehr klickbar.
+ *  - [onGiftClick]   Wird beim 5. Klick zum Auswerfen verwendet.
  */
 @Composable
 fun IncomeAndGiftDisplay(
     income: Int,
+    giftEnabled: Boolean,
     onGiftClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -74,12 +75,16 @@ fun IncomeAndGiftDisplay(
             )
         )
         Spacer(Modifier.width(10.dp))
+
+        val giftModifier = Modifier
+            .size(40.dp)
+            .alpha(if (giftEnabled) 1f else 0.35f)
+            .let { if (giftEnabled) it.clickable(onClick = onGiftClick) else it }
+
         Image(
             painter = painterResource(id = R.drawable.random_surprise),
             contentDescription = null,
-            modifier = Modifier
-                .size(40.dp)
-                .clickable(onClick = onGiftClick)
+            modifier = giftModifier
         )
     }
 }
