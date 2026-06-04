@@ -11,10 +11,14 @@ object UnitIconProvider {
 
     /**
      * Returns the drawable resource ID for a given unit type and player color.
-     * Skeletons use the same icon regardless of color.
      */
     fun iconFor(color: PlayerColor, type: UnitType): Int = when (type) {
-        UnitType.SKELETON -> R.drawable.figure_skeleton
+        UnitType.SKELETON -> when (color) {
+            PlayerColor.RED -> R.drawable.figure_red_gravestone
+            PlayerColor.BLUE -> R.drawable.figure_blue_gravestone
+            PlayerColor.GREEN -> R.drawable.figure_green_gravestone
+            PlayerColor.YELLOW -> R.drawable.figure_yellow_gravestone
+        }
         UnitType.INFANTRY -> when (color) {
             PlayerColor.RED -> R.drawable.figure_red_infantry
             PlayerColor.BLUE -> R.drawable.figure_blue_infantry
