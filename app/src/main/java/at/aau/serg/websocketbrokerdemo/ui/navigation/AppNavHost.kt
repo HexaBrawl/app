@@ -20,20 +20,14 @@ import at.aau.serg.websocketbrokerdemo.ui.waiting.WaitingLobbyScreen
 
 /**
  * Hauptnavigation der App.
- *
  * Registriert fuer jeden [Screen] genau einen Composable-Eintrag und
- * beobachtet zusaetzlich die aktive Route, um beim Wechsel automatisch
- * die passende Hintergrundmusik anzustossen.
- *
- * Saemtliche Routen werden ueber das [Screen]-sealed-class adressiert --
- * String-Literale fuer Routen sind ausschliesslich in [Screen] erlaubt.
- * Die "Route -> Musik-Track"-Logik liegt in [NavigationLogic] und ist
- * dort unit-getestet.
- *
- * Der GameScreen erhaelt aktuell hartkodiert DUAL_VALLEY als Modus,
- * weil der Server noch nicht zurueckliefert, in welchem Modus wir
- * sind. Sobald das Backend ein "currentMode" im GameState mitschickt,
- * koennen wir das hier auflesen statt zu raten.
+ *  * beobachtet zusaetzlich die aktive Route, um beim Wechsel automatisch
+ *  * die passende Hintergrundmusik anzustossen.
+ *  *
+ *  * Saemtliche Routen werden ueber das [Screen]-sealed-class adressiert --
+ *  * String-Literale fuer Routen sind ausschliesslich in [Screen] erlaubt.
+ *  * Die "Route -> Musik-Track"-Logik liegt in [NavigationLogic] und ist
+ *  * dort unit-getestet.
  */
 @Composable
 fun AppNavHost(
@@ -53,7 +47,7 @@ fun AppNavHost(
         }
     }
 
-    NavHost(navController, startDestination = Screen.Home.route) {
+    NavHost(navController, startDestination = Screen.Game.route) {
 
         composable(Screen.Home.route) {
             HomeScreen(navController)
@@ -88,11 +82,8 @@ fun AppNavHost(
         }
 
         composable(Screen.Game.route) {
-            // TODO: aktuell hartcodiert auf DUAL_VALLEY. Sobald der
-            // GameState einen aktuellen Modus mitliefert oder die
-            // Route den Modus als Argument transportiert, kann das
-            // hier dynamisch werden.
-            GameScreen(session = session, mode = GameMode.DUAL_VALLEY)
+            // TODO: Modus dynamisch ableiten sobald Server ihn liefert.
+            GameScreen(session = session, mode = GameMode.BATTLEFIELD_PEAKS)
         }
     }
 }

@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
@@ -14,17 +15,15 @@ import at.aau.serg.websocketbrokerdemo.grid.MapLayouts
 import at.aau.serg.websocketbrokerdemo.network.GameSession
 import at.aau.serg.websocketbrokerdemo.ui.game.camera.CameraState
 import at.aau.serg.websocketbrokerdemo.ui.game.components.GameMap
+import at.aau.serg.websocketbrokerdemo.ui.game.tophud.TopHud
 import at.aau.serg.websocketbrokerdemo.ui.mainmenu.GameMode
 
 /**
  * GameScreen -- der eigentliche Spielbildschirm.
  *
- * Reine UI-Schicht. Reicht den serverseitigen GameState an die
- * Sub-Composables weiter und delegiert Taps an das ViewModel.
- *
- * Erhaelt den Spielmodus per Parameter, weil der Server bisher keine
- * Map-Konfiguration zurueck schickt -- das Frontend leitet das Brett
- * aus dem in der Wartelobby gewaehlten Modus ab.
+ * Verbindet Spielkarte und Top-HUD. Da die Einstellungen jetzt in einem
+ * In-Game-Popup landen (statt zum SettingsScreen zu navigieren),
+ * braucht der GameScreen keinen NavController mehr.
  */
 @Composable
 fun GameScreen(
@@ -51,6 +50,7 @@ fun GameScreen(
 
     val units = gameState?.units.orEmpty()
     val players = gameState?.players.orEmpty()
+    val localName = session.localPlayerName.value
 
     Box(modifier = Modifier.fillMaxSize()) {
         GameMap(
@@ -64,6 +64,12 @@ fun GameScreen(
                     viewModel.onCellTapped(cell.first, cell.second, units)
                 }
             }
+        )
+
+        TopHud(
+            players = players,
+            localName = localName,
+            modifier = Modifier.align(Alignment.TopCenter)
         )
     }
 }
