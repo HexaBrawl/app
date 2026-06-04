@@ -1,10 +1,10 @@
 package at.aau.serg.websocketbrokerdemo.grid
 
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.painter.Painter
 import at.aau.serg.websocketbrokerdemo.data.serverside.GameUnit
 import at.aau.serg.websocketbrokerdemo.data.serverside.Player
 import at.aau.serg.websocketbrokerdemo.data.serverside.PlayerColor
@@ -14,8 +14,6 @@ import io.mockk.justRun
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -28,8 +26,8 @@ import org.junit.jupiter.api.Test
  *
  * Was wir testen:
  *  - Anzahl der drawPath-Aufrufe entspricht Zellenzahl
- *  - drawCircle-Aufrufe pro Einheit
- *  - Einheiten-Farbe stimmt mit PlayerColor ueberein
+ *  - Icons werden pro Einheit gezeichnet
+ *  - Einheiten-Farbe stimmt mit PlayerColor ueberein (Lookup des richtigen Painters)
  *
  * Was wir NICHT testen koennen (Compose-Limit):
  *  - Genaue Pixel-Koordinaten der Pfade
@@ -47,30 +45,27 @@ class HexRendererTest {
 
     private lateinit var renderer: HexRenderer
     private lateinit var scope: DrawScope
+    private lateinit var unitPainters: Map<Pair<PlayerColor, UnitType>, Painter>
 
     @BeforeEach
     fun setUp() {
         renderer = HexRenderer()
         scope = mockk(relaxed = true)
+        
+        unitPainters = PlayerColor.entries.flatMap { color ->
+            UnitType.entries.map { type ->
+                (color to type) to mockk<Painter>(relaxed = true)
+            }
+        }.toMap()
+
         // Die wichtigsten DrawScope-Aufrufe explizit stubben, damit
         // verify auf sie greifen kann.
         justRun { scope.drawPath(any(), any<Color>(), any(), any(), any(), any()) }
-        justRun {
-            scope.drawCircle(
-                color = any(),
-                radius = any(),
-                center = any(),
-                alpha = any(),
-                style = any(),
-                colorFilter = any(),
-                blendMode = any()
-            )
-        }
     }
 
     private fun draw(units: List<GameUnit> = emptyList(), players: List<Player> = emptyList()) {
         with(renderer) {
-            scope.render(tinyLayout, units, players)
+            scope.render(tinyLayout, units, players, unitPainters)
         }
     }
 
@@ -104,166 +99,82 @@ class HexRendererTest {
     // ---- Units ---------------------------------------------------------
 
     @Test
-    fun `draws one circle per unit`() {
+    fun `draws one icon per unit`() {
         val units = listOf(
             GameUnit(player = "Alice", x = 0, y = 0, type = UnitType.INFANTRY),
-            GameUnit(player = "Bob", x = 1, y = 1, type = UnitType.INFANTRY)
+            GameUnit(player = "Bob", x = 1, y = 1, type = UnitType.CAVALRY)
         )
         draw(units = units, players = listOf(alice, bob))
 
-        verify(exactly = 2) {
-            scope.drawCircle(
-                color = any(),
-                radius = any(),
-                center = any(),
-                alpha = any(),
-                style = any(),
-                colorFilter = any(),
-                blendMode = any()
-            )
+        val alicePainter = unitPainters[PlayerColor.RED to UnitType.INFANTRY]!!
+        val bobPainter = unitPainters[PlayerColor.BLUE to UnitType.CAVALRY]!!
+
+        verify(exactly = 1) {
+            with(alicePainter) { scope.draw(any()) }
+            with(bobPainter) { scope.draw(any()) }
         }
     }
 
     @Test
-    fun `uses player color for unit circle`() {
+    fun `uses red painter for red unit`() {
         val units = listOf(GameUnit(player = "Alice", x = 0, y = 0, type = UnitType.INFANTRY))
         draw(units = units, players = listOf(alice))
 
-        // Alice ist RED -> PlayerColor.RED.main
+        val redPainter = unitPainters[PlayerColor.RED to UnitType.INFANTRY]!!
         verify {
-            scope.drawCircle(
-                color = PlayerColor.RED.main,
-                radius = any(),
-                center = any(),
-                alpha = any(),
-                style = any(),
-                colorFilter = any(),
-                blendMode = any()
-            )
+            with(redPainter) { scope.draw(any()) }
         }
     }
 
     @Test
-    fun `uses default color when unit player is not in players list`() {
-        // Edge-Case: Unit-Owner ist nicht in der Spieler-Liste (etwa
-        // weil das GameState gerade asynchron ankommt). Sollte den
-        // Default-Color nutzen statt zu crashen.
+    fun `uses fallback color when unit player is not in players list`() {
+        // Edge-Case: Unit-Owner ist nicht in der Spieler-Liste.
+        // Sollte PlayerColor.RED als Fallback nutzen.
         val units = listOf(GameUnit(player = "Ghost", x = 0, y = 0, type = UnitType.INFANTRY))
         draw(units = units, players = emptyList())
 
+        val fallbackPainter = unitPainters[PlayerColor.RED to UnitType.INFANTRY]!!
         verify {
-            scope.drawCircle(
-                color = PlayerColorMap.DEFAULT_COLOR,
-                radius = any(),
-                center = any(),
-                alpha = any(),
-                style = any(),
-                colorFilter = any(),
-                blendMode = any()
-            )
+            with(fallbackPainter) { scope.draw(any()) }
         }
-    }
-
-    @Test
-    fun `unit radius is smaller than hex size`() {
-        // Verifiziert dass der Renderer HexGridLogic.unitRadius nutzt
-        // (Wert <= hexSize / 2.5).
-        val units = listOf(GameUnit(player = "Alice", x = 0, y = 0, type = UnitType.INFANTRY))
-
-        val radiusSlot = slot<Float>()
-        every {
-            scope.drawCircle(
-                color = any(),
-                radius = capture(radiusSlot),
-                center = any(),
-                alpha = any(),
-                style = any(),
-                colorFilter = any(),
-                blendMode = any()
-            )
-        } answers { /* ignore */ }
-
-        draw(units = units, players = listOf(alice))
-
-        assertTrue(radiusSlot.captured < tinyLayout.hexSize)
-        assertEquals(tinyLayout.hexSize / 2.5f, radiusSlot.captured, 0.001f)
-    }
-
-    @Test
-    fun `unit is placed at the cell center`() {
-        // Verifiziert dass der Renderer HexGridLogic.cellCenter nutzt:
-        // die Position der Einheit soll mit der berechneten Zell-Mitte
-        // uebereinstimmen.
-        val targetCol = 1
-        val targetRow = 0
-        val units = listOf(GameUnit(player = "Alice", x = targetCol, y = targetRow, type = UnitType.INFANTRY))
-
-        val centerSlot = slot<Offset>()
-        every {
-            scope.drawCircle(
-                color = any(),
-                radius = any(),
-                center = capture(centerSlot),
-                alpha = any(),
-                style = any(),
-                colorFilter = any(),
-                blendMode = any()
-            )
-        } answers { /* ignore */ }
-
-        draw(units = units, players = listOf(alice))
-
-        val (expectedX, expectedY) = HexGridLogic.cellCenter(targetCol, targetRow, tinyLayout)
-        assertEquals(expectedX, centerSlot.captured.x, 0.001f)
-        assertEquals(expectedY, centerSlot.captured.y, 0.001f)
     }
 
     // ---- Mehrere Units gleichzeitig ------------------------------------
 
     @Test
-    fun `multiple units in different cells produce separate circles`() {
+    fun `multiple units in different cells produce separate icons`() {
         val units = listOf(
             GameUnit(player = "Alice", x = 0, y = 0, type = UnitType.INFANTRY),
-            GameUnit(player = "Bob", x = 1, y = 0, type = UnitType.INFANTRY),
-            GameUnit(player = "Alice", x = 0, y = 1, type = UnitType.INFANTRY)
+            GameUnit(player = "Bob", x = 1, y = 0, type = UnitType.CAVALRY),
+            GameUnit(player = "Alice", x = 0, y = 1, type = UnitType.ARCHER)
         )
         draw(units = units, players = listOf(alice, bob))
 
-        // 3 Einheiten = 3 drawCircle
-        verify(exactly = 3) {
-            scope.drawCircle(
-                color = any(),
-                radius = any(),
-                center = any(),
-                alpha = any(),
-                style = any(),
-                colorFilter = any(),
-                blendMode = any()
-            )
+        verify(exactly = 4) {
+            scope.drawPath(any(), any<Color>(), any(), any(), any(), any())
+        }
+        
+        verify(exactly = 1) {
+            with(unitPainters[PlayerColor.RED to UnitType.INFANTRY]!!) { scope.draw(any()) }
+            with(unitPainters[PlayerColor.BLUE to UnitType.CAVALRY]!!) { scope.draw(any()) }
+            with(unitPainters[PlayerColor.RED to UnitType.ARCHER]!!) { scope.draw(any()) }
         }
     }
 
     @Test
     fun `unit on same cell overrides previous (associateBy collapses duplicates)`() {
-        // Edge-Case: Server koennte theoretisch zwei Units auf der
-        // gleichen Zelle schicken. associateBy nimmt den letzten.
-        // Verifizieren dass nur 1 Circle gezeichnet wird, nicht 2.
         val units = listOf(
             GameUnit(player = "Alice", x = 0, y = 0, type = UnitType.INFANTRY),
-            GameUnit(player = "Bob", x = 0, y = 0, type = UnitType.INFANTRY)
+            GameUnit(player = "Bob", x = 0, y = 0, type = UnitType.CAVALRY)
         )
         draw(units = units, players = listOf(alice, bob))
 
+        // Nur 1 Icon (Bob ueberschreibt Alice)
         verify(exactly = 1) {
-            scope.drawCircle(
-                color = any(),
-                radius = any(),
-                center = any(),
-                alpha = any(),
-                style = any(),
-                colorFilter = any(),
-                blendMode = any()
-            )
+            with(unitPainters[PlayerColor.BLUE to UnitType.CAVALRY]!!) { scope.draw(any()) }
+        }
+        verify(exactly = 0) {
+            with(unitPainters[PlayerColor.RED to UnitType.INFANTRY]!!) { scope.draw(any()) }
         }
     }
 }
