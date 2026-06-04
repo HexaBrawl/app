@@ -1,7 +1,7 @@
 package at.aau.serg.websocketbrokerdemo.ui.waiting
 
+import at.aau.serg.websocketbrokerdemo.data.serverside.PlayerColor
 import at.aau.serg.websocketbrokerdemo.ui.mainmenu.GameMode
-import at.aau.serg.websocketbrokerdemo.ui.waiting.model.PlayerColor
 import at.aau.serg.websocketbrokerdemo.ui.waiting.model.PlayerSlot
 import at.aau.serg.websocketbrokerdemo.ui.waiting.model.SlotStatus
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -12,17 +12,18 @@ import org.junit.jupiter.api.Test
 /**
  * Tests fuer WaitingLobbyLogic.
  *
- * Reine Pure-Function-Tests, kein MockK/Compose noetig.
+ * Reine Pure-Function-Tests. Nach der Enum-Vereinigung nutzen wir
+ * RED/BLUE/GREEN/YELLOW statt der frueheren Red/Blue/Green/Yellow.
  */
 class WaitingLobbyLogicTest {
 
     private val player0 = PlayerSlot(
         id = 0, status = SlotStatus.Player, name = "Aldric",
-        color = PlayerColor.Red, ready = false, isLocal = true
+        color = PlayerColor.RED, ready = false, isLocal = true
     )
     private val player1 = PlayerSlot(
         id = 1, status = SlotStatus.Player, name = "Borian",
-        color = PlayerColor.Blue, ready = true, isLocal = false
+        color = PlayerColor.BLUE, ready = true, isLocal = false
     )
     private val empty2 = PlayerSlot(id = 2)
 
@@ -66,7 +67,6 @@ class WaitingLobbyLogicTest {
     @Test
     fun `createInitialSlots uses GENERAL_NAMES by default`() {
         val slots = WaitingLobbyLogic.createInitialSlots(GameMode.DUAL_VALLEY)
-        // Wir wissen nicht welcher Name kam, nur dass er aus der Liste stammt.
         assertTrue(slots[0].name in WaitingLobbyLogic.GENERAL_NAMES)
     }
 
@@ -75,17 +75,15 @@ class WaitingLobbyLogicTest {
     @Test
     fun `takenColorsExcept returns colors of other non-empty slots`() {
         val slots = listOf(player0, player1, empty2)
-        // Aus Sicht von Slot 0: nur Slot 1 (Player, Blue) zaehlt.
         val taken = WaitingLobbyLogic.takenColorsExcept(slots, exceptId = 0)
-        assertEquals(setOf(PlayerColor.Blue), taken)
+        assertEquals(setOf(PlayerColor.BLUE), taken)
     }
 
     @Test
     fun `takenColorsExcept excludes the slot itself`() {
         val slots = listOf(player0, player1)
-        // Aus Sicht von Slot 1: Slot 1 zaehlt nicht, nur Slot 0 (Red).
         val taken = WaitingLobbyLogic.takenColorsExcept(slots, exceptId = 1)
-        assertEquals(setOf(PlayerColor.Red), taken)
+        assertEquals(setOf(PlayerColor.RED), taken)
     }
 
     @Test
@@ -105,10 +103,7 @@ class WaitingLobbyLogicTest {
 
     @Test
     fun `allReady is false when a slot is empty`() {
-        val slots = listOf(
-            player0.copy(ready = true),
-            empty2
-        )
+        val slots = listOf(player0.copy(ready = true), empty2)
         assertFalse(WaitingLobbyLogic.allReady(slots))
     }
 
@@ -120,10 +115,7 @@ class WaitingLobbyLogicTest {
 
     @Test
     fun `allReady is true when all players are ready and no empty slots`() {
-        val slots = listOf(
-            player0.copy(ready = true),
-            player1
-        )
+        val slots = listOf(player0.copy(ready = true), player1)
         assertTrue(WaitingLobbyLogic.allReady(slots))
     }
 
@@ -179,29 +171,28 @@ class WaitingLobbyLogicTest {
     @Test
     fun `applyColorChange updates the color`() {
         val slots = listOf(player0)
-        val result = WaitingLobbyLogic.applyColorChange(slots, slotId = 0, newColor = PlayerColor.Green)
-        assertEquals(PlayerColor.Green, result[0].color)
+        val result = WaitingLobbyLogic.applyColorChange(slots, slotId = 0, newColor = PlayerColor.GREEN)
+        assertEquals(PlayerColor.GREEN, result[0].color)
     }
 
     @Test
     fun `applyColorChange does nothing when slot is ready`() {
         val slots = listOf(player0.copy(ready = true))
-        val result = WaitingLobbyLogic.applyColorChange(slots, slotId = 0, newColor = PlayerColor.Green)
-        assertEquals(PlayerColor.Red, result[0].color)
+        val result = WaitingLobbyLogic.applyColorChange(slots, slotId = 0, newColor = PlayerColor.GREEN)
+        assertEquals(PlayerColor.RED, result[0].color)
     }
 
     @Test
     fun `applyColorChange rejects color already taken by other slot`() {
-        // player1 hat Blue. Slot 0 versucht Blue zu nehmen -> abgelehnt.
         val slots = listOf(player0, player1)
-        val result = WaitingLobbyLogic.applyColorChange(slots, slotId = 0, newColor = PlayerColor.Blue)
-        assertEquals(PlayerColor.Red, result[0].color)
+        val result = WaitingLobbyLogic.applyColorChange(slots, slotId = 0, newColor = PlayerColor.BLUE)
+        assertEquals(PlayerColor.RED, result[0].color)
     }
 
     @Test
     fun `applyColorChange does nothing for unknown slot id`() {
         val slots = listOf(player0)
-        val result = WaitingLobbyLogic.applyColorChange(slots, slotId = 99, newColor = PlayerColor.Green)
+        val result = WaitingLobbyLogic.applyColorChange(slots, slotId = 99, newColor = PlayerColor.GREEN)
         assertEquals(slots, result)
     }
 

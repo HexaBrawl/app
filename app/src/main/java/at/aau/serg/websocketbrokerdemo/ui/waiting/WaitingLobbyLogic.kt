@@ -1,7 +1,7 @@
 package at.aau.serg.websocketbrokerdemo.ui.waiting
 
+import at.aau.serg.websocketbrokerdemo.data.serverside.PlayerColor
 import at.aau.serg.websocketbrokerdemo.ui.mainmenu.GameMode
-import at.aau.serg.websocketbrokerdemo.ui.waiting.model.PlayerColor
 import at.aau.serg.websocketbrokerdemo.ui.waiting.model.PlayerSlot
 import at.aau.serg.websocketbrokerdemo.ui.waiting.model.SlotStatus
 
@@ -29,11 +29,6 @@ object WaitingLobbyLogic {
      *
      *  - Slot 0 ist der lokale Spieler (mit zufaelligem General-Namen)
      *  - Slots 1..n sind leer und warten auf andere Spieler
-     *
-     * @param mode bestimmt die Anzahl der Slots (= playerCount)
-     * @param nameProvider liefert den Namen fuer den lokalen Slot
-     *                     (Default = zufaelliger Name aus GENERAL_NAMES;
-     *                     im Test ueberschreibbar fuer Determinismus)
      */
     fun createInitialSlots(
         mode: GameMode,
@@ -45,7 +40,7 @@ object WaitingLobbyLogic {
                 id = 0,
                 status = SlotStatus.Player,
                 name = nameProvider(),
-                color = PlayerColor.Red,
+                color = PlayerColor.RED,
                 ready = false,
                 isLocal = true
             )
@@ -58,14 +53,6 @@ object WaitingLobbyLogic {
 
     /**
      * Liefert die Farben, die bereits von anderen Slots belegt sind.
-     *
-     * Nuetzlich fuer die Farbwahl-UI: belegte Farben werden im
-     * UI gedimmt dargestellt und sind nicht anklickbar.
-     *
-     * @param slots aktuelle Slot-Liste
-     * @param exceptId Slot-ID, dessen Farbe NICHT als belegt zaehlt
-     *                 (typischerweise der lokale Slot, weil der
-     *                 seine eigene Farbe nicht "belegen" soll)
      */
     fun takenColorsExcept(slots: List<PlayerSlot>, exceptId: Int): Set<PlayerColor> =
         slots
@@ -79,35 +66,18 @@ object WaitingLobbyLogic {
             it.status != SlotStatus.Empty && it.ready
         }
 
-    /**
-     * Ersetzt einen Slot in der Liste anhand seiner ID.
-     *
-     * @return neue Liste mit dem ersetzten Slot, oder die unveraenderte
-     *         Liste wenn kein Slot mit dieser ID existiert.
-     */
+    /** Ersetzt einen Slot in der Liste anhand seiner ID. */
     fun replaceSlot(slots: List<PlayerSlot>, updated: PlayerSlot): List<PlayerSlot> =
         slots.map { if (it.id == updated.id) updated else it }
 
-    /**
-     * Aendert den Namen eines Slots.
-     *
-     * Wird nur durchgefuehrt, wenn der Slot noch nicht ready ist --
-     * sobald ein Spieler bereit ist, ist sein Name fest.
-     */
+    /** Aendert den Namen eines Slots (nur wenn nicht bereit). */
     fun applyNameChange(slots: List<PlayerSlot>, slotId: Int, newName: String): List<PlayerSlot> {
         val slot = slots.firstOrNull { it.id == slotId } ?: return slots
         if (slot.ready) return slots
         return replaceSlot(slots, slot.copy(name = newName))
     }
 
-    /**
-     * Aendert die Farbe eines Slots.
-     *
-     * Wird nur durchgefuehrt wenn:
-     *  - Der Slot existiert
-     *  - Der Slot noch nicht ready ist
-     *  - Die neue Farbe nicht von einem anderen Slot belegt ist
-     */
+    /** Aendert die Farbe eines Slots (nur wenn nicht bereit und Farbe frei). */
     fun applyColorChange(
         slots: List<PlayerSlot>,
         slotId: Int,
@@ -120,12 +90,7 @@ object WaitingLobbyLogic {
         return replaceSlot(slots, slot.copy(color = newColor))
     }
 
-    /**
-     * Toggelt den Ready-Status eines Slots.
-     *
-     * Wird nur durchgefuehrt, wenn der Slot besetzt ist UND einen Namen
-     * hat. Verhindert leere Namen bei "bereit".
-     */
+    /** Toggelt den Ready-Status (nur bei besetztem Slot mit Namen). */
     fun applyReadyToggle(slots: List<PlayerSlot>, slotId: Int): List<PlayerSlot> {
         val slot = slots.firstOrNull { it.id == slotId } ?: return slots
         if (slot.status == SlotStatus.Empty) return slots
