@@ -5,6 +5,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import at.aau.serg.websocketbrokerdemo.data.serverside.GameUnit
 import at.aau.serg.websocketbrokerdemo.data.serverside.Player
 
 /**
@@ -19,13 +20,13 @@ class HexRenderer {
      * Zeichnet alle Zellen und die darauf stehenden Einheiten.
      *
      * @param layout  Hex-Geometrie der aktuellen Karte
-     * @param units   Vereinfachte Einheiten-Liste (siehe UnitData)
+     * @param units   Liste der Einheiten (GameUnit)
      * @param players Volle Spieler-Liste aus dem GameState fuer das
      *                Farb-Mapping
      */
     fun DrawScope.render(
         layout: MapLayout,
-        units: List<UnitData>,
+        units: List<GameUnit>,
         players: List<Player>
     ) {
         val unitsByPosition = units.associateBy { it.x to it.y }

@@ -21,7 +21,6 @@ import at.aau.serg.websocketbrokerdemo.data.serverside.UnitType
 import at.aau.serg.websocketbrokerdemo.grid.HexGrid
 import at.aau.serg.websocketbrokerdemo.grid.HexGridLogic
 import at.aau.serg.websocketbrokerdemo.grid.MapLayout
-import at.aau.serg.websocketbrokerdemo.grid.UnitData
 import at.aau.serg.websocketbrokerdemo.ui.game.camera.CameraState
 import at.aau.serg.websocketbrokerdemo.ui.game.camera.cameraControls
 import com.example.myapplication.R
@@ -44,10 +43,8 @@ fun GameMap(
     onCellTapped: (tapX: Float, tapY: Float, pixelToCell: (Float, Float) -> Pair<Int, Int>?) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val unitData = remember(units) {
-        units
-            .filter { it.type != UnitType.SKELETON }
-            .map { UnitData(it.x, it.y, it.player) }
+    val filteredUnits = remember(units) {
+        units.filter { it.type != UnitType.SKELETON }
     }
 
     Box(
@@ -77,7 +74,7 @@ fun GameMap(
             ) {
                 HexGrid(
                     layout = layout,
-                    units = unitData,
+                    units = filteredUnits,
                     players = players,
                     modifier = Modifier.wrapContentSize()
                 )

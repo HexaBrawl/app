@@ -4,10 +4,11 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
+import at.aau.serg.websocketbrokerdemo.data.serverside.GameUnit
 import at.aau.serg.websocketbrokerdemo.data.serverside.Player
 import at.aau.serg.websocketbrokerdemo.data.serverside.PlayerColor
+import at.aau.serg.websocketbrokerdemo.data.serverside.UnitType
 import io.mockk.every
 import io.mockk.justRun
 import io.mockk.mockk
@@ -28,7 +29,6 @@ import org.junit.jupiter.api.Test
  * Was wir testen:
  *  - Anzahl der drawPath-Aufrufe entspricht Zellenzahl
  *  - drawCircle-Aufrufe pro Einheit
- *  - Skelette werden nicht gezeichnet (Filterung)
  *  - Einheiten-Farbe stimmt mit PlayerColor ueberein
  *
  * Was wir NICHT testen koennen (Compose-Limit):
@@ -68,7 +68,7 @@ class HexRendererTest {
         }
     }
 
-    private fun draw(units: List<UnitData> = emptyList(), players: List<Player> = emptyList()) {
+    private fun draw(units: List<GameUnit> = emptyList(), players: List<Player> = emptyList()) {
         with(renderer) {
             scope.render(tinyLayout, units, players)
         }
@@ -106,8 +106,8 @@ class HexRendererTest {
     @Test
     fun `draws one circle per unit`() {
         val units = listOf(
-            UnitData(x = 0, y = 0, player = "Alice"),
-            UnitData(x = 1, y = 1, player = "Bob")
+            GameUnit(player = "Alice", x = 0, y = 0, type = UnitType.INFANTRY),
+            GameUnit(player = "Bob", x = 1, y = 1, type = UnitType.INFANTRY)
         )
         draw(units = units, players = listOf(alice, bob))
 
@@ -126,7 +126,7 @@ class HexRendererTest {
 
     @Test
     fun `uses player color for unit circle`() {
-        val units = listOf(UnitData(x = 0, y = 0, player = "Alice"))
+        val units = listOf(GameUnit(player = "Alice", x = 0, y = 0, type = UnitType.INFANTRY))
         draw(units = units, players = listOf(alice))
 
         // Alice ist RED -> PlayerColor.RED.main
@@ -148,7 +148,7 @@ class HexRendererTest {
         // Edge-Case: Unit-Owner ist nicht in der Spieler-Liste (etwa
         // weil das GameState gerade asynchron ankommt). Sollte den
         // Default-Color nutzen statt zu crashen.
-        val units = listOf(UnitData(x = 0, y = 0, player = "Ghost"))
+        val units = listOf(GameUnit(player = "Ghost", x = 0, y = 0, type = UnitType.INFANTRY))
         draw(units = units, players = emptyList())
 
         verify {
@@ -168,7 +168,7 @@ class HexRendererTest {
     fun `unit radius is smaller than hex size`() {
         // Verifiziert dass der Renderer HexGridLogic.unitRadius nutzt
         // (Wert <= hexSize / 2.5).
-        val units = listOf(UnitData(x = 0, y = 0, player = "Alice"))
+        val units = listOf(GameUnit(player = "Alice", x = 0, y = 0, type = UnitType.INFANTRY))
 
         val radiusSlot = slot<Float>()
         every {
@@ -196,7 +196,7 @@ class HexRendererTest {
         // uebereinstimmen.
         val targetCol = 1
         val targetRow = 0
-        val units = listOf(UnitData(x = targetCol, y = targetRow, player = "Alice"))
+        val units = listOf(GameUnit(player = "Alice", x = targetCol, y = targetRow, type = UnitType.INFANTRY))
 
         val centerSlot = slot<Offset>()
         every {
@@ -223,9 +223,9 @@ class HexRendererTest {
     @Test
     fun `multiple units in different cells produce separate circles`() {
         val units = listOf(
-            UnitData(x = 0, y = 0, player = "Alice"),
-            UnitData(x = 1, y = 0, player = "Bob"),
-            UnitData(x = 0, y = 1, player = "Alice")
+            GameUnit(player = "Alice", x = 0, y = 0, type = UnitType.INFANTRY),
+            GameUnit(player = "Bob", x = 1, y = 0, type = UnitType.INFANTRY),
+            GameUnit(player = "Alice", x = 0, y = 1, type = UnitType.INFANTRY)
         )
         draw(units = units, players = listOf(alice, bob))
 
@@ -249,8 +249,8 @@ class HexRendererTest {
         // gleichen Zelle schicken. associateBy nimmt den letzten.
         // Verifizieren dass nur 1 Circle gezeichnet wird, nicht 2.
         val units = listOf(
-            UnitData(x = 0, y = 0, player = "Alice"),
-            UnitData(x = 0, y = 0, player = "Bob")
+            GameUnit(player = "Alice", x = 0, y = 0, type = UnitType.INFANTRY),
+            GameUnit(player = "Bob", x = 0, y = 0, type = UnitType.INFANTRY)
         )
         draw(units = units, players = listOf(alice, bob))
 
