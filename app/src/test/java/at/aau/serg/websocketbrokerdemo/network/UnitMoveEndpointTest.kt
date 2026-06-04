@@ -4,6 +4,7 @@ import at.aau.serg.websocketbrokerdemo.data.serverside.ErrorCode
 import at.aau.serg.websocketbrokerdemo.data.serverside.ErrorMessage
 import at.aau.serg.websocketbrokerdemo.data.serverside.GameState
 import at.aau.serg.websocketbrokerdemo.data.serverside.Move
+import at.aau.serg.websocketbrokerdemo.data.serverside.PlayerColor
 import io.mockk.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -45,12 +46,10 @@ class UnitMoveEndpointTest {
     }
 
     @Test
-    fun `joinGame sends player name as text`() {
-
-        endpoint.joinGame("game1", "Max")
-
+    fun `joinGame sends JSON with name and color`() {
+        endpoint.joinGame("game1", "Max", PlayerColor.RED)
         verify {
-            stomp.sendText("/app/rooms/game1/join", "Max")
+            stomp.sendJson("/app/rooms/game1/join", """{"name":"Max","color":"RED"}""")
         }
     }
 
