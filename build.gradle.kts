@@ -29,7 +29,6 @@ sonar {
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/components/**",
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/game/components/**",
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/game/GameScreen.kt",
-                "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/game/GameDebugConfig.kt",
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/game/camera/CameraModifier.kt",
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/home/HomeScreen.kt",
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/lobby_modes/ActionCard.kt",
