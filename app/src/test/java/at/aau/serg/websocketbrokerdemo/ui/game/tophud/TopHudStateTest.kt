@@ -20,14 +20,14 @@ class TopHudStateTest {
     }
 
     @Test
-    fun `HudPopup has three entries`() {
-        assertEquals(3, HudPopup.entries.size)
+    fun `HudPopup has four entries`() {
+        assertEquals(4, HudPopup.entries.size)
     }
 
     @Test
-    fun `HudPopup contains None Menu Info`() {
+    fun `HudPopup contains None Menu Info Settings`() {
         val names = HudPopup.entries.map { it.name }.toSet()
-        assertEquals(setOf("None", "Menu", "Info"), names)
+        assertEquals(setOf("None", "Menu", "Info", "Settings"), names)
     }
 
     @Test

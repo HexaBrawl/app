@@ -46,4 +46,10 @@ class TopHudViewModelTest {
         vm.showInfo()
         assertEquals(HudPopup.Info, vm.state.value.popup)
     }
+
+    @Test
+    fun `showSettings sets popup to Settings`() {
+        vm.showSettings()
+        assertEquals(HudPopup.Settings, vm.state.value.popup)
+    }
 }
