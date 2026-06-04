@@ -15,10 +15,6 @@ import kotlinx.coroutines.flow.asStateFlow
  * Haelt die lokale Auswahl-Logik und reicht User-Eingaben (Taps) an die
  * GameSession durch. Die eigentliche Spielzustands-Verwaltung erfolgt
  * server-seitig -- das ViewModel beobachtet nur und sendet Moves.
- *
- * Die Bot-Logik aus der vorherigen Version ist entfernt; falls spaeter
- * eine Test-AI benoetigt wird, lebt sie in einer separaten Klasse und
- * nicht im ViewModel.
  */
 class GameViewModel(
     private val session: GameSession
@@ -39,8 +35,6 @@ class GameViewModel(
         val localName = session.localPlayerName.value
         val currentSelected = _uiState.value.selected
 
-        val tapDescription = GameScreenLogic.describeTap(col, row, units, localName)
-
         when (val action = GameScreenLogic.decideTapAction(
             col = col,
             row = row,
@@ -49,24 +43,15 @@ class GameViewModel(
             currentlySelected = currentSelected
         )) {
             is GameScreenLogic.TapAction.Select -> {
-                _uiState.value = _uiState.value.copy(
-                    selected = action.unit,
-                    lastTap = tapDescription
-                )
+                _uiState.value = _uiState.value.copy(selected = action.unit)
             }
 
             is GameScreenLogic.TapAction.ExecuteMove -> {
                 sendMove(action.move)
-                _uiState.value = _uiState.value.copy(
-                    selected = null,
-                    lastTap = tapDescription,
-                    lastMove = GameScreenLogic.describeMove(action.move)
-                )
+                _uiState.value = _uiState.value.copy(selected = null)
             }
 
-            GameScreenLogic.TapAction.Ignore -> {
-                _uiState.value = _uiState.value.copy(lastTap = tapDescription)
-            }
+            GameScreenLogic.TapAction.Ignore -> Unit
         }
     }
 
@@ -81,11 +66,6 @@ class GameViewModel(
         pixelToCell: (Float, Float) -> Pair<Int, Int>?
     ): Pair<Int, Int>? =
         GameScreenLogic.tapToCell(tapX, tapY, viewportSize, pixelToCell)
-
-    /** Loescht eine vom Server gemeldete Fehlermeldung. */
-    fun clearError() {
-        session.lastError.value = null
-    }
 
     private fun sendMove(move: Move) {
         session.lastError.value = null
