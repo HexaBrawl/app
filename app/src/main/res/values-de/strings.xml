@@ -69,6 +69,17 @@
     <string name="waiting_remote_ally">Verbundener Verbündeter</string>
     <string name="waiting_bot_ally">Bot-Verbündeter</string>
 
+    <!-- DE / Default -->
+    <string name="hud_per_round">/ Runde</string>
+    <string name="hud_menu_title">Menü</string>
+    <string name="hud_menu_settings">Einstellungen</string>
+    <string name="hud_menu_info">Informationen</string>
+    <string name="hud_settings_title">Einstellungen</string>
+    <string name="hud_info_title">Spielerklärung</string>
+    <string name="hud_info_body">HexaBrawl ist ein rundenbasiertes Strategiespiel. Erobere Felder, baue Farmen und Truppen, und nimm die gegnerische Hauptburg ein, um zu gewinnen. Gold sammelst du über deine Farmen, und du kannst es ausgeben um Truppen zu kaufen.</string>
+    <string name="hud_info_cheat_title">⚠ Aufpassen — Schummelgefahr</string>
+    <string name="hud_info_cheat_body">Wenn du oft auf das Geschenk-Symbol drückst, kannst du Gold gewinnen oder verlieren. Aber pass auf: dein Gegner sieht es und kann versuchen dein Geschenk zu stehlen!</string>
+    <string name="dialog_close">Schließen</string>
 
 
 
