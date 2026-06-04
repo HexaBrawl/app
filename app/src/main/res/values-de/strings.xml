@@ -81,6 +81,18 @@
     <string name="hud_info_cheat_body">Wenn du oft auf das Geschenk-Symbol drückst, kannst du Gold gewinnen oder verlieren. Aber pass auf: dein Gegner sieht es und kann versuchen dein Geschenk zu stehlen!</string>
     <string name="dialog_close">Schließen</string>
 
+    <!-- DE (values-de/strings.xml) -->
+    <string name="cheat_steal_title">Ein Geschenk!</string>
+    <string name="cheat_steal_body">%1$s hat ein verdaechtiges Geschenk geoeffnet. Willst du es stehlen? Du weisst nicht ob du Gold gewinnst oder verlierst — riskiere es!</string>
+    <string name="cheat_steal_yes">Stehlen</string>
+    <string name="cheat_steal_no">Lass los</string>
+
+    <string name="cheat_waiting_won">Du wuerdest %1$d Gold gewinnen!</string>
+    <string name="cheat_waiting_lost">Du wuerdest %1$d Gold verlieren!</string>
+    <string name="cheat_waiting_subtitle">Aber pass auf — vielleicht wirst du beklaut.</string>
+    <string name="cheat_waiting_for_opponent">Warte auf Gegner…</string>
+
+
 
 
 </resources>
