@@ -5,7 +5,7 @@ import at.aau.serg.websocketbrokerdemo.data.serverside.PlayerColor
 import at.aau.serg.websocketbrokerdemo.data.serverside.UnitType
 
 /**
- * Provides drawable resource IDs for game units and castles based on player color and unit type.
+ * Provides drawable resource IDs for game units based on player color and unit type.
  */
 object UnitIconProvider {
 
@@ -37,15 +37,5 @@ object UnitIconProvider {
             PlayerColor.GREEN -> R.drawable.figure_green_archer
             PlayerColor.YELLOW -> R.drawable.figure_yellow_archer
         }
-    }
-
-    /**
-     * Returns the drawable resource ID for a castle of the given player color.
-     */
-    fun castleFor(color: PlayerColor): Int = when (color) {
-        PlayerColor.RED -> R.drawable.castle_red
-        PlayerColor.BLUE -> R.drawable.castle_blue
-        PlayerColor.GREEN -> R.drawable.castle_green
-        PlayerColor.YELLOW -> R.drawable.castle_yellow
     }
 }

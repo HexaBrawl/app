@@ -56,17 +56,6 @@ class UnitIconProviderTest {
     }
 
     @Test
-    fun `castle icons are unique per color`() {
-        val icons = PlayerColor.entries.map { UnitIconProvider.castleFor(it) }
-        assertEquals(4, icons.distinct().size, "Each color should have a unique castle icon")
-
-        assertEquals(R.drawable.castle_red, UnitIconProvider.castleFor(PlayerColor.RED))
-        assertEquals(R.drawable.castle_blue, UnitIconProvider.castleFor(PlayerColor.BLUE))
-        assertEquals(R.drawable.castle_green, UnitIconProvider.castleFor(PlayerColor.GREEN))
-        assertEquals(R.drawable.castle_yellow, UnitIconProvider.castleFor(PlayerColor.YELLOW))
-    }
-
-    @Test
     fun `icons for different types are different for same color`() {
         val color = PlayerColor.RED
         val infantry = UnitIconProvider.iconFor(color, UnitType.INFANTRY)
