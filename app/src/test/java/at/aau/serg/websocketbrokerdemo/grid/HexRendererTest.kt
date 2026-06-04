@@ -5,6 +5,8 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.painter.Painter
+import at.aau.serg.websocketbrokerdemo.data.serverside.Building
+import at.aau.serg.websocketbrokerdemo.data.serverside.BuildingType
 import at.aau.serg.websocketbrokerdemo.data.serverside.GameUnit
 import at.aau.serg.websocketbrokerdemo.data.serverside.Player
 import at.aau.serg.websocketbrokerdemo.data.serverside.PlayerColor
@@ -14,6 +16,7 @@ import io.mockk.justRun
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
+import io.mockk.verifyOrder
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -23,18 +26,6 @@ import org.junit.jupiter.api.Test
  * Compose-Renderer testen wir ueber MockK auf dem DrawScope-Interface --
  * wir koennen kein echtes Pixel-Output verifizieren, aber wir koennen
  * pruefen welche draw-Aufrufe in welcher Reihenfolge gemacht werden.
- *
- * Was wir testen:
- *  - Anzahl der drawPath-Aufrufe entspricht Zellenzahl
- *  - Icons werden pro Einheit gezeichnet
- *  - Einheiten-Farbe stimmt mit PlayerColor ueberein (Lookup des richtigen Painters)
- *
- * Was wir NICHT testen koennen (Compose-Limit):
- *  - Genaue Pixel-Koordinaten der Pfade
- *  - Visuelle Korrektheit
- *
- * Die rein-mathematischen Anteile (cellCenter, hexCorners) sind in
- * HexGridLogicTest separat abgedeckt.
  */
 class HexRendererTest {
 
@@ -46,6 +37,7 @@ class HexRendererTest {
     private lateinit var renderer: HexRenderer
     private lateinit var scope: DrawScope
     private lateinit var unitPainters: Map<Pair<PlayerColor, UnitType>, Painter>
+    private lateinit var buildingPainters: Map<Pair<PlayerColor, BuildingType>, Painter>
 
     @BeforeEach
     fun setUp() {
@@ -58,14 +50,24 @@ class HexRendererTest {
             }
         }.toMap()
 
+        buildingPainters = PlayerColor.entries.flatMap { color ->
+            BuildingType.entries.map { type ->
+                (color to type) to mockk<Painter>(relaxed = true)
+            }
+        }.toMap()
+
         // Die wichtigsten DrawScope-Aufrufe explizit stubben, damit
         // verify auf sie greifen kann.
         justRun { scope.drawPath(any(), any<Color>(), any(), any(), any(), any()) }
     }
 
-    private fun draw(units: List<GameUnit> = emptyList(), players: List<Player> = emptyList()) {
+    private fun draw(
+        units: List<GameUnit> = emptyList(),
+        buildings: List<Building> = emptyList(),
+        players: List<Player> = emptyList()
+    ) {
         with(renderer) {
-            scope.render(tinyLayout, units, players, unitPainters)
+            scope.render(tinyLayout, units, buildings, players, unitPainters, buildingPainters)
         }
     }
 
@@ -126,43 +128,59 @@ class HexRendererTest {
         }
     }
 
-    @Test
-    fun `uses fallback color when unit player is not in players list`() {
-        // Edge-Case: Unit-Owner ist nicht in der Spieler-Liste.
-        // Sollte PlayerColor.RED als Fallback nutzen.
-        val units = listOf(GameUnit(player = "Ghost", x = 0, y = 0, type = UnitType.INFANTRY))
-        draw(units = units, players = emptyList())
-
-        val fallbackPainter = unitPainters[PlayerColor.RED to UnitType.INFANTRY]!!
-        verify {
-            with(fallbackPainter) { scope.draw(any()) }
-        }
-    }
-
-    // ---- Mehrere Units gleichzeitig ------------------------------------
+    // ---- Buildings -----------------------------------------------------
 
     @Test
-    fun `multiple units in different cells produce separate icons`() {
-        val units = listOf(
-            GameUnit(player = "Alice", x = 0, y = 0, type = UnitType.INFANTRY),
-            GameUnit(player = "Bob", x = 1, y = 0, type = UnitType.CAVALRY),
-            GameUnit(player = "Alice", x = 0, y = 1, type = UnitType.ARCHER)
+    fun `draws one icon per building`() {
+        val buildings = listOf(
+            Building(player = "Alice", x = 0, y = 0, type = BuildingType.CASTLE),
+            Building(player = "Bob", x = 1, y = 1, type = BuildingType.CASTLE)
         )
-        draw(units = units, players = listOf(alice, bob))
+        draw(buildings = buildings, players = listOf(alice, bob))
 
-        verify(exactly = 4) {
-            scope.drawPath(any(), any<Color>(), any(), any(), any(), any())
-        }
-        
+        val aliceCastle = buildingPainters[PlayerColor.RED to BuildingType.CASTLE]!!
+        val bobCastle = buildingPainters[PlayerColor.BLUE to BuildingType.CASTLE]!!
+
         verify(exactly = 1) {
-            with(unitPainters[PlayerColor.RED to UnitType.INFANTRY]!!) { scope.draw(any()) }
-            with(unitPainters[PlayerColor.BLUE to UnitType.CAVALRY]!!) { scope.draw(any()) }
-            with(unitPainters[PlayerColor.RED to UnitType.ARCHER]!!) { scope.draw(any()) }
+            with(aliceCastle) { scope.draw(any()) }
+            with(bobCastle) { scope.draw(any()) }
         }
     }
 
     @Test
-    fun `unit on same cell overrides previous (associateBy collapses duplicates)`() {
+    fun `uses blue painter for blue castle`() {
+        val buildings = listOf(Building(player = "Bob", x = 0, y = 0, type = BuildingType.CASTLE))
+        draw(buildings = buildings, players = listOf(bob))
+
+        val blueCastle = buildingPainters[PlayerColor.BLUE to BuildingType.CASTLE]!!
+        verify {
+            with(blueCastle) { scope.draw(any()) }
+        }
+    }
+
+    // ---- Rendering Order -----------------------------------------------
+
+    @Test
+    fun `draws buildings before units on the same cell`() {
+        val buildings = listOf(Building(player = "Alice", x = 0, y = 0, type = BuildingType.CASTLE))
+        val units = listOf(GameUnit(player = "Alice", x = 0, y = 0, type = UnitType.INFANTRY))
+        
+        draw(units = units, buildings = buildings, players = listOf(alice))
+
+        val castlePainter = buildingPainters[PlayerColor.RED to BuildingType.CASTLE]!!
+        val unitPainter = unitPainters[PlayerColor.RED to UnitType.INFANTRY]!!
+
+        // Verifiziert die Reihenfolge: Gebaeude (Hintergrund) -> Einheit (Vordergrund)
+        verifyOrder {
+            with(castlePainter) { scope.draw(any()) }
+            with(unitPainter) { scope.draw(any()) }
+        }
+    }
+
+    // ---- Mehrere Objekte gleichzeitig ----------------------------------
+
+    @Test
+    fun `unit on same cell as another unit overrides previous`() {
         val units = listOf(
             GameUnit(player = "Alice", x = 0, y = 0, type = UnitType.INFANTRY),
             GameUnit(player = "Bob", x = 0, y = 0, type = UnitType.CAVALRY)

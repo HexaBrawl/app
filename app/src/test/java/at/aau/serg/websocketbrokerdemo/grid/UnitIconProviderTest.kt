@@ -10,16 +10,14 @@ import org.junit.jupiter.api.Test
 class UnitIconProviderTest {
 
     @Test
-    fun `skeleton icon is the same for all colors`() {
-        val redSkeleton = UnitIconProvider.iconFor(PlayerColor.RED, UnitType.SKELETON)
-        val blueSkeleton = UnitIconProvider.iconFor(PlayerColor.BLUE, UnitType.SKELETON)
-        val greenSkeleton = UnitIconProvider.iconFor(PlayerColor.GREEN, UnitType.SKELETON)
-        val yellowSkeleton = UnitIconProvider.iconFor(PlayerColor.YELLOW, UnitType.SKELETON)
+    fun `skeleton icons are unique per color`() {
+        val icons = PlayerColor.entries.map { UnitIconProvider.iconFor(it, UnitType.SKELETON) }
+        assertEquals(4, icons.distinct().size, "Each color should have a unique skeleton icon")
 
-        assertEquals(R.drawable.figure_skeleton, redSkeleton)
-        assertEquals(redSkeleton, blueSkeleton)
-        assertEquals(redSkeleton, greenSkeleton)
-        assertEquals(redSkeleton, yellowSkeleton)
+        assertEquals(R.drawable.figure_red_gravestone, UnitIconProvider.iconFor(PlayerColor.RED, UnitType.SKELETON))
+        assertEquals(R.drawable.figure_blue_gravestone, UnitIconProvider.iconFor(PlayerColor.BLUE, UnitType.SKELETON))
+        assertEquals(R.drawable.figure_green_gravestone, UnitIconProvider.iconFor(PlayerColor.GREEN, UnitType.SKELETON))
+        assertEquals(R.drawable.figure_yellow_gravestone, UnitIconProvider.iconFor(PlayerColor.YELLOW, UnitType.SKELETON))
     }
 
     @Test
