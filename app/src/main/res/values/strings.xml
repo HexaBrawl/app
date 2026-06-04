@@ -69,4 +69,17 @@
     <string name="waiting_remote_ally">Connected ally</string>
     <string name="waiting_bot_ally">Bot ally</string>
 
+    <!-- EN / values-en/strings.xml -->
+    <string name="hud_per_round">/ round</string>
+    <string name="hud_menu_title">Menu</string>
+    <string name="hud_menu_settings">Settings</string>
+    <string name="hud_menu_info">Information</string>
+    <string name="hud_settings_title">Settings</string>
+    <string name="hud_info_title">Game Rules</string>
+    <string name="hud_info_body">HexaBrawl is a turn-based strategy game. Conquer tiles, build farms and units, and capture the enemy main castle to win. You earn gold from your farms and can spend it on troops.</string>
+    <string name="hud_info_cheat_title">⚠ Beware — Cheat Risk</string>
+    <string name="hud_info_cheat_body">If you tap the gift icon multiple times, you may win or lose gold. But careful: your opponent can see it and might try to steal your gift!</string>
+    <string name="dialog_close">Close</string>
+
+
 </resources>

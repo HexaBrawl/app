@@ -29,11 +29,13 @@ import com.example.myapplication.R
 /**
  * Composable fuer die Spielkarte (Hintergrund + Hex-Grid + Kamera).
  *
- * Tap-Handling Note:
- *  Der innere Canvas misst sich mit `wrapContentSize` und der
- *  Kamera-Layer wendet ein graphicsLayer-Transform aufs ganze Mapping
- *  an. Taps werden daher auf der aeusseren Box gefangen und ueber
- *  [HexGridLogic.pixelToCell] aufgeloest.
+ * Background-Image liegt INNERHALB des cameraControls-Layers, damit
+ * sich Hintergrund und Hex-Grid beim Zoomen gemeinsam bewegen --
+ * sonst wirkt das Grid wie "losgeloest" vom Boden.
+ *
+ * Damit kein weisser Rand am Anfang auftaucht, ist die Initial-Scale
+ * unten auf [CameraState.minScale] geclamped: lieber eine etwas zu
+ * grosse Karte (Spieler kann panen) als ein weisser Rand drumherum.
  */
 @Composable
 fun GameMap(
@@ -66,8 +68,8 @@ fun GameMap(
         Image(
             painter = painterResource(id = R.drawable.bg_map2),
             contentDescription = null,
-            modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.FillBounds
+            contentScale = ContentScale.FillBounds,
+            modifier = Modifier.fillMaxSize()
         )
 
         if (camera.viewportSize.value != IntSize.Zero) {
@@ -95,7 +97,10 @@ fun GameMap(
                 val scaleX = camera.viewportSize.value.width / gridWidth
                 val scaleY = camera.viewportSize.value.height / gridHeight
 
-                camera.scale.floatValue = minOf(scaleX, scaleY) * 0.7f
+                // Berechnete Optimal-Scale, aber niemals unter minScale,
+                // sonst entsteht ein weisser Rand um das Background.
+                val computed = minOf(scaleX, scaleY) * 0.7f
+                camera.scale.floatValue = computed.coerceAtLeast(camera.minScale)
             }
         }
     }

@@ -16,23 +16,23 @@ import at.aau.serg.websocketbrokerdemo.ui.mainmenu.GameMode
 object MapLayouts {
 
     val DUAL_VALLEY = MapLayout(
-        rows = 10,
-        cols = 10,
+        rows = 9,
+        cols = 9,
         hexSize = 60f,
         name = "Dual Valley"
     )
 
     val TRIAD_OUTPOST = MapLayout(
-        rows = 12,
-        cols = 12,
-        hexSize = 50f,
+        rows = 11,
+        cols = 11,
+        hexSize = 52f,
         name = "Triad Outpost"
     )
 
     val BATTLEFIELD_PEAKS = MapLayout(
-        rows = 14,
-        cols = 14,
-        hexSize = 45f,
+        rows = 13,
+        cols = 13,
+        hexSize = 47f,
         name = "Battlefield Peaks"
     )
 
