@@ -21,9 +21,9 @@ import at.aau.serg.websocketbrokerdemo.ui.mainmenu.GameMode
 /**
  * GameScreen -- der eigentliche Spielbildschirm.
  *
- * Verbindet Spielkarte und Top-HUD. Da die Einstellungen jetzt in einem
- * In-Game-Popup landen (statt zum SettingsScreen zu navigieren),
- * braucht der GameScreen keinen NavController mehr.
+ * Verbindet Spielkarte und Top-HUD. Das pendingGift aus dem GameState
+ * wird ans HUD weitergereicht, damit Steal-Popup und Waiting-Overlay
+ * korrekt erscheinen koennen.
  */
 @Composable
 fun GameScreen(
@@ -51,6 +51,7 @@ fun GameScreen(
     val units = gameState?.units.orEmpty()
     val players = gameState?.players.orEmpty()
     val localName = session.localPlayerName.value
+    val pendingGift = gameState?.pendingGift
 
     Box(modifier = Modifier.fillMaxSize()) {
         GameMap(
@@ -69,6 +70,8 @@ fun GameScreen(
         TopHud(
             players = players,
             localName = localName,
+            pendingGift = pendingGift,
+            session = session,
             modifier = Modifier.align(Alignment.TopCenter)
         )
     }
