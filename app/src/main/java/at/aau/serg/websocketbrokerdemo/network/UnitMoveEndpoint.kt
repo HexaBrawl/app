@@ -11,16 +11,12 @@ import kotlinx.coroutines.Job
 /**
  * Wrapper um die STOMP-Topics rund ums Spiel.
  *
- * Bietet drei Methoden, eine pro logische Aktion: Game-State
- * abonnieren, Errors abonnieren, Move senden. Plus Join: hier kommt
- * jetzt auch die gewuenschte Spieler-Farbe mit, damit der Server sie
- * dem `Player`-Modell zuweisen kann.
- *
- * Bridge-Verhalten:
- *  Aktuell schickt der Server bei [joinGame] noch keine Color-Antwort
- *  zurueck (`Player.color` bleibt also auf dem Server-Default).
- *  Sobald der Server den Endpoint unterstuetzt, kommt die Farbe ohne
- *  weitere Frontend-Aenderung im naechsten GameState-Update mit.
+ * Bietet drei "normale" Aktionen (Game-State abonnieren, Errors
+ * abonnieren, Move senden) plus zwei Cheat-Gift-Endpoints:
+ *  - [claimCheatGift]    Spieler hat das Geschenk-Icon 5x geklickt
+ *                        und sendet das gewuerfelte Delta an den Server
+ *  - [respondToCheatGift] Spieler reagiert auf das Steal-Popup
+ *                        (accept=true zum Stehlen, false zum Ablehnen)
  */
 class UnitMoveEndpoint(
     private val stomp: Stomp
@@ -58,14 +54,6 @@ class UnitMoveEndpoint(
         }
     }
 
-    /**
-     * Tritt einem Spiel bei und uebergibt Name + gewuenschte Farbe.
-     *
-     * Wird als JSON gesendet, damit der Server die Felder typisiert
-     * lesen kann (im Gegensatz zum frueher genutzten plain-text-Format
-     * mit nur dem Namen). Das Backend muss den Endpoint entsprechend
-     * akzeptieren.
-     */
     fun joinGame(roomId: String, playerName: String, color: PlayerColor) {
         val payload = JoinRequest(name = playerName, color = color.name)
         val json = gson.toJson(payload)
@@ -74,12 +62,47 @@ class UnitMoveEndpoint(
     }
 
     /**
-     * DTO fuer den Join-Request. Wird hier als interne data class
-     * gehalten, damit der Server-Vertrag in einer Stelle definiert ist.
+     * Schummel-Geschenk oeffnen: Frontend hat bereits gewuerfelt und
+     * schickt das Delta an den Server. Server addiert/subtrahiert das
+     * Delta vom Spieler-Gold und setzt [GameState.pendingGift], sodass
+     * alle anderen Spieler das Steal-Popup sehen koennen.
+     *
+     * Server-Validierung: nur erlaubt wenn Player.hasUsedGift == false
+     * und GameState.pendingGift == null.
      */
+    fun claimCheatGift(roomId: String, playerName: String, delta: Int) {
+        val payload = ClaimGiftRequest(playerName = playerName, delta = delta)
+        val json = gson.toJson(payload)
+        Log.d(TAG, "-> /app/rooms/$roomId/cheat/claim-gift: $json")
+        stomp.sendJson("/app/rooms/$roomId/cheat/claim-gift", json)
+    }
+
+    /**
+     * Antwort auf das Steal-Popup. [accept] = true bedeutet "Ja klauen";
+     * = false bedeutet "Nein, lass ihm das Gold". Server lehnt ab wenn
+     * der Spieler der Owner ist oder wenn pendingGift bereits weg ist
+     * (jemand war schneller).
+     */
+    fun respondToCheatGift(roomId: String, playerName: String, accept: Boolean) {
+        val payload = StealResponseRequest(playerName = playerName, accept = accept)
+        val json = gson.toJson(payload)
+        Log.d(TAG, "-> /app/rooms/$roomId/cheat/respond-steal: $json")
+        stomp.sendJson("/app/rooms/$roomId/cheat/respond-steal", json)
+    }
+
     private data class JoinRequest(
         val name: String,
         val color: String
+    )
+
+    private data class ClaimGiftRequest(
+        val playerName: String,
+        val delta: Int
+    )
+
+    private data class StealResponseRequest(
+        val playerName: String,
+        val accept: Boolean
     )
 
     companion object {
