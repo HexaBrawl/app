@@ -1,75 +1,63 @@
 package at.aau.serg.websocketbrokerdemo.grid
 
+import androidx.compose.ui.graphics.Color
+import at.aau.serg.websocketbrokerdemo.data.serverside.Player
+import at.aau.serg.websocketbrokerdemo.data.serverside.PlayerColor
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotEquals
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 /**
- * Tests fuer PlayerColorMap.
+ * Tests fuer das umgebaute PlayerColorMap.
  *
- * Wichtigstes Property: deterministisch (gleicher Name -> gleiche
- * Farbe, auf allen Geraeten und nach App-Restart).
+ * Frueher: Hash-basiert. Jetzt: Lookup ueber GameState.players. Die
+ * Logik ist seiteneffekt-frei und gut testbar.
  */
 class PlayerColorMapTest {
 
+    private val alice = Player(name = "Alice", color = PlayerColor.RED)
+    private val bob = Player(name = "Bob", color = PlayerColor.BLUE)
+    private val carol = Player(name = "Carol", color = PlayerColor.GREEN)
+    private val dave = Player(name = "Dave", color = PlayerColor.YELLOW)
+
+    private val allPlayers = listOf(alice, bob, carol, dave)
+
     @Test
-    fun `same name always returns same color`() {
-        val a = PlayerColorMap.colorFor("Alice")
-        val b = PlayerColorMap.colorFor("Alice")
-        assertEquals(a, b)
+    fun `colorFor returns the player's server color for known names`() {
+        assertEquals(PlayerColor.RED.main, PlayerColorMap.colorFor("Alice", allPlayers))
+        assertEquals(PlayerColor.BLUE.main, PlayerColorMap.colorFor("Bob", allPlayers))
+        assertEquals(PlayerColor.GREEN.main, PlayerColorMap.colorFor("Carol", allPlayers))
+        assertEquals(PlayerColor.YELLOW.main, PlayerColorMap.colorFor("Dave", allPlayers))
     }
 
     @Test
-    fun `different names usually get different colors`() {
-        // Bei 4-Farb-Palette und 4 unterschiedlichen Namen koennen
-        // theoretisch Kollisionen passieren. Wir nutzen Namen, deren
-        // hashCodes mod 4 alle Werte abdecken.
-        // Stattdessen pruefen wir nur: nicht alle Spieler haben die
-        // gleiche Farbe (= Deterministic-Hash funktioniert).
-        val names = listOf("Alice", "Bob", "Carol", "Dave", "Eve", "Frank")
-        val colors = names.map { PlayerColorMap.colorFor(it) }.toSet()
-        assertTrue(colors.size > 1, "Mit 6 Namen muessen mind. 2 Farben rauskommen")
+    fun `colorFor returns default for unknown player name`() {
+        assertEquals(PlayerColorMap.DEFAULT_COLOR, PlayerColorMap.colorFor("Ghost", allPlayers))
     }
 
     @Test
-    fun `colors come from a fixed palette`() {
-        val red = android.graphics.Color.RED
-        val blue = android.graphics.Color.BLUE
-        val green = android.graphics.Color.GREEN
-        val yellow = android.graphics.Color.YELLOW
-        val palette = setOf(red, blue, green, yellow)
-
-        val sampleNames = listOf("X", "Y", "Z", "A", "B", "C", "D", "E")
-        sampleNames.forEach { name ->
-            assertTrue(
-                PlayerColorMap.colorFor(name) in palette,
-                "Farbe fuer $name muss aus der Palette stammen"
-            )
-        }
+    fun `colorFor returns default when players list is empty`() {
+        assertEquals(PlayerColorMap.DEFAULT_COLOR, PlayerColorMap.colorFor("Alice", emptyList()))
     }
 
     @Test
-    fun `empty string returns a valid palette color`() {
-        // Edge-case: leerer Name darf nicht crashen oder Color.TRANSPARENT
-        // liefern.
-        val color = PlayerColorMap.colorFor("")
-        val palette = setOf(
-            android.graphics.Color.RED,
-            android.graphics.Color.BLUE,
-            android.graphics.Color.GREEN,
-            android.graphics.Color.YELLOW
-        )
-        assertTrue(color in palette)
+    fun `colorFor direct mapping returns main color of enum`() {
+        assertEquals(PlayerColor.RED.main, PlayerColorMap.colorFor(PlayerColor.RED))
+        assertEquals(PlayerColor.BLUE.main, PlayerColorMap.colorFor(PlayerColor.BLUE))
+        assertEquals(PlayerColor.GREEN.main, PlayerColorMap.colorFor(PlayerColor.GREEN))
+        assertEquals(PlayerColor.YELLOW.main, PlayerColorMap.colorFor(PlayerColor.YELLOW))
     }
 
     @Test
-    fun `mapping is independent of call order`() {
-        // Beweist dass keine versteckte State-Mutation am Werk ist --
-        // die Reihenfolge der Aufrufe darf das Ergebnis nicht aendern.
-        val firstAlice = PlayerColorMap.colorFor("Alice")
-        repeat(10) { PlayerColorMap.colorFor("DummyPlayer-$it") }
-        val secondAlice = PlayerColorMap.colorFor("Alice")
-        assertEquals(firstAlice, secondAlice)
+    fun `default color is gray`() {
+        assertEquals(Color.Gray, PlayerColorMap.DEFAULT_COLOR)
+    }
+
+    @Test
+    fun `colorFor is deterministic for same input`() {
+        // Mehrfacher Aufruf gibt das gleiche Ergebnis (keine versteckte
+        // State-Mutation).
+        val first = PlayerColorMap.colorFor("Alice", allPlayers)
+        val second = PlayerColorMap.colorFor("Alice", allPlayers)
+        assertEquals(first, second)
     }
 }

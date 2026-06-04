@@ -13,13 +13,11 @@ import at.aau.serg.websocketbrokerdemo.ui.navigation.Screen
  * Verbindet das Wartelobby-ViewModel mit dem GameSession-Netzwerk.
  *
  * Verantwortungen:
- *  - Beim Aufruf: lokalen Spieler beim Server anmelden
+ *  - Beim Aufruf: lokalen Spieler + gewaehlte Farbe beim Server anmelden
  *  - GameState-Subscription verwalten (DisposableEffect)
- *  - Server-Updates an [WaitingLobbyViewModel.applyRemoteState] weiterreichen
+ *  - Server-Updates an [WaitingLobbyViewModel.applyRemoteState]
+ *    weiterreichen
  *  - Bei status = IN_PROGRESS zum GameScreen navigieren
- *
- * Eigene Composable-Funktion damit die Side-Effects nicht direkt im
- * Screen-Composable haengen -- das haelt den Screen logikfrei.
  */
 @Composable
 fun LobbyNetworkSync(
@@ -28,6 +26,7 @@ fun LobbyNetworkSync(
     navController: NavController
 ) {
     val localName = viewModel.localName
+    val localColor = viewModel.localColor
 
     DisposableEffect(session.activeRoomId.value) {
         val job = session.endpoint.subscribeToGameState(session.activeRoomId.value) { state ->
@@ -36,10 +35,11 @@ fun LobbyNetworkSync(
         onDispose { job.cancel() }
     }
 
-    LaunchedEffect(localName) {
+    // Anmelden sobald Name+Farbe feststehen.
+    LaunchedEffect(localName, localColor) {
         if (localName.isNotBlank()) {
             session.localPlayerName.value = localName
-            session.endpoint.joinGame(session.activeRoomId.value, localName)
+            session.endpoint.joinGame(session.activeRoomId.value, localName, localColor)
         }
     }
 

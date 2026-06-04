@@ -1,5 +1,7 @@
 package at.aau.serg.websocketbrokerdemo.ui.waiting.model
 
+import at.aau.serg.websocketbrokerdemo.data.serverside.PlayerColor
+
 /**
  * Repraesentiert einen Slot in der Wartelobby.
  *
@@ -16,7 +18,7 @@ data class PlayerSlot(
     val id: Int,
     val status: SlotStatus = SlotStatus.Empty,
     val name: String = "",
-    val color: PlayerColor = PlayerColor.Red,
+    val color: PlayerColor = PlayerColor.RED,
     val ready: Boolean = false,
     val isLocal: Boolean = false
 )

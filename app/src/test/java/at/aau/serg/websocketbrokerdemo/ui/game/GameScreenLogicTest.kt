@@ -19,9 +19,12 @@ class GameScreenLogicTest {
     private val alice = "Alice"
     private val bob = "Bob"
 
-    private fun ownInf(x: Int, y: Int) = GameUnit(player = alice, x = x, y = y, type = UnitType.INFANTRY)
-    private fun enemyArc(x: Int, y: Int) = GameUnit(player = bob, x = x, y = y, type = UnitType.ARCHER)
-    private fun skeleton(x: Int, y: Int) = GameUnit(player = "Doom", x = x, y = y, type = UnitType.SKELETON)
+    private fun ownInf(x: Int, y: Int) =
+        GameUnit(player = alice, x = x, y = y, type = UnitType.INFANTRY)
+    private fun enemyArc(x: Int, y: Int) =
+        GameUnit(player = bob, x = x, y = y, type = UnitType.ARCHER)
+    private fun skeleton(x: Int, y: Int) =
+        GameUnit(player = "Doom", x = x, y = y, type = UnitType.SKELETON)
 
     // ---- tapToCell -----------------------------------------------------
 
@@ -33,8 +36,6 @@ class GameScreenLogicTest {
 
     @Test
     fun `tapToCell shifts origin to viewport center`() {
-        // Bei viewport 200x200 muss tapToCell(150, 130) zu (50, 30)
-        // verschoben werden, bevor pixelToCell aufgerufen wird.
         var observedX = 0f
         var observedY = 0f
         GameScreenLogic.tapToCell(
@@ -148,8 +149,6 @@ class GameScreenLogicTest {
 
     @Test
     fun `skeletons are ignored when looking for clickable unit`() {
-        // Skelett auf demselben Feld wie der Tap -- soll nicht als
-        // selektierbar erkannt werden, weil Skelette nur Dekoration sind.
         val skel = skeleton(3, 3)
         val action = GameScreenLogic.decideTapAction(
             col = 3, row = 3,
@@ -158,42 +157,5 @@ class GameScreenLogicTest {
             currentlySelected = null
         )
         assertEquals(GameScreenLogic.TapAction.Ignore, action)
-    }
-
-    // ---- describeTap ---------------------------------------------------
-
-    @Test
-    fun `describeTap labels empty cells as empty`() {
-        val desc = GameScreenLogic.describeTap(5, 5, emptyList(), alice)
-        assertEquals("(5,5) empty", desc)
-    }
-
-    @Test
-    fun `describeTap labels own unit cells`() {
-        val unit = ownInf(2, 3)
-        val desc = GameScreenLogic.describeTap(2, 3, listOf(unit), alice)
-        assertEquals("(2,3) own INFANTRY", desc)
-    }
-
-    @Test
-    fun `describeTap labels enemy unit cells`() {
-        val enemy = enemyArc(2, 3)
-        val desc = GameScreenLogic.describeTap(2, 3, listOf(enemy), alice)
-        assertEquals("(2,3) enemy ARCHER", desc)
-    }
-
-    @Test
-    fun `describeTap ignores skeletons`() {
-        val skel = skeleton(2, 3)
-        val desc = GameScreenLogic.describeTap(2, 3, listOf(skel), alice)
-        assertEquals("(2,3) empty", desc)
-    }
-
-    // ---- describeMove --------------------------------------------------
-
-    @Test
-    fun `describeMove formats from-to coords`() {
-        val move = Move(alice, UnitType.CAVALRY, 1, 2, 3, 4)
-        assertEquals("CAVALRY (1,2) -> (3,4)", GameScreenLogic.describeMove(move))
     }
 }

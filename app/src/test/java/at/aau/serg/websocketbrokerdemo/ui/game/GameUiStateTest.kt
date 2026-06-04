@@ -13,28 +13,26 @@ import org.junit.jupiter.api.Test
 class GameUiStateTest {
 
     @Test
-    fun `default state has no selection and dashes`() {
+    fun `default state has no selection`() {
         val state = GameUiState()
         assertNull(state.selected)
-        assertEquals("-", state.lastTap)
-        assertEquals("-", state.lastMove)
     }
 
     @Test
     fun `copy creates independent state`() {
         val unit = GameUnit(player = "X", x = 1, y = 2, type = UnitType.CAVALRY)
-        val original = GameUiState(selected = unit, lastTap = "a")
-        val modified = original.copy(lastTap = "b")
-        assertEquals("a", original.lastTap)
-        assertEquals("b", modified.lastTap)
+        val original = GameUiState()
+        val modified = original.copy(selected = unit)
+        assertNull(original.selected)
         assertEquals(unit, modified.selected)
     }
 
     @Test
-    fun `equals compares all fields`() {
-        val a = GameUiState(lastTap = "x")
-        val b = GameUiState(lastTap = "x")
-        val c = GameUiState(lastTap = "y")
+    fun `equals compares selected field`() {
+        val unit = GameUnit(player = "X", x = 1, y = 2, type = UnitType.CAVALRY)
+        val a = GameUiState(selected = unit)
+        val b = GameUiState(selected = unit)
+        val c = GameUiState(selected = null)
         assertEquals(a, b)
         assertNotEquals(a, c)
     }

@@ -1,6 +1,7 @@
 package at.aau.serg.websocketbrokerdemo.ui.waiting.model
 
 import androidx.compose.ui.graphics.Color
+import at.aau.serg.websocketbrokerdemo.data.serverside.PlayerColor
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotEquals
@@ -8,13 +9,14 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 /**
- * Tests fuer PlayerSlot, PlayerColor und SlotStatus.
+ * Tests fuer PlayerSlot und PlayerColor (zentrale Variante).
  *
- * Reine Daten-Tests: Defaults, copy(), Enum-Sanity.
+ * Die frueheren Wartelobby-spezifischen Tests fuer PlayerColor sind
+ * obsolet -- der Enum lebt jetzt in `data.serverside`. Sanity-Checks
+ * bleiben hier dass das vereinte Enum die fuer die Lobby noetigen
+ * Properties (main, dark) trotzdem hat.
  */
 class PlayerSlotTest {
-
-    // ---- PlayerSlot defaults ------------------------------------------
 
     @Test
     fun `default slot is empty and not local`() {
@@ -23,7 +25,7 @@ class PlayerSlotTest {
         assertEquals("", slot.name)
         assertFalse(slot.isLocal)
         assertFalse(slot.ready)
-        assertEquals(PlayerColor.Red, slot.color)
+        assertEquals(PlayerColor.RED, slot.color)
     }
 
     @Test
@@ -44,7 +46,7 @@ class PlayerSlotTest {
         assertNotEquals(a, c)
     }
 
-    // ---- PlayerColor --------------------------------------------------
+    // ---- PlayerColor (zentral) ----------------------------------------
 
     @Test
     fun `there are exactly four player colors`() {
@@ -77,17 +79,16 @@ class PlayerSlotTest {
 
     @Test
     fun `PlayerColor valueOf works for all entries`() {
-        assertEquals(PlayerColor.Red, PlayerColor.valueOf("Red"))
-        assertEquals(PlayerColor.Blue, PlayerColor.valueOf("Blue"))
-        assertEquals(PlayerColor.Green, PlayerColor.valueOf("Green"))
-        assertEquals(PlayerColor.Yellow, PlayerColor.valueOf("Yellow"))
+        assertEquals(PlayerColor.RED, PlayerColor.valueOf("RED"))
+        assertEquals(PlayerColor.BLUE, PlayerColor.valueOf("BLUE"))
+        assertEquals(PlayerColor.GREEN, PlayerColor.valueOf("GREEN"))
+        assertEquals(PlayerColor.YELLOW, PlayerColor.valueOf("YELLOW"))
     }
 
     // ---- SlotStatus ---------------------------------------------------
 
     @Test
     fun `SlotStatus has exactly two entries`() {
-        // Empty + Player; Bot wurde im Refactoring entfernt.
         assertEquals(2, SlotStatus.entries.size)
     }
 

@@ -16,6 +16,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.IntSize
 import at.aau.serg.websocketbrokerdemo.data.serverside.GameUnit
+import at.aau.serg.websocketbrokerdemo.data.serverside.Player
 import at.aau.serg.websocketbrokerdemo.data.serverside.UnitType
 import at.aau.serg.websocketbrokerdemo.grid.HexGrid
 import at.aau.serg.websocketbrokerdemo.grid.HexGridLogic
@@ -28,20 +29,17 @@ import com.example.myapplication.R
 /**
  * Composable fuer die Spielkarte (Hintergrund + Hex-Grid + Kamera).
  *
- * Verantwortlich nur fuer die Darstellung und Tap-Erfassung. Welche
- * Aktion ein Tap konkret ausloest, entscheidet der Aufrufer ueber
- * [onCellTapped].
- *
  * Tap-Handling Note:
  *  Der innere Canvas misst sich mit `wrapContentSize` und der
  *  Kamera-Layer wendet ein graphicsLayer-Transform aufs ganze Mapping
- *  an. Taps werden daher auf der aeusseren Box gefangen, und die
- *  Position wird ueber [HexGridLogic.pixelToCell] aufgeloest.
+ *  an. Taps werden daher auf der aeusseren Box gefangen und ueber
+ *  [HexGridLogic.pixelToCell] aufgeloest.
  */
 @Composable
 fun GameMap(
     layout: MapLayout,
     units: List<GameUnit>,
+    players: List<Player>,
     camera: CameraState,
     onCellTapped: (tapX: Float, tapY: Float, pixelToCell: (Float, Float) -> Pair<Int, Int>?) -> Unit,
     modifier: Modifier = Modifier
@@ -80,6 +78,7 @@ fun GameMap(
                 HexGrid(
                     layout = layout,
                     units = unitData,
+                    players = players,
                     modifier = Modifier.wrapContentSize()
                 )
             }
@@ -90,9 +89,6 @@ fun GameMap(
                 camera.offsetX.floatValue = 0f
                 camera.offsetY.floatValue = 0f
 
-                // Approximierte Grid-Ausdehnung in Pixeln, damit die
-                // Kamera auf das Brett zoomt. Faktoren entsprechen dem
-                // Hex-Spacing (siehe HexGridLogic).
                 val gridWidth = (layout.cols - 1) * (layout.hexSize * 1.5f)
                 val gridHeight = (layout.rows - 1) * (layout.hexSize * 1.732f)
 

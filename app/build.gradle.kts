@@ -102,7 +102,6 @@ tasks.register<JacocoReport>("jacocoTestReport") {
         "**/ui/components/**",
         "**/ui/game/components/**",
         "**/ui/game/GameScreen.kt",
-        "**/ui/game/GameDebugConfig*.*",
         "**/ui/game/camera/CameraModifier*.*",
         "**/ui/home/HomeScreen.kt",
         "**/ui/lobby_modes/ActionCard*.*",
