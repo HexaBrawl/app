@@ -70,7 +70,7 @@ class HexRendererTest {
 
     private fun draw(units: List<UnitData> = emptyList(), players: List<Player> = emptyList()) {
         with(renderer) {
-            scope.render(tinyLayout, units)
+            scope.render(tinyLayout, units, players)
         }
     }
 
@@ -114,6 +114,46 @@ class HexRendererTest {
         verify(exactly = 2) {
             scope.drawCircle(
                 color = any(),
+                radius = any(),
+                center = any(),
+                alpha = any(),
+                style = any(),
+                colorFilter = any(),
+                blendMode = any()
+            )
+        }
+    }
+
+    @Test
+    fun `uses player color for unit circle`() {
+        val units = listOf(UnitData(x = 0, y = 0, player = "Alice"))
+        draw(units = units, players = listOf(alice))
+
+        // Alice ist RED -> PlayerColor.RED.main
+        verify {
+            scope.drawCircle(
+                color = PlayerColor.RED.main,
+                radius = any(),
+                center = any(),
+                alpha = any(),
+                style = any(),
+                colorFilter = any(),
+                blendMode = any()
+            )
+        }
+    }
+
+    @Test
+    fun `uses default color when unit player is not in players list`() {
+        // Edge-Case: Unit-Owner ist nicht in der Spieler-Liste (etwa
+        // weil das GameState gerade asynchron ankommt). Sollte den
+        // Default-Color nutzen statt zu crashen.
+        val units = listOf(UnitData(x = 0, y = 0, player = "Ghost"))
+        draw(units = units, players = emptyList())
+
+        verify {
+            scope.drawCircle(
+                color = PlayerColorMap.DEFAULT_COLOR,
                 radius = any(),
                 center = any(),
                 alpha = any(),

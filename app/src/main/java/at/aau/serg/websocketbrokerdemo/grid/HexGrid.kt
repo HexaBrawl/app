@@ -4,30 +4,27 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import at.aau.serg.websocketbrokerdemo.data.serverside.Player
 
 /**
  * Composable, das ein Hex-Grid samt Einheiten rendert.
  *
- * Vorher: UniversalGrid (Composable) + UniversalGridLogic (Tap-Math)
- *         + HexInput (delegierte an Layout) + HexLayout (Mathematik).
- *         Vier Files fuer "zeichne ein Grid und gib Taps weiter".
- *
- * Jetzt: dieser Composable plus [HexGridLogic] -- fertig. Tap-Handling
- * ist absichtlich aus dem Composable raus, weil der aussenliegende
- * Container (siehe GameMap) die Taps auf einem viel groesseren Bereich
- * abfaengt und ueber HexGridLogic.pixelToCell selbst aufloest.
+ * @param layout  Hex-Geometrie der aktuellen Karte
+ * @param units   Vereinfachte Einheiten-Liste fuers Rendering
+ * @param players Volle Spieler-Liste fuer das Farb-Mapping
  */
 @Composable
 fun HexGrid(
     layout: MapLayout,
     units: List<UnitData>,
+    players: List<Player>,
     modifier: Modifier = Modifier
 ) {
     val renderer = remember { HexRenderer() }
 
     Canvas(modifier = modifier) {
         with(renderer) {
-            render(layout, units)
+            render(layout, units, players)
         }
     }
 }
