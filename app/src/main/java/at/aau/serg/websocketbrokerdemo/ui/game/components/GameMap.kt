@@ -14,6 +14,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.IntSize
+import at.aau.serg.websocketbrokerdemo.data.serverside.Building
 import at.aau.serg.websocketbrokerdemo.data.serverside.GameUnit
 import at.aau.serg.websocketbrokerdemo.data.serverside.Player
 import at.aau.serg.websocketbrokerdemo.grid.HexGrid
@@ -36,6 +37,7 @@ import com.example.myapplication.R
 fun GameMap(
     layout: MapLayout,
     units: List<GameUnit>,
+    buildings: List<Building>,
     players: List<Player>,
     camera: CameraState,
     onCellTapped: (tapX: Float, tapY: Float, pixelToCell: (Float, Float) -> Pair<Int, Int>?) -> Unit,
@@ -69,6 +71,7 @@ fun GameMap(
                 HexGrid(
                     layout = layout,
                     units = units,
+                    buildings = buildings,
                     players = players,
                     modifier = Modifier.wrapContentSize()
                 )

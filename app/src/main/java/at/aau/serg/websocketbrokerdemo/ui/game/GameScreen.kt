@@ -49,13 +49,15 @@ fun GameScreen(
         onDispose { job.cancel() }
     }
 
-    val units = gameState?.units.orEmpty()
-    val players = gameState?.players.orEmpty()
+    val units = (gameState?.units.orEmpty() + dummyUnits)
+    val buildings = (gameState?.buildings.orEmpty() + dummyBuildings)
+    val players = (gameState?.players.orEmpty() + dummyPlayers)
 
     Box(modifier = Modifier.fillMaxSize()) {
         GameMap(
             layout = layout,
             units = units,
+            buildings = buildings,
             players = players,
             camera = camera,
             onCellTapped = { tapX, tapY, pixelToCell ->
