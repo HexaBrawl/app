@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
@@ -17,7 +16,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.IntSize
 import at.aau.serg.websocketbrokerdemo.data.serverside.GameUnit
 import at.aau.serg.websocketbrokerdemo.data.serverside.Player
-import at.aau.serg.websocketbrokerdemo.data.serverside.UnitType
 import at.aau.serg.websocketbrokerdemo.grid.HexGrid
 import at.aau.serg.websocketbrokerdemo.grid.HexGridLogic
 import at.aau.serg.websocketbrokerdemo.grid.MapLayout
@@ -43,10 +41,6 @@ fun GameMap(
     onCellTapped: (tapX: Float, tapY: Float, pixelToCell: (Float, Float) -> Pair<Int, Int>?) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val filteredUnits = remember(units) {
-        units.filter { it.type != UnitType.SKELETON }
-    }
-
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -74,7 +68,7 @@ fun GameMap(
             ) {
                 HexGrid(
                     layout = layout,
-                    units = filteredUnits,
+                    units = units,
                     players = players,
                     modifier = Modifier.wrapContentSize()
                 )
