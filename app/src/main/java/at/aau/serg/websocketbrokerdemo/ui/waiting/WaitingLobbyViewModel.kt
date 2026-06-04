@@ -2,8 +2,8 @@ package at.aau.serg.websocketbrokerdemo.ui.waiting
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import at.aau.serg.websocketbrokerdemo.data.serverside.PlayerColor
 import at.aau.serg.websocketbrokerdemo.ui.mainmenu.GameMode
-import at.aau.serg.websocketbrokerdemo.ui.waiting.model.PlayerColor
 import at.aau.serg.websocketbrokerdemo.ui.waiting.model.PlayerSlot
 import at.aau.serg.websocketbrokerdemo.ui.waiting.model.SlotStatus
 import kotlinx.coroutines.Job
@@ -20,13 +20,9 @@ import kotlinx.coroutines.launch
  * (Name aendern, Farbe waehlen, ready toggeln) und startet einen
  * 3-Sekunden-Countdown sobald alle Slots besetzt und bereit sind.
  *
- * Server-Synchronisation laeuft separat ueber [LobbyNetworkSync] --
+ * Server-Synchronisation laeuft separat ueber LobbyNetworkSync --
  * das ViewModel selbst kennt das Netzwerk nicht. Stattdessen ruft der
  * Screen [applyRemoteState] auf, wenn vom Server neue Daten kommen.
- *
- * Die eigentliche Spielstart-Navigation passiert nicht hier, sondern
- * ueber den `onCountdownFinished`-Callback im Screen -- damit ist das
- * ViewModel frei von NavController und besser testbar.
  */
 class WaitingLobbyViewModel(
     private val mode: GameMode
@@ -38,7 +34,6 @@ class WaitingLobbyViewModel(
         )
     )
 
-    /** Public State, wird vom Composable ueber collectAsStateWithLifecycle gelesen. */
     val state: StateFlow<WaitingLobbyState> = _state.asStateFlow()
 
     private var countdownJob: Job? = null
@@ -46,6 +41,10 @@ class WaitingLobbyViewModel(
     /** Der lokale Spieler-Name (fuer NetworkSync zum Anmelden beim Server). */
     val localName: String
         get() = _state.value.slots.firstOrNull { it.isLocal }?.name.orEmpty()
+
+    /** Die vom lokalen Spieler gewaehlte Farbe (fuer NetworkSync). */
+    val localColor: PlayerColor
+        get() = _state.value.slots.firstOrNull { it.isLocal }?.color ?: PlayerColor.RED
 
     // ---- User-Aktionen --------------------------------------------------
 
