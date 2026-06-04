@@ -15,9 +15,6 @@ import androidx.compose.material.icons.filled.GroupAdd
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -26,6 +23,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import at.aau.serg.websocketbrokerdemo.ui.components.PlayerCountBadge
 import at.aau.serg.websocketbrokerdemo.ui.components.RoundCoinIconButton
@@ -38,20 +37,17 @@ import com.example.myapplication.R
  * Modus-Lobby: Auswahl zwischen "Privates Spiel erstellen", "Mit Code
  * beitreten" und "Zufaelliges Spiel".
  *
- * Der Composable ist auf reine UI reduziert:
- *  - Navigations-Routen kommen aus [LobbyLogic]
- *  - Der Dialog-State (`showJoinDialog`) wird lokal mit `remember`
- *    gehalten -- ein dediziertes ViewModel waere fuer dieses einzelne
- *    Boolean ueberdimensioniert (kein Repository, keine Persistierung).
+ * Reine UI-Schicht. State und Dialog-Handler liegen im
+ * [LobbyViewModel]; Navigation-Mapping in [LobbyLogic].
  */
 @Composable
 fun LobbyScreen(
     mode: GameMode,
-    navController: NavController
+    navController: NavController,
+    viewModel: LobbyViewModel = viewModel()
 ) {
-    var showJoinDialog by remember { mutableStateOf(false) }
-
-    val waitingRoute = LobbyLogic.toWaitingRoute(mode)
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    val waitingScreen = LobbyLogic.toWaitingScreen(mode)
 
     Box(modifier = Modifier.fillMaxSize()) {
 
@@ -115,31 +111,35 @@ fun LobbyScreen(
                 title = stringResource(R.string.lobby_create_private),
                 subtitle = stringResource(R.string.lobby_create_private_sub),
                 sealColor = SealColor.Red,
-                onClick = { navController.navigate(waitingRoute) }
+                onClick = { navController.navigate(waitingScreen.route) }
             )
             ActionCard(
                 icon = Icons.Filled.GroupAdd,
                 title = stringResource(R.string.lobby_join_with_code),
                 subtitle = stringResource(R.string.lobby_join_with_code_sub),
                 sealColor = SealColor.Blue,
-                onClick = { showJoinDialog = true }
+                onClick = { viewModel.openJoinDialog() }
             )
             ActionCard(
                 icon = Icons.Filled.Casino,
                 title = stringResource(R.string.lobby_join_random),
                 subtitle = stringResource(R.string.lobby_join_random_sub),
                 sealColor = SealColor.Gold,
-                onClick = { navController.navigate(waitingRoute) }
+                onClick = { navController.navigate(waitingScreen.route) }
             )
         }
     }
 
-    if (showJoinDialog) {
+    if (state.showJoinDialog) {
         JoinByCodeDialog(
-            onDismiss = { showJoinDialog = false },
+            code = state.code,
+            canJoin = state.canJoin,
+            onCodeChange = viewModel::onCodeChange,
+            onDismiss = viewModel::closeJoinDialog,
             onJoin = {
-                showJoinDialog = false
-                navController.navigate(waitingRoute)
+                if (viewModel.tryJoinByCode()) {
+                    navController.navigate(waitingScreen.route)
+                }
             }
         )
     }

@@ -100,25 +100,25 @@ tasks.register<JacocoReport>("jacocoTestReport") {
 
         // Composables / UI-Screens (HexaBrawl UI)
         "**/ui/components/**",
-        "**/ui/game/GameScreen*.*",
+        "**/ui/game/components/**",
+        "**/ui/game/GameScreen.kt",
+        "**/ui/game/camera/CameraModifier*.*",
         "**/ui/home/HomeScreen.kt",
         "**/ui/lobby_modes/ActionCard*.*",
         "**/ui/lobby_modes/JoinByCodeDialog*.*",
         "**/ui/lobby_modes/LobbyScreen*.*",
-        "**/ui/lobby_modes/RoundCoinButton*.*",
         "**/ui/mainmenu/MainMenuScreen*.*",
         "**/ui/mainmenu/components/**",
         "**/ui/navigation/AppNavHost*.*",
         "**/ui/settings/SettingsScreen*.*",
         "**/ui/settings/components/**",
         "**/ui/theme/**",
-        "**/ui/waiting/WaitingLobbyComponents*.*",
+        "**/ui/waiting/components/**",
+        "**/ui/waiting/LobbyNetworkSync*.*",
         "**/ui/waiting/WaitingLobbyScreen*.*",
-        "**/ui/waiting/WaitingLobbyState*.*",
 
         // Canvas-Drawing
-        "**/grid/UniversalGrid*.*",
-        "**/grid/renderer/**",
+        "**/grid/HexGrid.kt",
 
         // Lifecycle / Network
         "**/MainActivity*.*",

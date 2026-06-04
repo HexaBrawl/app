@@ -21,14 +21,19 @@ import at.aau.serg.websocketbrokerdemo.ui.waiting.WaitingLobbyScreen
 /**
  * Hauptnavigation der App.
  *
- * Registriert für jedes [Screen] genau einen Composable-Eintrag und
- * beobachtet zusätzlich die aktive Route, um beim Wechsel automatisch
- * die passende Hintergrundmusik anzustoßen.
+ * Registriert fuer jeden [Screen] genau einen Composable-Eintrag und
+ * beobachtet zusaetzlich die aktive Route, um beim Wechsel automatisch
+ * die passende Hintergrundmusik anzustossen.
  *
- * Sämtliche Routen werden über die [Screen]-sealed-class adressiert --
- * String-Literale für Routen sind ausschließlich in [Screen] erlaubt.
+ * Saemtliche Routen werden ueber das [Screen]-sealed-class adressiert --
+ * String-Literale fuer Routen sind ausschliesslich in [Screen] erlaubt.
  * Die "Route -> Musik-Track"-Logik liegt in [NavigationLogic] und ist
  * dort unit-getestet.
+ *
+ * Der GameScreen erhaelt aktuell hartkodiert DUAL_VALLEY als Modus,
+ * weil der Server noch nicht zurueckliefert, in welchem Modus wir
+ * sind. Sobald das Backend ein "currentMode" im GameState mitschickt,
+ * koennen wir das hier auflesen statt zu raten.
  */
 @Composable
 fun AppNavHost(
@@ -37,7 +42,6 @@ fun AppNavHost(
 ) {
     val context = LocalContext.current
 
-    // Aktive Route beobachten und Musik beim Wechsel umstellen.
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
 
@@ -84,7 +88,11 @@ fun AppNavHost(
         }
 
         composable(Screen.Game.route) {
-            GameScreen(session)
+            // TODO: aktuell hartcodiert auf DUAL_VALLEY. Sobald der
+            // GameState einen aktuellen Modus mitliefert oder die
+            // Route den Modus als Argument transportiert, kann das
+            // hier dynamisch werden.
+            GameScreen(session = session, mode = GameMode.DUAL_VALLEY)
         }
     }
 }

@@ -27,25 +27,25 @@ sonar {
             listOf(
                 // Composables / UI-Screens
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/components/**",
+                "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/game/components/**",
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/game/GameScreen.kt",
+                "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/game/camera/CameraModifier.kt",
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/home/HomeScreen.kt",
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/lobby_modes/ActionCard.kt",
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/lobby_modes/JoinByCodeDialog.kt",
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/lobby_modes/LobbyScreen.kt",
-                "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/lobby_modes/RoundCoinButton.kt",
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/mainmenu/MainMenuScreen.kt",
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/mainmenu/components/**",
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/navigation/AppNavHost.kt",
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/settings/SettingsScreen.kt",
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/settings/components/**",
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/theme/**",
-                "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/waiting/WaitingLobbyComponents.kt",
+                "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/waiting/components/**",
+                "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/waiting/LobbyNetworkSync.kt",
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/waiting/WaitingLobbyScreen.kt",
-                "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/waiting/WaitingLobbyState.kt",
 
                 // Grid-Rendering (Canvas)
-                "app/src/main/java/at/aau/serg/websocketbrokerdemo/grid/UniversalGrid.kt",
-                "app/src/main/java/at/aau/serg/websocketbrokerdemo/grid/renderer/**",
+                "app/src/main/java/at/aau/serg/websocketbrokerdemo/grid/HexGrid.kt",
 
                 // Lifecycle / Network
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/MainActivity.kt",
