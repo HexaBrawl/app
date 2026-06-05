@@ -1,4 +1,4 @@
-package at.aau.serg.websocketbrokerdemo.ui.game.components
+package at.aau.serg.websocketbrokerdemo.ui.game
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
@@ -15,13 +14,12 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.IntSize
+import at.aau.serg.websocketbrokerdemo.data.serverside.Building
 import at.aau.serg.websocketbrokerdemo.data.serverside.GameUnit
 import at.aau.serg.websocketbrokerdemo.data.serverside.Player
-import at.aau.serg.websocketbrokerdemo.data.serverside.UnitType
 import at.aau.serg.websocketbrokerdemo.grid.HexGrid
 import at.aau.serg.websocketbrokerdemo.grid.HexGridLogic
 import at.aau.serg.websocketbrokerdemo.grid.MapLayout
-import at.aau.serg.websocketbrokerdemo.grid.UnitData
 import at.aau.serg.websocketbrokerdemo.ui.game.camera.CameraState
 import at.aau.serg.websocketbrokerdemo.ui.game.camera.cameraControls
 import com.example.myapplication.R
@@ -36,22 +34,23 @@ import com.example.myapplication.R
  * Damit kein weisser Rand am Anfang auftaucht, ist die Initial-Scale
  * unten auf [CameraState.minScale] geclamped: lieber eine etwas zu
  * grosse Karte (Spieler kann panen) als ein weisser Rand drumherum.
+ *
+ * Tap-Handling Note:
+ *  Der innere Canvas misst sich mit `wrapContentSize` und der
+ *  Kamera-Layer wendet ein graphicsLayer-Transform aufs ganze Mapping
+ *  an. Taps werden daher auf der aeusseren Box gefangen und ueber
+ *  [HexGridLogic.pixelToCell] aufgeloest.
  */
 @Composable
 fun GameMap(
     layout: MapLayout,
     units: List<GameUnit>,
+    buildings: List<Building>,
     players: List<Player>,
     camera: CameraState,
     onCellTapped: (tapX: Float, tapY: Float, pixelToCell: (Float, Float) -> Pair<Int, Int>?) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val unitData = remember(units) {
-        units
-            .filter { it.type != UnitType.SKELETON }
-            .map { UnitData(it.x, it.y, it.player) }
-    }
-
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -79,7 +78,8 @@ fun GameMap(
             ) {
                 HexGrid(
                     layout = layout,
-                    units = unitData,
+                    units = units,
+                    buildings = buildings,
                     players = players,
                     modifier = Modifier.wrapContentSize()
                 )
@@ -97,8 +97,6 @@ fun GameMap(
                 val scaleX = camera.viewportSize.value.width / gridWidth
                 val scaleY = camera.viewportSize.value.height / gridHeight
 
-                // Berechnete Optimal-Scale, aber niemals unter minScale,
-                // sonst entsteht ein weisser Rand um das Background.
                 val computed = minOf(scaleX, scaleY) * 0.7f
                 camera.scale.floatValue = computed.coerceAtLeast(camera.minScale)
             }

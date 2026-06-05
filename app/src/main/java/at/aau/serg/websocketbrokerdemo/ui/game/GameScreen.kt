@@ -14,7 +14,6 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import at.aau.serg.websocketbrokerdemo.grid.MapLayouts
 import at.aau.serg.websocketbrokerdemo.network.GameSession
 import at.aau.serg.websocketbrokerdemo.ui.game.camera.CameraState
-import at.aau.serg.websocketbrokerdemo.ui.game.components.GameMap
 import at.aau.serg.websocketbrokerdemo.ui.game.tophud.TopHud
 import at.aau.serg.websocketbrokerdemo.ui.mainmenu.GameMode
 
@@ -24,6 +23,16 @@ import at.aau.serg.websocketbrokerdemo.ui.mainmenu.GameMode
  * Verbindet Spielkarte und Top-HUD. Das pendingGift aus dem GameState
  * wird ans HUD weitergereicht, damit Steal-Popup und Waiting-Overlay
  * korrekt erscheinen koennen.
+ * Verbindet Spielkarte und Top-HUD. Da die Einstellungen jetzt in einem
+ * In-Game-Popup landen (statt zum SettingsScreen zu navigieren),
+ * braucht der GameScreen keinen NavController mehr.
+ *
+ * Reine UI-Schicht. Reicht den serverseitigen GameState an die
+ * Sub-Composables weiter und delegiert Taps an das ViewModel.
+ *
+ * Erhaelt den Spielmodus per Parameter, weil der Server bisher keine
+ * Map-Konfiguration zurueck schickt -- das Frontend leitet das Brett
+ * aus dem in der Wartelobby gewaehlten Modus ab.
  */
 @Composable
 fun GameScreen(
@@ -49,6 +58,7 @@ fun GameScreen(
     }
 
     val units = gameState?.units.orEmpty()
+    val buildings = gameState?.buildings.orEmpty()
     val players = gameState?.players.orEmpty()
     val localName = session.localPlayerName.value
     val pendingGift = gameState?.pendingGift
@@ -57,6 +67,7 @@ fun GameScreen(
         GameMap(
             layout = layout,
             units = units,
+            buildings = buildings,
             players = players,
             camera = camera,
             onCellTapped = { tapX, tapY, pixelToCell ->

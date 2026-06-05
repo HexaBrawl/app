@@ -11,6 +11,7 @@ package at.aau.serg.websocketbrokerdemo.data.serverside
 data class GameState(
     val players: MutableList<Player> = mutableListOf(),
     val units: MutableList<GameUnit> = mutableListOf(),
+    val buildings: MutableList<Building> = mutableListOf(),
     var currentTurn: String? = null,
     var status: GameStatus = GameStatus.WAITING_FOR_PLAYERS,
     var pendingGift: PendingGift? = null
