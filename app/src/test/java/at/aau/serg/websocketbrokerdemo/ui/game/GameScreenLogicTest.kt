@@ -26,7 +26,7 @@ class GameScreenLogicTest {
     private fun skeleton(x: Int, y: Int) =
         GameUnit(player = "Doom", x = x, y = y, type = UnitType.SKELETON)
 
-    // ---- tapToCell -----------------------------------------------------
+    // ---- tapToCell ----------------------------------------------------
 
     @Test
     fun `tapToCell returns null for zero viewport`() {
@@ -68,7 +68,54 @@ class GameScreenLogicTest {
         assertNull(result)
     }
 
-    // ---- decideTapAction ----------------------------------------------
+    // ---- decideTapAction: Platzierungs-Modus -------------------------
+
+    @Test
+    fun `tap in placement mode produces PlaceUnit regardless of cell content`() {
+        val action = GameScreenLogic.decideTapAction(
+            col = 3, row = 4,
+            units = emptyList(),
+            localName = alice,
+            currentlySelected = null,
+            placementMode = UnitType.INFANTRY
+        )
+        assertTrue(action is GameScreenLogic.TapAction.PlaceUnit)
+        val place = action as GameScreenLogic.TapAction.PlaceUnit
+        assertEquals(UnitType.INFANTRY, place.type)
+        assertEquals(3, place.x)
+        assertEquals(4, place.y)
+    }
+
+    @Test
+    fun `placement mode takes precedence over existing selection`() {
+        // Auch wenn jemand selektiert ist, hat Placement Vorrang
+        val selected = ownInf(0, 0)
+        val action = GameScreenLogic.decideTapAction(
+            col = 5, row = 5,
+            units = listOf(selected),
+            localName = alice,
+            currentlySelected = selected,
+            placementMode = UnitType.CAVALRY
+        )
+        assertTrue(action is GameScreenLogic.TapAction.PlaceUnit)
+    }
+
+    @Test
+    fun `placement mode forwards the chosen UnitType`() {
+        listOf(UnitType.INFANTRY, UnitType.ARCHER, UnitType.CAVALRY).forEach { type ->
+            val action = GameScreenLogic.decideTapAction(
+                col = 1, row = 1,
+                units = emptyList(),
+                localName = alice,
+                currentlySelected = null,
+                placementMode = type
+            )
+            assertTrue(action is GameScreenLogic.TapAction.PlaceUnit)
+            assertEquals(type, (action as GameScreenLogic.TapAction.PlaceUnit).type)
+        }
+    }
+
+    // ---- decideTapAction: normaler Flow -------------------------------
 
     @Test
     fun `tapping own unit without selection selects it`() {
@@ -77,7 +124,8 @@ class GameScreenLogicTest {
             col = 3, row = 4,
             units = listOf(unit),
             localName = alice,
-            currentlySelected = null
+            currentlySelected = null,
+            placementMode = null
         )
         assertTrue(action is GameScreenLogic.TapAction.Select)
         assertEquals(unit, (action as GameScreenLogic.TapAction.Select).unit)
@@ -91,7 +139,8 @@ class GameScreenLogicTest {
             col = 2, row = 2,
             units = listOf(first, second),
             localName = alice,
-            currentlySelected = first
+            currentlySelected = first,
+            placementMode = null
         )
         assertTrue(action is GameScreenLogic.TapAction.Select)
         assertEquals(second, (action as GameScreenLogic.TapAction.Select).unit)
@@ -104,7 +153,8 @@ class GameScreenLogicTest {
             col = 5, row = 5,
             units = listOf(selected),
             localName = alice,
-            currentlySelected = selected
+            currentlySelected = selected,
+            placementMode = null
         )
         assertTrue(action is GameScreenLogic.TapAction.ExecuteMove)
         val move = (action as GameScreenLogic.TapAction.ExecuteMove).move
@@ -119,7 +169,8 @@ class GameScreenLogicTest {
             col = 3, row = 3,
             units = listOf(selected, enemy),
             localName = alice,
-            currentlySelected = selected
+            currentlySelected = selected,
+            placementMode = null
         )
         assertTrue(action is GameScreenLogic.TapAction.ExecuteMove)
     }
@@ -130,7 +181,8 @@ class GameScreenLogicTest {
             col = 5, row = 5,
             units = emptyList(),
             localName = alice,
-            currentlySelected = null
+            currentlySelected = null,
+            placementMode = null
         )
         assertEquals(GameScreenLogic.TapAction.Ignore, action)
     }
@@ -142,7 +194,8 @@ class GameScreenLogicTest {
             col = 3, row = 3,
             units = listOf(enemy),
             localName = alice,
-            currentlySelected = null
+            currentlySelected = null,
+            placementMode = null
         )
         assertEquals(GameScreenLogic.TapAction.Ignore, action)
     }
@@ -154,7 +207,8 @@ class GameScreenLogicTest {
             col = 3, row = 3,
             units = listOf(skel),
             localName = alice,
-            currentlySelected = null
+            currentlySelected = null,
+            placementMode = null
         )
         assertEquals(GameScreenLogic.TapAction.Ignore, action)
     }
