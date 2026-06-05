@@ -23,6 +23,9 @@ object GameScreenLogic {
         /** Ein Zug soll ausgefuehrt werden. */
         data class ExecuteMove(val move: Move) : TapAction()
 
+        /** Eine gekaufte Einheit soll an einer Zelle platziert werden. */
+        data class PlaceUnit(val type: UnitType, val x: Int, val y: Int) : TapAction()
+
         /** Tap hatte keinen Effekt (z. B. leeres Feld ohne Auswahl). */
         data object Ignore : TapAction()
     }
@@ -47,20 +50,26 @@ object GameScreenLogic {
     }
 
     /**
-     * Entscheidet was ein Tap auf eine bestimmte Zelle ausloesen soll.
+     * Entscheidet was ein Tap auf eine Zelle ausloesen soll.
      *
-     *  - Keine Auswahl + eigene Einheit getippt        -> Select
-     *  - Bestehende Auswahl + eigene Einheit getippt   -> Select (Wechsel)
-     *  - Bestehende Auswahl + andere Zelle             -> ExecuteMove
-     *  - Keine Auswahl + leere oder gegnerische Zelle  -> Ignore
+     * Wenn der Spieler im Platzierungs-Modus ist (placementMode != null),
+     * loest jeder Tap eine PlaceUnit-Aktion aus -- der Server validiert
+     * dann ob die Zelle dem Spieler gehoert.
+     *
+     * Sonst gelten die bisherigen Regeln (Select / Move / Ignore).
      */
     fun decideTapAction(
         col: Int,
         row: Int,
         units: List<GameUnit>,
         localName: String?,
-        currentlySelected: GameUnit?
+        currentlySelected: GameUnit?,
+        placementMode: UnitType?
     ): TapAction {
+        if (placementMode != null) {
+            return TapAction.PlaceUnit(placementMode, col, row)
+        }
+
         val clickedUnit = findClickableUnit(units, col, row)
 
         if (clickedUnit != null && clickedUnit.player == localName) {

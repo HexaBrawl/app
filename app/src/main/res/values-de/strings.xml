@@ -92,7 +92,12 @@
     <string name="cheat_waiting_subtitle">Aber pass auf — vielleicht wirst du beklaut.</string>
     <string name="cheat_waiting_for_opponent">Warte auf Gegner…</string>
 
-
-
+    <!-- DE (values-de/strings.xml) -->
+    <string name="bottom_hud_buy_farm">Farm kaufen</string>
+    <string name="bottom_hud_end_turn">Runde aus</string>
+    <string name="unit_infantry">Infanterie</string>
+    <string name="unit_archer">Bogenschuetze</string>
+    <string name="unit_cavalry">Kavallerie</string>
+    <string name="placement_choose_cell">Waehle ein Feld fuer deine %1$s</string>
 
 </resources>

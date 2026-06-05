@@ -13,26 +13,28 @@ import org.junit.jupiter.api.Test
 class GameUiStateTest {
 
     @Test
-    fun `default state has no selection`() {
+    fun `default state has no selection and no placement`() {
         val state = GameUiState()
         assertNull(state.selected)
+        assertNull(state.placementMode)
     }
 
     @Test
     fun `copy creates independent state`() {
         val unit = GameUnit(player = "X", x = 1, y = 2, type = UnitType.CAVALRY)
         val original = GameUiState()
-        val modified = original.copy(selected = unit)
+        val modified = original.copy(selected = unit, placementMode = UnitType.INFANTRY)
         assertNull(original.selected)
         assertEquals(unit, modified.selected)
+        assertEquals(UnitType.INFANTRY, modified.placementMode)
     }
 
     @Test
-    fun `equals compares selected field`() {
+    fun `equals compares all fields`() {
         val unit = GameUnit(player = "X", x = 1, y = 2, type = UnitType.CAVALRY)
-        val a = GameUiState(selected = unit)
-        val b = GameUiState(selected = unit)
-        val c = GameUiState(selected = null)
+        val a = GameUiState(selected = unit, placementMode = UnitType.ARCHER)
+        val b = GameUiState(selected = unit, placementMode = UnitType.ARCHER)
+        val c = GameUiState(selected = unit, placementMode = UnitType.INFANTRY)
         assertEquals(a, b)
         assertNotEquals(a, c)
     }

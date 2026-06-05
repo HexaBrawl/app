@@ -5,6 +5,7 @@ import at.aau.serg.websocketbrokerdemo.data.serverside.ErrorMessage
 import at.aau.serg.websocketbrokerdemo.data.serverside.GameState
 import at.aau.serg.websocketbrokerdemo.data.serverside.Move
 import at.aau.serg.websocketbrokerdemo.data.serverside.PlayerColor
+import at.aau.serg.websocketbrokerdemo.data.serverside.UnitType
 import com.google.gson.Gson
 import kotlinx.coroutines.Job
 
@@ -90,22 +91,53 @@ class UnitMoveEndpoint(
         stomp.sendJson("/app/rooms/$roomId/cheat/respond-steal", json)
     }
 
-    private data class JoinRequest(
-        val name: String,
-        val color: String
-    )
-
-    private data class ClaimGiftRequest(
-        val playerName: String,
-        val delta: Int
-    )
-
-    private data class StealResponseRequest(
-        val playerName: String,
-        val accept: Boolean
-    )
-
-    companion object {
-        private const val TAG = "UnitMoveEndpoint"
+    /**
+     * Kauft eine Farm fuer den Spieler. Server zieht das Gold ab und
+     * erhoeht das Einkommen (income) entsprechend. Validierung
+     * server-seitig (isMyTurn, genug Gold, etc.).
+     */
+    fun buyFarm(roomId: String, playerName: String) {
+        val payload = BuyFarmRequest(playerName = playerName)
+        val json = gson.toJson(payload)
+        Log.d(TAG, "-> /app/rooms/$roomId/buy-farm: $json")
+        stomp.sendJson("/app/rooms/$roomId/buy-farm", json)
     }
+
+    /**
+     * Kauft eine Einheit und platziert sie an Position (x, y). Server
+     * validiert ob die Zelle dem Spieler gehoert und ob genug Gold da
+     * ist.
+     */
+    fun buyUnit(roomId: String, playerName: String, type: UnitType, x: Int, y: Int) {
+        val payload = BuyUnitRequest(
+            playerName = playerName,
+            type = type.name,
+            x = x,
+            y = y
+        )
+        val json = gson.toJson(payload)
+        Log.d(TAG, "-> /app/rooms/$roomId/buy-unit: $json")
+        stomp.sendJson("/app/rooms/$roomId/buy-unit", json)
+    }
+
+    /**
+     * Beendet die Runde des lokalen Spielers. Server rotiert den
+     * currentTurn auf den naechsten Spieler und schreibt das Einkommen
+     * (income) dem Spieler gut.
+     */
+    fun endTurn(roomId: String, playerName: String) {
+        val payload = EndTurnRequest(playerName = playerName)
+        val json = gson.toJson(payload)
+        Log.d(TAG, "-> /app/rooms/$roomId/end-turn: $json")
+        stomp.sendJson("/app/rooms/$roomId/end-turn", json)
+    }
+
+    private data class JoinRequest(val name: String, val color: String)
+    private data class ClaimGiftRequest(val playerName: String, val delta: Int)
+    private data class StealResponseRequest(val playerName: String, val accept: Boolean)
+    private data class BuyFarmRequest(val playerName: String)
+    private data class BuyUnitRequest(val playerName: String, val type: String, val x: Int, val y: Int)
+    private data class EndTurnRequest(val playerName: String)
+
+    companion object { private const val TAG = "UnitMoveEndpoint" }
 }

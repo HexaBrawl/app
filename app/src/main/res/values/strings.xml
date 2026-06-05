@@ -92,5 +92,12 @@
     <string name="cheat_waiting_subtitle">But beware — you might get robbed.</string>
     <string name="cheat_waiting_for_opponent">Waiting for opponent…</string>
 
+    <!-- EN (values/strings.xml) -->
+    <string name="bottom_hud_buy_farm">Buy Farm</string>
+    <string name="bottom_hud_end_turn">End Turn</string>
+    <string name="unit_infantry">Infantry</string>
+    <string name="unit_archer">Archer</string>
+    <string name="unit_cavalry">Cavalry</string>
+    <string name="placement_choose_cell">Pick a cell for your %1$s</string>
 
 </resources>

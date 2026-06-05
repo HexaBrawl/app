@@ -179,6 +179,92 @@ class UnitMoveEndpointTest {
         }
     }
 
+    @Test
+    fun `buyFarm sends correct JSON`() {
+        endpoint.buyFarm("game1", "Alice")
+
+        verify {
+            stomp.sendJson(
+                "/app/rooms/game1/buy-farm",
+                """{"playerName":"Alice"}"""
+            )
+        }
+    }
+
+    @Test
+    fun `buyFarm uses correct room id`() {
+        endpoint.buyFarm("room-77", "Bob")
+
+        verify {
+            stomp.sendJson(
+                destination = "/app/rooms/room-77/buy-farm",
+                json = any()
+            )
+        }
+    }
+
+    @Test
+    fun `buyUnit sends correct JSON with all fields`() {
+        endpoint.buyUnit("game1", "Alice", UnitType.ARCHER, 3, 4)
+
+        verify {
+            stomp.sendJson(
+                "/app/rooms/game1/buy-unit",
+                """{"playerName":"Alice","type":"ARCHER","x":3,"y":4}"""
+            )
+        }
+    }
+
+    @Test
+    fun `buyUnit serializes UnitType correctly`() {
+        endpoint.buyUnit("g", "A", UnitType.INFANTRY, 0, 0)
+        endpoint.buyUnit("g", "B", UnitType.CAVALRY, 1, 1)
+        endpoint.buyUnit("g", "C", UnitType.ARCHER, 2, 2)
+
+        verify { stomp.sendJson(any(), """{"playerName":"A","type":"INFANTRY","x":0,"y":0}""") }
+        verify { stomp.sendJson(any(), """{"playerName":"B","type":"CAVALRY","x":1,"y":1}""") }
+        verify { stomp.sendJson(any(), """{"playerName":"C","type":"ARCHER","x":2,"y":2}""") }
+    }
+
+    @Test
+    fun `buyUnit uses correct room id`() {
+        endpoint.buyUnit("battle-9", "Alice", UnitType.INFANTRY, 7, 8)
+
+        verify {
+            stomp.sendJson(
+                destination = "/app/rooms/battle-9/buy-unit",
+                json = any()
+            )
+        }
+    }
+
+    @Test
+    fun `endTurn sends correct JSON`() {
+        endpoint.endTurn("game1", "Alice")
+
+        verify {
+            stomp.sendJson(
+                "/app/rooms/game1/end-turn",
+                """{"playerName":"Alice"}"""
+            )
+        }
+    }
+
+    @Test
+    fun `endTurn uses correct room id`() {
+        endpoint.endTurn("arena-55", "Bob")
+
+        verify {
+            stomp.sendJson(
+                destination = "/app/rooms/arena-55/end-turn",
+                json = any()
+            )
+        }
+    }
+
+
+
+
     // ---- subscribeToGameState ------------------------------------------
 
     @Test
