@@ -102,6 +102,8 @@ tasks.register<JacocoReport>("jacocoTestReport") {
         "**/ui/components/**",
         "**/ui/game/tophud/components/**",
         "**/ui/game/tophud/TopHud.kt",
+        "**/ui/game/bottomhud/components/**",
+        "**/ui/game/bottomhud/BottomHud.kt",
         "**/ui/game/GameScreen.kt",
         "**/ui/game/GameMap.kt",
         "**/ui/game/camera/CameraModifier*.*",
