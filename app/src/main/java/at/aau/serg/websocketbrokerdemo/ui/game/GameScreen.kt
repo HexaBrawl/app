@@ -8,11 +8,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import at.aau.serg.websocketbrokerdemo.data.serverside.GameStatus
 import at.aau.serg.websocketbrokerdemo.grid.MapLayouts
 import at.aau.serg.websocketbrokerdemo.network.GameSession
+import at.aau.serg.websocketbrokerdemo.ui.game.bottomhud.BottomHud
+import at.aau.serg.websocketbrokerdemo.ui.game.bottomhud.components.PlacementOverlay
 import at.aau.serg.websocketbrokerdemo.ui.game.camera.CameraState
 import at.aau.serg.websocketbrokerdemo.ui.game.tophud.TopHud
 import at.aau.serg.websocketbrokerdemo.ui.mainmenu.GameMode
@@ -45,6 +49,7 @@ fun GameScreen(
         }
     )
 
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val gameState by session.gameState
 
     val layout = remember(mode) { MapLayouts.forMode(mode) }
@@ -58,16 +63,17 @@ fun GameScreen(
     }
 
     val units = gameState?.units.orEmpty()
-    val buildings = gameState?.buildings.orEmpty()
     val players = gameState?.players.orEmpty()
     val localName = session.localPlayerName.value
     val pendingGift = gameState?.pendingGift
+    val currentTurn = gameState?.currentTurn
+    val status = gameState?.status ?: GameStatus.WAITING_FOR_PLAYERS
 
     Box(modifier = Modifier.fillMaxSize()) {
         GameMap(
             layout = layout,
             units = units,
-            buildings = buildings,
+            buildings = gameState?.buildings.orEmpty(),
             players = players,
             camera = camera,
             onCellTapped = { tapX, tapY, pixelToCell ->
@@ -85,5 +91,36 @@ fun GameScreen(
             session = session,
             modifier = Modifier.align(Alignment.TopCenter)
         )
+
+        BottomHud(
+            players = players,
+            buildings = gameState?.buildings.orEmpty(),
+            localName = localName,
+            currentTurn = currentTurn,
+            status = status,
+            placementMode = uiState.placementMode,
+            onBuyFarm = {
+                localName?.let { name ->
+                    session.endpoint.buyFarm(session.activeRoomId.value, name)
+                }
+            },
+            onSelectUnit = { type ->
+                viewModel.startPlacement(type)
+            },
+            onEndTurn = {
+                localName?.let { name ->
+                    session.endpoint.endTurn(session.activeRoomId.value, name)
+                }
+            },
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
+
+        uiState.placementMode?.let { type ->
+            PlacementOverlay(
+                type = type,
+                onCancel = viewModel::cancelPlacement,
+                modifier = Modifier.align(Alignment.TopCenter)
+            )
+        }
     }
 }
