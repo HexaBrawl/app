@@ -39,6 +39,7 @@ class GameViewModelTest {
     fun setUp() {
         endpoint = mockk(relaxed = true)
         justRun { endpoint.sendMove(any(), any()) }
+        justRun { endpoint.buyUnit(any(), any(), any(), any(), any()) }
         session = GameSession(
             endpoint = endpoint,
             activeRoomId = mutableStateOf("test-room"),
@@ -58,11 +59,12 @@ class GameViewModelTest {
     // ---- Initialer State -----------------------------------------------
 
     @Test
-    fun `initial state has no selection`() {
+    fun `initial state has no selection and no placement`() {
         assertNull(vm.uiState.value.selected)
+        assertNull(vm.uiState.value.placementMode)
     }
 
-    // ---- onCellTapped --------------------------------------------------
+    // ---- Normal flow ---------------------------------------------------
 
     @Test
     fun `onCellTapped on own unit sets selected`() {
@@ -76,7 +78,6 @@ class GameViewModelTest {
     @Test
     fun `onCellTapped on empty cell without selection ignores tap`() {
         vm.onCellTapped(5, 5, emptyList())
-
         assertNull(vm.uiState.value.selected)
         verify(exactly = 0) { endpoint.sendMove(any(), any()) }
     }
@@ -132,7 +133,54 @@ class GameViewModelTest {
         assertNull(session.lastError.value)
     }
 
-    // ---- tapToCell -----------------------------------------------------
+    // ---- Placement-Modus ---------------------------------------------
+
+    @Test
+    fun `startPlacement sets placementMode and clears selection`() {
+        // Erst was selektieren
+        vm.onCellTapped(2, 2, listOf(own(2, 2)))
+        // Dann placement starten
+        vm.startPlacement(UnitType.ARCHER)
+        assertEquals(UnitType.ARCHER, vm.uiState.value.placementMode)
+        assertNull(vm.uiState.value.selected)
+    }
+
+    @Test
+    fun `cancelPlacement resets placementMode`() {
+        vm.startPlacement(UnitType.INFANTRY)
+        vm.cancelPlacement()
+        assertNull(vm.uiState.value.placementMode)
+    }
+
+    @Test
+    fun `tap in placement mode sends buyUnit and exits mode`() {
+        vm.startPlacement(UnitType.ARCHER)
+        vm.onCellTapped(4, 5, emptyList())
+
+        verify {
+            endpoint.buyUnit(
+                roomId = "test-room",
+                playerName = alice,
+                type = UnitType.ARCHER,
+                x = 4,
+                y = 5
+            )
+        }
+        assertNull(vm.uiState.value.placementMode)
+    }
+
+    @Test
+    fun `tap in placement mode does not send move even if a unit was previously selected`() {
+        val unit = own(1, 1)
+        vm.onCellTapped(1, 1, listOf(unit)) // selektiert
+        vm.startPlacement(UnitType.CAVALRY) // selection wird gecancelt
+        vm.onCellTapped(2, 2, listOf(unit))
+
+        verify(exactly = 0) { endpoint.sendMove(any(), any()) }
+        verify(exactly = 1) { endpoint.buyUnit(any(), any(), any(), any(), any()) }
+    }
+
+    // ---- tapToCell ---------------------------------------------------
 
     @Test
     fun `tapToCell delegates to GameScreenLogic`() {

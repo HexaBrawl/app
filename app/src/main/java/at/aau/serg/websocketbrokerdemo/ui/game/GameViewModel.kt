@@ -4,6 +4,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.lifecycle.ViewModel
 import at.aau.serg.websocketbrokerdemo.data.serverside.GameUnit
 import at.aau.serg.websocketbrokerdemo.data.serverside.Move
+import at.aau.serg.websocketbrokerdemo.data.serverside.UnitType
 import at.aau.serg.websocketbrokerdemo.network.GameSession
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -26,6 +27,20 @@ class GameViewModel(
     val uiState: StateFlow<GameUiState> = _uiState.asStateFlow()
 
     /**
+     * Aktiviert den Platzierungs-Modus fuer eine gekaufte Einheit. Eine
+     * eventuelle Selection wird verworfen, weil beide State-Felder sich
+     * gegenseitig ausschliessen.
+     */
+    fun startPlacement(type: UnitType) {
+        _uiState.value = GameUiState(selected = null, placementMode = type)
+    }
+
+    /** Bricht den Platzierungs-Modus ohne Kauf ab. */
+    fun cancelPlacement() {
+        _uiState.value = _uiState.value.copy(placementMode = null)
+    }
+
+    /**
      * Verarbeitet einen Tap auf eine Hex-Zelle.
      *
      * Delegiert die Entscheidung an [GameScreenLogic.decideTapAction]
@@ -33,22 +48,35 @@ class GameViewModel(
      */
     fun onCellTapped(col: Int, row: Int, units: List<GameUnit>) {
         val localName = session.localPlayerName.value
-        val currentSelected = _uiState.value.selected
+        val state = _uiState.value
 
         when (val action = GameScreenLogic.decideTapAction(
             col = col,
             row = row,
             units = units,
             localName = localName,
-            currentlySelected = currentSelected
+            currentlySelected = state.selected,
+            placementMode = state.placementMode
         )) {
             is GameScreenLogic.TapAction.Select -> {
-                _uiState.value = _uiState.value.copy(selected = action.unit)
+                _uiState.value = state.copy(selected = action.unit)
             }
 
             is GameScreenLogic.TapAction.ExecuteMove -> {
                 sendMove(action.move)
-                _uiState.value = _uiState.value.copy(selected = null)
+                _uiState.value = state.copy(selected = null)
+            }
+
+            is GameScreenLogic.TapAction.PlaceUnit -> {
+                val name = localName ?: return
+                session.endpoint.buyUnit(
+                    roomId = session.activeRoomId.value,
+                    playerName = name,
+                    type = action.type,
+                    x = action.x,
+                    y = action.y
+                )
+                _uiState.value = state.copy(placementMode = null)
             }
 
             GameScreenLogic.TapAction.Ignore -> Unit
