@@ -64,6 +64,7 @@ fun GameMap(
                     }
                 }
             }
+
     ) {
         Image(
             painter = painterResource(id = R.drawable.bg_map2),
