@@ -53,7 +53,7 @@ fun FarmButton(
             Image(
                 painter = painterResource(id = R.drawable.farm_icon),
                 contentDescription = null,
-                modifier = Modifier.size(60.dp)
+                modifier = Modifier.size(50.dp)
             )
 
             // Preis oben rechts
@@ -75,7 +75,7 @@ fun FarmButton(
         Text(
             text = stringResource(R.string.bottom_hud_buy_farm),
             style = TextStyle(
-                fontSize = 12.sp,
+                fontSize = 11.sp,
                 fontWeight = FontWeight.ExtraBold,
                 color = ParchmentLight
             )
