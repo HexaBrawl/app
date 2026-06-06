@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.unit.dp
+import at.aau.serg.websocketbrokerdemo.ui.game.LocalHudSizing
 import at.aau.serg.websocketbrokerdemo.ui.theme.GoldCoinDark
 import at.aau.serg.websocketbrokerdemo.ui.theme.InkBlack
 import at.aau.serg.websocketbrokerdemo.ui.theme.ParchmentDark
@@ -28,10 +29,12 @@ fun HudMenuButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val sizing = LocalHudSizing.current
+
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
-            .size(52.dp)
+            .size(sizing.topMenuButtonSize)
             .shadow(4.dp, RoundedCornerShape(10.dp))
             .background(
                 brush = Brush.verticalGradient(listOf(ParchmentLight, ParchmentDark)),
@@ -44,7 +47,7 @@ fun HudMenuButton(
             imageVector = Icons.Filled.Menu,
             contentDescription = null,
             tint = InkBlack,
-            modifier = Modifier.size(30.dp)
+            modifier = Modifier.size(sizing.topMenuIconSize)
         )
     }
 }

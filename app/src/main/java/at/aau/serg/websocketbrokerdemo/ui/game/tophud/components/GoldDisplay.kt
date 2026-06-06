@@ -20,7 +20,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import at.aau.serg.websocketbrokerdemo.ui.game.LocalHudSizing
 import at.aau.serg.websocketbrokerdemo.ui.theme.GoldCoinLight
 import at.aau.serg.websocketbrokerdemo.ui.theme.WoodDark
 import com.example.myapplication.R
@@ -28,7 +28,7 @@ import com.example.myapplication.R
 /**
  * Gold-Anzeige links im Top-HUD.
  *
- * Kompakte Box: Muenze und Zahl haben den gleichen Abstand zum
+ * Kompakte dunkle Box: Muenze und Zahl haben den gleichen Abstand zum
  * Box-Rand und sitzen nah beieinander.
  */
 @Composable
@@ -36,6 +36,8 @@ fun GoldDisplay(
     gold: Int,
     modifier: Modifier = Modifier
 ) {
+    val sizing = LocalHudSizing.current
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
@@ -47,18 +49,21 @@ fun GoldDisplay(
                 shape = RoundedCornerShape(10.dp)
             )
             .border(2.dp, GoldCoinLight, RoundedCornerShape(10.dp))
-            .padding(horizontal = 8.dp, vertical = 4.dp)
+            .padding(
+                horizontal = 8.dp,
+                vertical = sizing.topBoxVerticalPadding
+            )
     ) {
         Image(
             painter = painterResource(id = R.drawable.gold_coin),
             contentDescription = null,
-            modifier = Modifier.size(40.dp)
+            modifier = Modifier.size(sizing.topGoldIconSize)
         )
-        Spacer(Modifier.width(6.dp))
+        Spacer(Modifier.width(sizing.topInnerSpacer))
         Text(
             text = gold.toString(),
             style = TextStyle(
-                fontSize = 24.sp,
+                fontSize = sizing.topGoldFontSize,
                 fontWeight = FontWeight.ExtraBold,
                 color = GoldCoinLight
             )

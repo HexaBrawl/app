@@ -23,7 +23,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import at.aau.serg.websocketbrokerdemo.ui.game.LocalHudSizing
 import at.aau.serg.websocketbrokerdemo.ui.theme.GoldCoinDark
 import at.aau.serg.websocketbrokerdemo.ui.theme.InkBlack
 import at.aau.serg.websocketbrokerdemo.ui.theme.ParchmentDark
@@ -46,6 +46,8 @@ fun IncomeAndGiftDisplay(
     onGiftClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val sizing = LocalHudSizing.current
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
@@ -55,12 +57,15 @@ fun IncomeAndGiftDisplay(
                 shape = RoundedCornerShape(10.dp)
             )
             .border(2.dp, GoldCoinDark, RoundedCornerShape(10.dp))
-            .padding(horizontal = 12.dp, vertical = 4.dp)
+            .padding(
+                horizontal = sizing.topBoxHorizontalPadding,
+                vertical = sizing.topBoxVerticalPadding
+            )
     ) {
         Text(
             text = "+$income",
             style = TextStyle(
-                fontSize = 22.sp,
+                fontSize = sizing.topIncomeNumberFontSize,
                 fontWeight = FontWeight.ExtraBold,
                 color = Color(0xFF2D7A1F)
             )
@@ -69,15 +74,15 @@ fun IncomeAndGiftDisplay(
         Text(
             text = stringResource(R.string.hud_per_round),
             style = TextStyle(
-                fontSize = 16.sp,
+                fontSize = sizing.topIncomeLabelFontSize,
                 fontWeight = FontWeight.Bold,
                 color = InkBlack
             )
         )
-        Spacer(Modifier.width(10.dp))
+        Spacer(Modifier.width(sizing.topInnerSpacer))
 
         val giftModifier = Modifier
-            .size(40.dp)
+            .size(sizing.topGiftIconSize)
             .alpha(if (giftEnabled) 1f else 0.35f)
             .let { if (giftEnabled) it.clickable(onClick = onGiftClick) else it }
 
