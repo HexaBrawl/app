@@ -7,7 +7,7 @@ import kotlin.math.max
 
 class CameraState(
     val mapSizeFactor: Float = 1.0f,
-    val minScale: Float = 1.0f,
+    val minScale: Float = 0.5f,
     val maxScale: Float = 4.0f
 ) {
 

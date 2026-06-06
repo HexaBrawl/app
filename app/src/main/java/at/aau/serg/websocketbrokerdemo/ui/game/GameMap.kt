@@ -41,6 +41,7 @@ import com.example.myapplication.R
  *  an. Taps werden daher auf der aeusseren Box gefangen und ueber
  *  [HexGridLogic.pixelToCell] aufgeloest.
  */
+
 @Composable
 fun GameMap(
     layout: MapLayout,
