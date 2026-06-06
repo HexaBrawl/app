@@ -11,4 +11,7 @@ data class RoomDTO(
     val joinCode: String,
     val mode: GameMode,
     val players: List<Player>
-)
+) {
+    /** Alias fuer LobbyRoomLogic, die roomId erwartet. */
+    val roomId: String get() = joinCode
+}
