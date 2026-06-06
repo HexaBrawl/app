@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import at.aau.serg.websocketbrokerdemo.data.serverside.PlayerColor
 import at.aau.serg.websocketbrokerdemo.data.serverside.UnitType
-import at.aau.serg.websocketbrokerdemo.ui.game.bottomhud.UnitIconProvider
+import at.aau.serg.websocketbrokerdemo.grid.UnitIconProvider
 import at.aau.serg.websocketbrokerdemo.ui.theme.GoldCoinDark
 import at.aau.serg.websocketbrokerdemo.ui.theme.InkBlack
 import at.aau.serg.websocketbrokerdemo.ui.theme.ParchmentDark
