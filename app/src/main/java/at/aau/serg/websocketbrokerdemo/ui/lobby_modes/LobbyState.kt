@@ -13,9 +13,11 @@ package at.aau.serg.websocketbrokerdemo.ui.lobby_modes
  */
 data class LobbyState(
     val showJoinDialog: Boolean = false,
-    val code: String = ""
+    val code: String = "",
+    val isLoading: Boolean = false,
+    val error: String? = null
 ) {
-    /** True wenn der aktuelle Code gueltig ist (4-8 Zeichen). */
+    /** True wenn der aktuelle Code gueltig ist (4-8 Zeichen) und nicht geladen wird. */
     val canJoin: Boolean
-        get() = JoinByCodeLogic.isValid(code)
+        get() = !isLoading && JoinByCodeLogic.isValid(code)
 }
