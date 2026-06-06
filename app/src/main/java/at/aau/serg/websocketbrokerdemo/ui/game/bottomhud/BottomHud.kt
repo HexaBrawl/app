@@ -64,7 +64,7 @@ fun BottomHud(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .padding(bottom = 24.dp, start = 8.dp, end = 8.dp)
+            .padding(bottom = 50.dp, start = 3.dp, end = 3.dp)
             .height(100.dp)
             .shadow(10.dp, RoundedCornerShape(14.dp))
             .background(
