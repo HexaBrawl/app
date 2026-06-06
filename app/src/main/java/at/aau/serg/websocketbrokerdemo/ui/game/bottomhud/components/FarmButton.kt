@@ -18,17 +18,19 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import at.aau.serg.websocketbrokerdemo.ui.game.LocalHudSizing
 import at.aau.serg.websocketbrokerdemo.ui.theme.InkBlack
 import at.aau.serg.websocketbrokerdemo.ui.theme.ParchmentDark
 import at.aau.serg.websocketbrokerdemo.ui.theme.ParchmentLight
 import com.example.myapplication.R
 
 /**
- * "Farm kaufen"-Pergament-Knopf links im Bottom-HUD.
+ * "Farm kaufen"-Knopf links im Bottom-HUD.
  *
- * Wird grayed out wenn der Spieler sich keine Farm leisten kann oder
- * nicht am Zug ist.
+ * Zeigt das Farm-Icon, einen Preis-Badge oben rechts (der Preis steigt
+ * dynamisch mit der Anzahl bereits gekaufter Farms) und ein Label
+ * darunter. Wird grayed out wenn der Spieler sich keine Farm leisten
+ * kann oder nicht am Zug ist.
  */
 @Composable
 fun FarmButton(
@@ -37,9 +39,14 @@ fun FarmButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val sizing = LocalHudSizing.current
+
     val baseModifier = modifier
         .alpha(if (enabled) 1f else 0.4f)
-        .padding(horizontal = 10.dp, vertical = 6.dp)
+        .padding(
+            horizontal = sizing.bottomItemHorizontalPadding,
+            vertical = sizing.bottomItemVerticalPadding
+        )
 
     val finalModifier = if (enabled) baseModifier.clickable(onClick = onClick) else baseModifier
 
@@ -47,13 +54,11 @@ fun FarmButton(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = finalModifier
     ) {
-        Box(
-            contentAlignment = Alignment.TopEnd
-        ) {
+        Box(contentAlignment = Alignment.TopEnd) {
             Image(
                 painter = painterResource(id = R.drawable.farm_icon),
                 contentDescription = null,
-                modifier = Modifier.size(60.dp)
+                modifier = Modifier.size(sizing.bottomIconSize)
             )
 
             // Preis oben rechts
@@ -65,7 +70,7 @@ fun FarmButton(
                 Text(
                     text = price.toString(),
                     style = TextStyle(
-                        fontSize = 12.sp,
+                        fontSize = sizing.bottomFarmPriceFontSize,
                         fontWeight = FontWeight.Bold,
                         color = InkBlack
                     )
@@ -75,7 +80,7 @@ fun FarmButton(
         Text(
             text = stringResource(R.string.bottom_hud_buy_farm),
             style = TextStyle(
-                fontSize = 12.sp,
+                fontSize = sizing.bottomTitleFontSize,
                 fontWeight = FontWeight.ExtraBold,
                 color = ParchmentLight
             )

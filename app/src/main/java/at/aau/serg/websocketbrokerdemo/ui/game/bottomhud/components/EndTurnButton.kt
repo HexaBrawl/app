@@ -16,8 +16,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import at.aau.serg.websocketbrokerdemo.ui.game.LocalHudSizing
 import at.aau.serg.websocketbrokerdemo.ui.theme.ParchmentLight
 import com.example.myapplication.R
 
@@ -32,9 +31,14 @@ fun EndTurnButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val sizing = LocalHudSizing.current
+
     val baseModifier = modifier
         .alpha(if (enabled) 1f else 0.4f)
-        .padding(horizontal = 10.dp, vertical = 6.dp)
+        .padding(
+            horizontal = sizing.bottomItemHorizontalPadding,
+            vertical = sizing.bottomItemVerticalPadding
+        )
 
     val finalModifier = if (enabled) baseModifier.clickable(onClick = onClick) else baseModifier
 
@@ -45,13 +49,13 @@ fun EndTurnButton(
         Image(
             painter = painterResource(id = R.drawable.hourglass_icon),
             contentDescription = null,
-            modifier = Modifier.size(50.dp)
+            modifier = Modifier.size(sizing.bottomIconSize)
         )
-        Spacer(Modifier.height(5.dp))
+        Spacer(Modifier.height(sizing.bottomLabelTopPadding))
         Text(
             text = stringResource(R.string.bottom_hud_end_turn),
             style = TextStyle(
-                fontSize = 12.sp,
+                fontSize = sizing.bottomTitleFontSize,
                 fontWeight = FontWeight.ExtraBold,
                 color = ParchmentLight
             )

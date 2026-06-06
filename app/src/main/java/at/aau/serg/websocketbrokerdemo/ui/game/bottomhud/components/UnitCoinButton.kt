@@ -2,7 +2,6 @@ package at.aau.serg.websocketbrokerdemo.ui.game.bottomhud.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
@@ -17,22 +16,22 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import at.aau.serg.websocketbrokerdemo.data.serverside.PlayerColor
 import at.aau.serg.websocketbrokerdemo.data.serverside.UnitType
-import at.aau.serg.websocketbrokerdemo.ui.game.bottomhud.UnitIconProvider
-import at.aau.serg.websocketbrokerdemo.ui.theme.GoldCoinDark
+import at.aau.serg.websocketbrokerdemo.grid.UnitIconProvider
+import at.aau.serg.websocketbrokerdemo.ui.game.LocalHudSizing
 import at.aau.serg.websocketbrokerdemo.ui.theme.InkBlack
 import at.aau.serg.websocketbrokerdemo.ui.theme.ParchmentDark
 
 /**
  * Truppen-Muenze im Bottom-HUD.
  *
- * Zeigt die Truppe in der Spielerfarbe an, hat einen Goldrand und einen
- * kleinen Preis-Badge unten dran. Wird grayed out wenn nicht leistbar
- * oder nicht am Zug.
+ * Zeigt die Truppe in der Spielerfarbe an mit einem Preis-Badge oben
+ * rechts. Wird grayed out wenn nicht leistbar oder nicht am Zug.
  *
- * Klick = Platzierungs-Modus starten.
+ * Klick = Platzierungs-Modus starten. [selected] kommt durch von der
+ * BottomHud, wird hier aktuell visuell nicht genutzt (kann spaeter
+ * fuer einen Selected-Border verwendet werden).
  */
 @Composable
 fun UnitCoinButton(
@@ -44,9 +43,11 @@ fun UnitCoinButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val sizing = LocalHudSizing.current
+
     Box(
         modifier = modifier
-            .size(60.dp)
+            .size(sizing.bottomIconSize)
             .alpha(if (enabled) 1f else 0.4f)
             .clickable(enabled = enabled, onClick = onClick)
     ) {
@@ -56,7 +57,7 @@ fun UnitCoinButton(
             contentDescription = null,
             modifier = Modifier
                 .align(Alignment.Center)
-                .size(60.dp)
+                .size(sizing.bottomIconSize)
         )
 
         // Preis oben rechts
@@ -70,7 +71,7 @@ fun UnitCoinButton(
             Text(
                 text = price.toString(),
                 style = TextStyle(
-                    fontSize = 16.sp,
+                    fontSize = sizing.bottomCoinPriceFontSize,
                     fontWeight = FontWeight.ExtraBold,
                     color = InkBlack
                 )
