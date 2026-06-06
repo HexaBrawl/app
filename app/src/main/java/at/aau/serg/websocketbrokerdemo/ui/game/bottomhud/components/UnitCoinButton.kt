@@ -46,7 +46,7 @@ fun UnitCoinButton(
 ) {
     Box(
         modifier = modifier
-            .size(60.dp)
+            .size(50.dp)
             .alpha(if (enabled) 1f else 0.4f)
             .clickable(enabled = enabled, onClick = onClick)
     ) {
@@ -56,7 +56,7 @@ fun UnitCoinButton(
             contentDescription = null,
             modifier = Modifier
                 .align(Alignment.Center)
-                .size(60.dp)
+                .size(50.dp)
         )
 
         // Preis oben rechts
