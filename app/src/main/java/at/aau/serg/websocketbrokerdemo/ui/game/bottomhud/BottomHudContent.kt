@@ -23,7 +23,6 @@ import at.aau.serg.websocketbrokerdemo.data.serverside.GameStatus
 import at.aau.serg.websocketbrokerdemo.data.serverside.Player
 import at.aau.serg.websocketbrokerdemo.data.serverside.UnitType
 import at.aau.serg.websocketbrokerdemo.ui.game.LocalHudSizing
-import at.aau.serg.websocketbrokerdemo.ui.game.GameHudSizingLogic
 import at.aau.serg.websocketbrokerdemo.ui.game.bottomhud.components.EndTurnButton
 import at.aau.serg.websocketbrokerdemo.ui.game.bottomhud.components.FarmButton
 import at.aau.serg.websocketbrokerdemo.ui.game.bottomhud.components.UnitCoinButton
@@ -35,7 +34,7 @@ import at.aau.serg.websocketbrokerdemo.ui.theme.GoldCoinLight
  * Enthält (von links nach rechts): Farm-Button, drei Einheitenbuttons
  * (Infanterie, Bogenschütze, Kavallerie) und den Zug-Beenden-Button.
  * Buttons sind nur aktiv wenn der lokale Spieler am Zug ist und
- * genug Gold hat. Styling und Abstände kommen aus [GameHudSizingLogic].
+ * genug Gold hat. Styling und Abstände kommen aus [LocalHudSizing].
  */
 
 @Composable

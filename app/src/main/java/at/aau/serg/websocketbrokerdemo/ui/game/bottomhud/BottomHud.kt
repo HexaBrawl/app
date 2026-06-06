@@ -1,18 +1,36 @@
 package at.aau.serg.websocketbrokerdemo.ui.game.bottomhud
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import at.aau.serg.websocketbrokerdemo.data.serverside.Building
 import at.aau.serg.websocketbrokerdemo.data.serverside.GameStatus
 import at.aau.serg.websocketbrokerdemo.data.serverside.Player
 import at.aau.serg.websocketbrokerdemo.data.serverside.UnitType
-import at.aau.serg.websocketbrokerdemo.ui.game.GameHudSizing
+import at.aau.serg.websocketbrokerdemo.ui.game.HudSizing
 import at.aau.serg.websocketbrokerdemo.ui.game.LocalHudSizing
-import at.aau.serg.websocketbrokerdemo.ui.game.GameHudSizingLogic
+import at.aau.serg.websocketbrokerdemo.ui.game.bottomhud.components.EndTurnButton
+import at.aau.serg.websocketbrokerdemo.ui.game.bottomhud.components.FarmButton
+import at.aau.serg.websocketbrokerdemo.ui.game.bottomhud.components.UnitCoinButton
+import at.aau.serg.websocketbrokerdemo.ui.theme.GoldCoinLight
 
 /**
  * Bottom-HUD des GameScreens.
@@ -23,7 +41,7 @@ import at.aau.serg.websocketbrokerdemo.ui.game.GameHudSizingLogic
  *  - Rechts: Runde-aus-Knopf
  *
  * Skaliert sich automatisch mit der Bildschirmbreite ueber [HudSizing] +
- * [GameHudSizingLogic]. Sub-Components lesen die Werte aus dem
+ * [LocalHudSizing]. Sub-Components lesen die Werte aus dem
  * CompositionLocal -- keine durchgereichten Sizing-Parameter noetig.
  */
 @Composable
@@ -40,20 +58,91 @@ fun BottomHud(
     modifier: Modifier = Modifier
 ) {
     BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
-        val sizing = remember(maxWidth) { GameHudSizingLogic.forWidth(maxWidth.value) }
+        val sizing = remember(maxWidth) { HudSizing.forWidth(maxWidth) }
 
         CompositionLocalProvider(LocalHudSizing provides sizing) {
-            BottomHudContent(
-                players = players,
-                buildings = buildings,
-                localName = localName,
-                currentTurn = currentTurn,
-                status = status,
-                placementMode = placementMode,
-                onBuyFarm = onBuyFarm,
-                onSelectUnit = onSelectUnit,
-                onEndTurn = onEndTurn
-            )
+            val gold = BottomHudLogic.goldOf(players, localName)
+            val playerColor = BottomHudLogic.colorOf(players, localName)
+            val isMyTurn = BottomHudLogic.isMyTurn(currentTurn, status, localName)
+            val farmPrice = BottomHudLogic.farmPrice(buildings, localName)
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    // Bottom-Padding fix bei 50dp -- das ist
+                    // Navigation-Bar-Abstand, soll NICHT mit der
+                    // Bildschirmbreite skalieren.
+                    .padding(
+                        bottom = 50.dp,
+                        start = sizing.bottomBarSidePadding,
+                        end = sizing.bottomBarSidePadding
+                    )
+                    .height(sizing.bottomBarHeight)
+                    .shadow(10.dp, RoundedCornerShape(14.dp))
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                Color(0xFF361B05),
+                                Color(0xFF361B05)
+                            )
+                        ),
+                        shape = RoundedCornerShape(14.dp)
+                    )
+                    .border(3.dp, GoldCoinLight, RoundedCornerShape(14.dp))
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = sizing.bottomBarInnerPadding)
+                ) {
+                    FarmButton(
+                        enabled = BottomHudLogic.canBuyFarm(gold, isMyTurn, buildings, localName),
+                        price = farmPrice,
+                        onClick = onBuyFarm
+                    )
+
+                    Spacer(Modifier.weight(1f))
+
+                    UnitCoinButton(
+                        type = UnitType.INFANTRY,
+                        playerColor = playerColor,
+                        price = BottomHudLogic.priceOf(UnitType.INFANTRY),
+                        enabled = BottomHudLogic.canBuyUnit(UnitType.INFANTRY, gold, isMyTurn),
+                        selected = placementMode == UnitType.INFANTRY,
+                        onClick = { onSelectUnit(UnitType.INFANTRY) }
+                    )
+
+                    Spacer(Modifier.width(sizing.bottomCoinSpacing))
+
+                    UnitCoinButton(
+                        type = UnitType.ARCHER,
+                        playerColor = playerColor,
+                        price = BottomHudLogic.priceOf(UnitType.ARCHER),
+                        enabled = BottomHudLogic.canBuyUnit(UnitType.ARCHER, gold, isMyTurn),
+                        selected = placementMode == UnitType.ARCHER,
+                        onClick = { onSelectUnit(UnitType.ARCHER) }
+                    )
+
+                    Spacer(Modifier.width(sizing.bottomCoinSpacing))
+
+                    UnitCoinButton(
+                        type = UnitType.CAVALRY,
+                        playerColor = playerColor,
+                        price = BottomHudLogic.priceOf(UnitType.CAVALRY),
+                        enabled = BottomHudLogic.canBuyUnit(UnitType.CAVALRY, gold, isMyTurn),
+                        selected = placementMode == UnitType.CAVALRY,
+                        onClick = { onSelectUnit(UnitType.CAVALRY) }
+                    )
+
+                    Spacer(Modifier.weight(1f))
+
+                    EndTurnButton(
+                        enabled = BottomHudLogic.canEndTurn(isMyTurn),
+                        onClick = onEndTurn
+                    )
+                }
+            }
         }
     }
 }
