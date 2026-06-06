@@ -137,9 +137,7 @@ fun LobbyScreen(
             onCodeChange = viewModel::onCodeChange,
             onDismiss = viewModel::closeJoinDialog,
             onJoin = {
-                if (viewModel.tryJoinByCode()) {
-                    navController.navigate(waitingScreen.route)
-                }
+                navController.navigate(waitingScreen.route)
             }
         )
     }
