@@ -30,19 +30,21 @@ class LobbyStateTest {
 
     @Test
     fun `canJoin is false for short code`() {
-        val state = LobbyState(code = "ABC")
+        // Min is now 6
+        val state = LobbyState(code = "ABCDE")
         assertFalse(state.canJoin)
     }
 
     @Test
-    fun `canJoin is true for valid 4-character code`() {
-        val state = LobbyState(code = "ABCD")
+    fun `canJoin is true for valid 6-character code`() {
+        val state = LobbyState(code = "123456")
         assertTrue(state.canJoin)
     }
 
     @Test
-    fun `canJoin is true for valid 8-character code`() {
-        val state = LobbyState(code = "ABCDEFGH")
-        assertTrue(state.canJoin)
+    fun `canJoin is false for long code`() {
+        // Max is now 6
+        val state = LobbyState(code = "1234567")
+        assertFalse(state.canJoin)
     }
 }
