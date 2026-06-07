@@ -120,13 +120,6 @@ fun LobbyScreen(
                 sealColor = SealColor.Blue,
                 onClick = { viewModel.openJoinDialog() }
             )
-            ActionCard(
-                icon = Icons.Filled.Casino,
-                title = stringResource(R.string.lobby_join_random),
-                subtitle = stringResource(R.string.lobby_join_random_sub),
-                sealColor = SealColor.Gold,
-                onClick = { navController.navigate(waitingScreen.route) }
-            )
         }
     }
 
