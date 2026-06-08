@@ -10,7 +10,9 @@ package at.aau.serg.websocketbrokerdemo.data.serverside
 data class RoomDTO(
     val joinCode: String,
     val mode: GameMode,
-    val players: List<Player>
+    val players: List<Player>,
+    val maxPlayers: Int = 0,
+    val currentPlayers: Int = 0
 ) {
     /** Alias fuer LobbyRoomLogic, die roomId erwartet. */
     val roomId: String get() = joinCode
