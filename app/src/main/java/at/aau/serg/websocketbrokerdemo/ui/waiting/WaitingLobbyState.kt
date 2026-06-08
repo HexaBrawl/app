@@ -13,6 +13,7 @@ import at.aau.serg.websocketbrokerdemo.ui.waiting.model.PlayerSlot
  *  - [countdown]  Sekunden bis zum Spielstart, -1 wenn nicht laeuft
  */
 data class WaitingLobbyState(
+    val roomId: String = "",
     val slots: List<PlayerSlot> = emptyList(),
     val countdown: Int = -1
 ) {
