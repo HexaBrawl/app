@@ -75,7 +75,13 @@ fun WaitingLobbyScreen(
     session: GameSession,
     viewModel: WaitingLobbyViewModel = viewModel(
         factory = viewModelFactory {
-            initializer { WaitingLobbyViewModel(mode, session.activeRoomId.value) }
+            initializer {
+                WaitingLobbyViewModel(
+                    mode = mode,
+                    initialRoomId = session.activeRoomId.value,
+                    initialJoinCode = session.activeJoinCode.value
+                )
+            }
         }
     )
 ) {
@@ -164,9 +170,9 @@ fun WaitingLobbyScreen(
                 )
             )
 
-            if (state.roomId.isNotEmpty()) {
+            if (state.joinCode.isNotEmpty()) {
                 Text(
-                    text = stringResource(R.string.waiting_room_id, state.roomId),
+                    text = stringResource(R.string.waiting_room_id, state.joinCode),
                     style = TextStyle(
                         fontSize = 14.sp,
                         color = GoldCoinLight.copy(alpha = 0.8f),
@@ -177,7 +183,7 @@ fun WaitingLobbyScreen(
                     modifier = Modifier
                         .background(Color.Black.copy(alpha = 0.3f), shape = RoundedCornerShape(4.dp))
                         .clickable {
-                            clipboardManager.setText(AnnotatedString(state.roomId))
+                            clipboardManager.setText(AnnotatedString(state.joinCode))
                         }
                         .padding(horizontal = 12.dp, vertical = 4.dp)
                 )
