@@ -25,6 +25,7 @@ object BottomHudLogic {
         UnitType.ARCHER -> 5
         UnitType.CAVALRY -> 5
         UnitType.SKELETON -> Int.MAX_VALUE // nicht kaufbar
+        UnitType.BASE -> Int.MAX_VALUE     // Basis ist die Heimatfeste des Spielers - kein kaufbares Item
     }
 
     /** Gold-Bestand des lokalen Spielers, 0 wenn nicht gefunden. */
