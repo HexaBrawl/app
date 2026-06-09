@@ -26,7 +26,6 @@ fun LobbyNetworkSync(
     navController: NavController
 ) {
     val localName = viewModel.localName
-    val localColor = viewModel.localColor
 
     DisposableEffect(session.activeRoomId.value) {
         val job = session.endpoint.subscribeToGameState(session.activeRoomId.value) { state ->
@@ -35,11 +34,22 @@ fun LobbyNetworkSync(
         onDispose { job.cancel() }
     }
 
-    // Anmelden sobald Name+Farbe feststehen.
-    LaunchedEffect(localName, localColor) {
+    // Anmelden sobald der lokale Name feststeht.
+    //
+    // Die Farbe wird BEWUSST nicht mitgeschickt (color = null). Der Server
+    // vergibt selbst eine freie Farbe und broadcasted sie ueber den
+    // GameState an alle Spieler im Raum. Damit gibt es keinen Konflikt
+    // mehr, wenn beide Clients lokal mit dem RED-Default ihres Slots
+    // initialisiert werden -- der zweite Spieler wuerde sonst vom Server
+    // mit COLOR_ALREADY_TAKEN abgelehnt und taucht in keinem Raum auf.
+    LaunchedEffect(localName) {
         if (localName.isNotBlank()) {
             session.localPlayerName.value = localName
-            session.endpoint.joinGame(session.activeRoomId.value, localName, localColor)
+            session.endpoint.joinGame(
+                roomId = session.activeRoomId.value,
+                playerName = localName,
+                color = null
+            )
         }
     }
 

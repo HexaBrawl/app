@@ -115,6 +115,30 @@ class UnitMoveEndpointTest {
         verify { stomp.sendJson(any(), """{"name":"C","color":"BLUE"}""") }
     }
 
+    @Test
+    fun `joinGame without color sends null in JSON so server picks a free color`() {
+        endpoint.joinGame(roomId = "game1", playerName = "Max")
+
+        verify {
+            stomp.sendJson(
+                "/app/rooms/game1/join",
+                """{"name":"Max","color":null}"""
+            )
+        }
+    }
+
+    @Test
+    fun `joinGame with explicit null color sends null in JSON`() {
+        endpoint.joinGame(roomId = "game1", playerName = "Max", color = null)
+
+        verify {
+            stomp.sendJson(
+                "/app/rooms/game1/join",
+                """{"name":"Max","color":null}"""
+            )
+        }
+    }
+
     // ---- claimCheatGift ------------------------------------------------
 
     @Test
