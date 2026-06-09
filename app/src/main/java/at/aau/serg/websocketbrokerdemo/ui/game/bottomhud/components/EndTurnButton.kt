@@ -51,7 +51,7 @@ fun EndTurnButton(
         Text(
             text = stringResource(R.string.bottom_hud_end_turn),
             style = TextStyle(
-                fontSize = 12.sp,
+                fontSize = 11.sp,
                 fontWeight = FontWeight.ExtraBold,
                 color = ParchmentLight
             )

@@ -159,7 +159,7 @@ fun LobbyScreen(
                     subtitle = stringResource(R.string.lobby_join_random_sub),
                     sealColor = SealColor.Gold,
                     onClick = {
-                        // TODO: Implement join random logic if needed, currently navigating to waiting
+                        // TODO: Implement join random logic if needed
                         navController.navigate(waitingScreen.route)
                     }
                 )
@@ -176,19 +176,5 @@ fun LobbyScreen(
                 }
             }
         }
-    }
-
-    if (state.showJoinDialog) {
-        JoinByCodeDialog(
-            code = state.code,
-            canJoin = state.canJoin,
-            onCodeChange = viewModel::onCodeChange,
-            onDismiss = viewModel::closeJoinDialog,
-            onJoin = {
-                viewModel.tryJoinByCodeAsync {
-                    navController.navigate(waitingScreen.route)
-                }
-            }
-        )
     }
 }

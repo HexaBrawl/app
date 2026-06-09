@@ -63,7 +63,7 @@ fun ActionCard(
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
-                .size(54.dp)
+                .size(84.dp)
                 .shadow(4.dp, CircleShape)
                 .background(
                     brush = Brush.radialGradient(
@@ -88,7 +88,7 @@ fun ActionCard(
             Text(
                 text = title,
                 style = TextStyle(
-                    fontSize = 17.sp,
+                    fontSize = 20.sp,
                     fontWeight = FontWeight.ExtraBold,
                     color = InkBlack,
                     letterSpacing = 0.5.sp
@@ -96,7 +96,7 @@ fun ActionCard(
             )
             Text(
                 text = subtitle,
-                style = TextStyle(fontSize = 12.sp, color = InkBrown)
+                style = TextStyle(fontSize = 14.sp, color = InkBrown)
             )
         }
 
