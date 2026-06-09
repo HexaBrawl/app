@@ -175,6 +175,25 @@ fun LobbyScreen(
                     CircularProgressIndicator(color = Color.White)
                 }
             }
+
+            // "Mit Code beitreten"-Dialog. Wird angezeigt, sobald der User
+            // die zugehoerige ActionCard klickt und das ViewModel
+            // showJoinDialog auf true setzt. Schliesst sich automatisch,
+            // wenn der Beitritt erfolgreich war (LobbyEffect.CloseJoinDialog)
+            // oder der User onDismiss triggert.
+            if (state.showJoinDialog) {
+                JoinByCodeDialog(
+                    code = state.code,
+                    canJoin = state.canJoin,
+                    onCodeChange = { viewModel.onCodeChange(it) },
+                    onDismiss = { viewModel.closeJoinDialog() },
+                    onJoin = {
+                        viewModel.tryJoinByCodeAsync {
+                            navController.navigate(waitingScreen.route)
+                        }
+                    }
+                )
+            }
         }
     }
 }
