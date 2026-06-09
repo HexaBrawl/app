@@ -116,25 +116,29 @@ class UnitMoveEndpointTest {
     }
 
     @Test
-    fun `joinGame without color sends null in JSON so server picks a free color`() {
+    fun `joinGame without color omits the color field so server picks a free color`() {
+        // Gson laesst null-Felder per Default weg. Der Server-Endpoint hat
+        // color: PlayerColor? = null mit Default null, sodass ein fehlendes
+        // Feld semantisch identisch ist zu "color": null - in beiden Faellen
+        // vergibt der Server eine freie Farbe.
         endpoint.joinGame(roomId = "game1", playerName = "Max")
 
         verify {
             stomp.sendJson(
                 "/app/rooms/game1/join",
-                """{"name":"Max","color":null}"""
+                """{"name":"Max"}"""
             )
         }
     }
 
     @Test
-    fun `joinGame with explicit null color sends null in JSON`() {
+    fun `joinGame with explicit null color omits the color field in JSON`() {
         endpoint.joinGame(roomId = "game1", playerName = "Max", color = null)
 
         verify {
             stomp.sendJson(
                 "/app/rooms/game1/join",
-                """{"name":"Max","color":null}"""
+                """{"name":"Max"}"""
             )
         }
     }
