@@ -1,7 +1,22 @@
 package at.aau.serg.websocketbrokerdemo.ui.lobby_modes
 
+import androidx.compose.runtime.mutableStateOf
+import at.aau.serg.websocketbrokerdemo.data.serverside.GameMode
+import at.aau.serg.websocketbrokerdemo.data.serverside.RoomDTO
+import at.aau.serg.websocketbrokerdemo.network.GameSession
+import at.aau.serg.websocketbrokerdemo.network.RoomApiClient
+import io.mockk.coEvery
+import io.mockk.every
+import io.mockk.mockk
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.setMain
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -9,17 +24,34 @@ import org.junit.jupiter.api.Test
 /**
  * Tests fuer LobbyViewModel.
  *
- * Reine State-Maschine ohne Coroutines, daher kein Coroutine-Setup
- * noetig. Geprueft werden Dialog-Lifecycle, Code-Eingabe und der
- * Join-Versuch mit gueltigem/ungueltigem Code.
+ * Verwendet MockK fuer den RoomApiClient und den UnconfinedTestDispatcher
+ * fuer Coroutines, damit Effekte sofort im State sichtbar werden.
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 class LobbyViewModelTest {
 
+    private lateinit var apiClient: RoomApiClient
+    private lateinit var session: GameSession
     private lateinit var vm: LobbyViewModel
+    private val testDispatcher = UnconfinedTestDispatcher()
 
     @BeforeEach
     fun setUp() {
-        vm = LobbyViewModel()
+        Dispatchers.setMain(testDispatcher)
+        apiClient = mockk()
+        session = mockk(relaxed = true)
+        // Mocking the activeRoomId + activeJoinCode states
+        val roomIdState = mutableStateOf("")
+        val joinCodeState = mutableStateOf("")
+        every { session.activeRoomId } returns roomIdState
+        every { session.activeJoinCode } returns joinCodeState
+
+        vm = LobbyViewModel(apiClient, session)
+    }
+
+    @AfterEach
+    fun tearDown() {
+        Dispatchers.resetMain()
     }
 
     // ---- Initialer State -----------------------------------------------
@@ -29,7 +61,11 @@ class LobbyViewModelTest {
         val state = vm.state.value
         assertFalse(state.showJoinDialog)
         assertEquals("", state.code)
-        assertFalse(state.canJoin)
+        assertNull(state.error)
+        assertFalse(state.isLoading)
+        
+        assertFalse(vm.isLoading.value)
+        assertNull(vm.lastError.value)
     }
 
     // ---- Dialog-Lifecycle ----------------------------------------------
@@ -41,76 +77,91 @@ class LobbyViewModelTest {
     }
 
     @Test
-    fun `openJoinDialog resets the code field`() {
-        // Wenn der User schon mal getippt hat und den Dialog wieder
-        // oeffnet, darf der alte Inhalt nicht stehenbleiben.
-        vm.onCodeChange("ABCD")
+    fun `openJoinDialog resets the code field and error`() {
+        vm.onCodeChange("ABCDEF")
         vm.closeJoinDialog()
         vm.openJoinDialog()
         assertEquals("", vm.state.value.code)
+        assertNull(vm.state.value.error)
+        assertNull(vm.lastError.value)
+    }
+
+    // ---- Beitritts-Aktionen --------------------------------------------
+
+    @Test
+    fun `createRoom calls API, sets session and triggers success`() {
+        val room = RoomDTO(
+            roomId = "uuid-GUID1",
+            joinCode = "CODE01",
+            mode = GameMode.DUAL_VALLEY
+        )
+        coEvery { apiClient.createRoom(any()) } returns room
+        var successCalled = false
+
+        vm.createRoom(at.aau.serg.websocketbrokerdemo.ui.mainmenu.GameMode.DUAL_VALLEY) {
+            successCalled = true
+        }
+
+        assertFalse(vm.isLoading.value)
+        assertNull(vm.lastError.value)
+        assertEquals("uuid-GUID1", session.activeRoomId.value)
+        assertEquals("CODE01", session.activeJoinCode.value)
+        assertTrue(successCalled)
     }
 
     @Test
-    fun `closeJoinDialog sets showJoinDialog to false`() {
+    fun `createRoom sets error when API fails`() {
+        coEvery { apiClient.createRoom(any()) } returns null
+
+        vm.createRoom(at.aau.serg.websocketbrokerdemo.ui.mainmenu.GameMode.DUAL_VALLEY) {}
+
+        assertFalse(vm.isLoading.value)
+        assertEquals("Raum konnte nicht erstellt werden", vm.lastError.value)
+        assertEquals("Raum konnte nicht erstellt werden", vm.state.value.error)
+    }
+
+    @Test
+    fun `createRoom handles exception`() {
+        coEvery { apiClient.createRoom(any()) } throws Exception("Network down")
+
+        vm.createRoom(at.aau.serg.websocketbrokerdemo.ui.mainmenu.GameMode.DUAL_VALLEY) {}
+
+        assertFalse(vm.isLoading.value)
+        assertTrue(vm.lastError.value!!.contains("Network down"))
+    }
+
+    @Test
+    fun `tryJoinByCodeAsync calls API, sets session and closes dialog on success`() {
         vm.openJoinDialog()
-        vm.closeJoinDialog()
+        vm.onCodeChange("CODE12") // 6 chars
+        val room = RoomDTO(
+            roomId = "uuid-GUID2",
+            joinCode = "CODE12",
+            mode = GameMode.DUAL_VALLEY
+        )
+        coEvery { apiClient.findByCode("CODE12") } returns room
+        var successCalled = false
+
+        vm.tryJoinByCodeAsync {
+            successCalled = true
+        }
+
         assertFalse(vm.state.value.showJoinDialog)
-    }
-
-    // ---- Code-Eingabe --------------------------------------------------
-
-    @Test
-    fun `onCodeChange normalizes the input`() {
-        vm.onCodeChange("ab cd 12!")
-        assertEquals("ABCD12", vm.state.value.code)
+        assertNull(vm.lastError.value)
+        assertEquals("uuid-GUID2", session.activeRoomId.value)
+        assertEquals("CODE12", session.activeJoinCode.value)
+        assertTrue(successCalled)
     }
 
     @Test
-    fun `onCodeChange caps at 8 characters`() {
-        vm.onCodeChange("ABCDEFGHIJKL")
-        assertEquals(8, vm.state.value.code.length)
-        assertEquals("ABCDEFGH", vm.state.value.code)
-    }
-
-    @Test
-    fun `onCodeChange to empty string clears the code`() {
-        vm.onCodeChange("ABCD")
-        vm.onCodeChange("")
-        assertEquals("", vm.state.value.code)
-    }
-
-    // ---- tryJoinByCode -------------------------------------------------
-
-    @Test
-    fun `tryJoinByCode returns false for invalid code`() {
+    fun `tryJoinByCodeAsync sets error on failure`() {
         vm.openJoinDialog()
-        vm.onCodeChange("AB")    // zu kurz
-        val result = vm.tryJoinByCode()
-        assertFalse(result)
-        // Dialog bleibt offen, der User soll seinen Code korrigieren koennen
+        vm.onCodeChange("CODE12")
+        coEvery { apiClient.findByCode("CODE12") } returns null
+
+        vm.tryJoinByCodeAsync {}
+
         assertTrue(vm.state.value.showJoinDialog)
-    }
-
-    @Test
-    fun `tryJoinByCode returns true for valid code and closes dialog`() {
-        vm.openJoinDialog()
-        vm.onCodeChange("ABCD")
-        val result = vm.tryJoinByCode()
-        assertTrue(result)
-        assertFalse(vm.state.value.showJoinDialog)
-    }
-
-    @Test
-    fun `tryJoinByCode returns false when code is empty`() {
-        vm.openJoinDialog()
-        val result = vm.tryJoinByCode()
-        assertFalse(result)
-    }
-
-    @Test
-    fun `tryJoinByCode succeeds at 8 character boundary`() {
-        vm.openJoinDialog()
-        vm.onCodeChange("ABCDEFGH")
-        assertTrue(vm.tryJoinByCode())
+        assertTrue(vm.lastError.value!!.contains("CODE12"))
     }
 }

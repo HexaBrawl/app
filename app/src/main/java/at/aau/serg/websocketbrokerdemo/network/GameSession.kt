@@ -11,7 +11,12 @@ import at.aau.serg.websocketbrokerdemo.data.serverside.GameState
  * Lifecycle is owned by `MainActivity`. UI screens receive this object and
  * observe [gameState] / [lastError] instead of building their own connections.
  *
- *  - [activeRoomId]      Aktueller Raum, ueber den die Subscriptions laufen.
+ *  - [activeRoomId]      Aktueller Raum (UUID), ueber den die Subscriptions
+ *                        und alle STOMP-Pfade laufen
+ *                        (/app/rooms/{roomId}/join, /move, /end-turn, ...).
+ *  - [activeJoinCode]    Menschenlesbarer 6-Zeichen-Code des aktuellen Raums.
+ *                        Wird ausschliesslich fuer Anzeige + Clipboard in der
+ *                        Wartelobby verwendet -- NICHT fuer STOMP-Pfade.
  *  - [gameState]         Letzter vom Server empfangener Spielzustand,
  *                        null vor der ersten Nachricht.
  *  - [lastError]         Letzte vom Server empfangene Fehlermeldung,
@@ -22,7 +27,8 @@ import at.aau.serg.websocketbrokerdemo.data.serverside.GameState
  */
 class GameSession(
     val endpoint: UnitMoveEndpoint,
-    val activeRoomId: MutableState<String> = mutableStateOf("game1"),
+    val activeRoomId: MutableState<String> = mutableStateOf(""),
+    val activeJoinCode: MutableState<String> = mutableStateOf(""),
     val gameState: MutableState<GameState?> = mutableStateOf(null),
     val lastError: MutableState<ErrorMessage?> = mutableStateOf(null),
     val localPlayerName: MutableState<String?> = mutableStateOf(null)

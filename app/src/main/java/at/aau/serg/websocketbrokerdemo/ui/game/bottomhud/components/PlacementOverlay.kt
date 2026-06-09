@@ -52,6 +52,7 @@ fun PlacementOverlay(
         UnitType.ARCHER -> stringResource(R.string.unit_archer)
         UnitType.CAVALRY -> stringResource(R.string.unit_cavalry)
         UnitType.SKELETON -> ""
+        UnitType.BASE -> ""   // Basis wird nicht ueber das Placement-UI gesetzt - sie wird vom Server beim Spielstart automatisch platziert
     }
 
     Row(

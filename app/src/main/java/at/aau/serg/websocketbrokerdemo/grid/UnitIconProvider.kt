@@ -37,5 +37,11 @@ object UnitIconProvider {
             PlayerColor.GREEN -> R.drawable.figure_green_archer
             PlayerColor.YELLOW -> R.drawable.figure_yellow_archer
         }
+        UnitType.BASE -> when (color) {
+            PlayerColor.RED -> R.drawable.castle_red
+            PlayerColor.BLUE -> R.drawable.castle_blue
+            PlayerColor.GREEN -> R.drawable.castle_green
+            PlayerColor.YELLOW -> R.drawable.castle_yellow
+        }
     }
 }

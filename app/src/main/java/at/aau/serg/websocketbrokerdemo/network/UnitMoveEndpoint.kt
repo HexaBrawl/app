@@ -55,8 +55,20 @@ class UnitMoveEndpoint(
         }
     }
 
-    fun joinGame(roomId: String, playerName: String, color: PlayerColor) {
-        val payload = JoinRequest(name = playerName, color = color.name)
+    /**
+     * Tritt einem Raum bei.
+     *
+     * Farb-Vergabe: Wenn [color] null ist, vergibt der Server eine freie
+     * Farbe und schickt sie via GameState-Broadcast zurueck. Damit gibt
+     * es keine Race-Condition zwischen "beide Clients schicken default
+     * RED" und "Server lehnt den zweiten mit COLOR_ALREADY_TAKEN ab".
+     *
+     * Eine explizite Farbe wird nur dann mitgegeben, wenn der User in
+     * der Wartelobby bewusst eine bestimmte Farbe gewaehlt hat. Solange
+     * das UI noch keinen Color-Picker hat, bleibt color = null.
+     */
+    fun joinGame(roomId: String, playerName: String, color: PlayerColor? = null) {
+        val payload = JoinRequest(name = playerName, color = color?.name)
         val json = gson.toJson(payload)
         Log.d(TAG, "-> /app/rooms/$roomId/join: $json")
         stomp.sendJson("/app/rooms/$roomId/join", json)
@@ -132,7 +144,7 @@ class UnitMoveEndpoint(
         stomp.sendJson("/app/rooms/$roomId/end-turn", json)
     }
 
-    private data class JoinRequest(val name: String, val color: String)
+    private data class JoinRequest(val name: String, val color: String?)
     private data class ClaimGiftRequest(val playerName: String, val delta: Int)
     private data class StealResponseRequest(val playerName: String, val accept: Boolean)
     private data class BuyFarmRequest(val playerName: String)
