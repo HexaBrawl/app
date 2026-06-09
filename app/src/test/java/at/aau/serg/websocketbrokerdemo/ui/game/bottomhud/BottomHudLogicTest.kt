@@ -274,6 +274,11 @@ class BottomHudLogicTest {
     }
 
     @Test
+    fun `canBuyUnit is false for BASE type (not purchasable)`() {
+        assertFalse(BottomHudLogic.canBuyUnit(UnitType.BASE, gold = 1_000_000, isMyTurn = true))
+    }
+
+    @Test
     fun `priceOf returns positive values for purchasable units`() {
         assertTrue(BottomHudLogic.priceOf(UnitType.INFANTRY) > 0)
         assertTrue(BottomHudLogic.priceOf(UnitType.ARCHER) > 0)
@@ -283,6 +288,11 @@ class BottomHudLogicTest {
     @Test
     fun `priceOf SKELETON is unaffordable`() {
         assertEquals(Int.MAX_VALUE, BottomHudLogic.priceOf(UnitType.SKELETON))
+    }
+
+    @Test
+    fun `priceOf BASE is unaffordable`() {
+        assertEquals(Int.MAX_VALUE, BottomHudLogic.priceOf(UnitType.BASE))
     }
 
     // ---- canEndTurn ---------------------------------------------------

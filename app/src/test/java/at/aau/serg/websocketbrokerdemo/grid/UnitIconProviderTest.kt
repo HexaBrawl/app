@@ -36,4 +36,15 @@ class UnitIconProviderTest {
         val icons = PlayerColor.entries.map { UnitIconProvider.iconFor(it, UnitType.ARCHER) }
         assertEquals(4, icons.distinct().size)
     }
+
+    @Test
+    fun `base icons are unique per color and map to castle drawables`() {
+        val icons = PlayerColor.entries.map { UnitIconProvider.iconFor(it, UnitType.BASE) }
+        assertEquals(4, icons.distinct().size)
+
+        assertEquals(R.drawable.castle_red, UnitIconProvider.iconFor(PlayerColor.RED, UnitType.BASE))
+        assertEquals(R.drawable.castle_blue, UnitIconProvider.iconFor(PlayerColor.BLUE, UnitType.BASE))
+        assertEquals(R.drawable.castle_green, UnitIconProvider.iconFor(PlayerColor.GREEN, UnitType.BASE))
+        assertEquals(R.drawable.castle_yellow, UnitIconProvider.iconFor(PlayerColor.YELLOW, UnitType.BASE))
+    }
 }
