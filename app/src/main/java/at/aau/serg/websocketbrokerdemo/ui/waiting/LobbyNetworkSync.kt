@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import at.aau.serg.websocketbrokerdemo.data.serverside.GameStatus
 import at.aau.serg.websocketbrokerdemo.network.GameSession
@@ -13,11 +14,14 @@ import at.aau.serg.websocketbrokerdemo.ui.navigation.Screen
  * Verbindet das Wartelobby-ViewModel mit dem GameSession-Netzwerk.
  *
  * Verantwortungen:
- *  - Beim Aufruf: lokalen Spieler + gewaehlte Farbe beim Server anmelden
  *  - GameState-Subscription verwalten (DisposableEffect)
  *  - Server-Updates an [WaitingLobbyViewModel.applyRemoteState]
  *    weiterreichen
- *  - Bei status = IN_PROGRESS zum GameScreen navigieren
+ *  - Lokalen Spieler erst dann beim Server anmelden, wenn der User
+ *    "Ready" geklickt hat -- vorher hat er Zeit, Name und Farbe zu
+ *    waehlen
+ *  - Zum GameScreen navigieren, sobald der Countdown durchgelaufen ist
+ *    UND der Server den Spielstatus auf IN_PROGRESS gesetzt hat
  */
 @Composable
 fun LobbyNetworkSync(
@@ -25,7 +29,10 @@ fun LobbyNetworkSync(
     viewModel: WaitingLobbyViewModel,
     navController: NavController
 ) {
+    val viewModelState by viewModel.state.collectAsStateWithLifecycle()
     val localName = viewModel.localName
+    val localColor = viewModel.localColor
+    val localReady = viewModel.localReady
 
     DisposableEffect(session.activeRoomId.value) {
         val job = session.endpoint.subscribeToGameState(session.activeRoomId.value) { state ->
@@ -34,26 +41,30 @@ fun LobbyNetworkSync(
         onDispose { job.cancel() }
     }
 
-    // Anmelden sobald der lokale Name feststeht.
+    // Anmelden erst wenn der User "Ready" geklickt hat.
     //
-    // Die Farbe wird BEWUSST nicht mitgeschickt (color = null). Der Server
-    // vergibt selbst eine freie Farbe und broadcasted sie ueber den
-    // GameState an alle Spieler im Raum. Damit gibt es keinen Konflikt
-    // mehr, wenn beide Clients lokal mit dem RED-Default ihres Slots
-    // initialisiert werden -- der zweite Spieler wuerde sonst vom Server
-    // mit COLOR_ALREADY_TAKEN abgelehnt und taucht in keinem Raum auf.
-    LaunchedEffect(localName) {
-        if (localName.isNotBlank()) {
+    // Der User hat in der WaitingLobby zuvor seinen Namen und seine Farbe
+    // gewaehlt. Der Klick auf "Ready" setzt im lokalen Slot ready=true
+    // und triggert diesen Effect. Die gewaehlte Farbe wird mitgegeben --
+    // bei Konflikt (zwei Spieler waehlen die gleiche Farbe) lehnt der
+    // Server mit COLOR_ALREADY_TAKEN ab; das Error-Handling dafuer kommt
+    // als Follow-up.
+    LaunchedEffect(localReady, localName, localColor) {
+        if (localReady && localName.isNotBlank() && session.activeRoomId.value.isNotBlank()) {
             session.localPlayerName.value = localName
             session.endpoint.joinGame(
                 roomId = session.activeRoomId.value,
                 playerName = localName,
-                color = null
+                color = localColor
             )
         }
     }
 
     val gameState by session.gameState
+
+    // Server-Updates an das ViewModel weiterreichen (Slots, Spielerliste).
+    // Navigation passiert bewusst NICHT hier, sondern erst nachdem der
+    // Countdown im ViewModel abgelaufen ist (siehe LaunchedEffect unten).
     LaunchedEffect(gameState) {
         val state = gameState ?: return@LaunchedEffect
 
@@ -62,8 +73,15 @@ fun LobbyNetworkSync(
             .map { it.name }
 
         viewModel.applyRemoteState(remotePlayerNames)
+    }
 
-        if (state.status == GameStatus.IN_PROGRESS) {
+    // Zum GameScreen navigieren -- aber erst NACHDEM der Countdown
+    // wirklich durchgelaufen ist. So sieht der User die 3-2-1-Anzeige,
+    // auch wenn der Server (Auto-Start sobald maxPlayers erreicht) den
+    // Status schon vorher auf IN_PROGRESS gesetzt hat.
+    LaunchedEffect(viewModelState.countdownComplete, gameState?.status) {
+        val status = gameState?.status ?: return@LaunchedEffect
+        if (viewModelState.countdownComplete && status == GameStatus.IN_PROGRESS) {
             navController.navigate(Screen.Game.route) {
                 popUpTo(Screen.Home.route) { inclusive = false }
             }

@@ -50,6 +50,10 @@ class WaitingLobbyViewModel(
     val localColor: PlayerColor
         get() = _state.value.slots.firstOrNull { it.isLocal }?.color ?: PlayerColor.RED
 
+    /** Ob der lokale Spieler bereits "Ready" geklickt hat (fuer NetworkSync). */
+    val localReady: Boolean
+        get() = _state.value.slots.firstOrNull { it.isLocal }?.ready ?: false
+
     // ---- User-Aktionen --------------------------------------------------
 
     fun onNameChange(slotId: Int, newName: String) {
@@ -120,19 +124,22 @@ class WaitingLobbyViewModel(
     private fun startCountdown() {
         countdownJob = viewModelScope.launch {
             var remaining = COUNTDOWN_SECONDS
-            _state.value = _state.value.copy(countdown = remaining)
+            _state.value = _state.value.copy(countdown = remaining, countdownComplete = false)
             while (remaining > 0) {
                 delay(COUNTDOWN_TICK_MS)
                 remaining -= 1
                 _state.value = _state.value.copy(countdown = remaining)
             }
+            // Countdown durchgelaufen -> Signal an LobbyNetworkSync, dass jetzt
+            // zum GameScreen navigiert werden darf.
+            _state.value = _state.value.copy(countdownComplete = true)
         }
     }
 
     private fun cancelCountdown() {
         countdownJob?.cancel()
         countdownJob = null
-        _state.value = _state.value.copy(countdown = -1)
+        _state.value = _state.value.copy(countdown = -1, countdownComplete = false)
     }
 
     override fun onCleared() {

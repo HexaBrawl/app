@@ -15,14 +15,21 @@ import at.aau.serg.websocketbrokerdemo.ui.waiting.model.PlayerSlot
  *  - joinCode   Menschenlesbarer 6-Zeichen-Code. Wird in der Wartelobby
  *               angezeigt und ist der Wert, den der User per Klick
  *               kopieren bzw. seinen Mitspielern weitergeben kann.
- *  - slots      Aktuelle Spieler-Slots (lokal + remote + leer)
- *  - countdown  Sekunden bis zum Spielstart, -1 wenn nicht laeuft
+ *  - slots             Aktuelle Spieler-Slots (lokal + remote + leer)
+ *  - countdown         Sekunden bis zum Spielstart, -1 wenn nicht laeuft
+ *  - countdownComplete True, sobald der Countdown auf 0 runtergezaehlt
+ *                      hat. Dient als Signal fuer die Navigation zum
+ *                      GameScreen -- erst wenn der Countdown wirklich
+ *                      durchgelaufen ist, wechselt die App auf das
+ *                      Spielfeld. Wird beim Start eines neuen Countdowns
+ *                      wieder auf false gesetzt.
  */
 data class WaitingLobbyState(
     val roomId: String = "",
     val joinCode: String = "",
     val slots: List<PlayerSlot> = emptyList(),
-    val countdown: Int = -1
+    val countdown: Int = -1,
+    val countdownComplete: Boolean = false
 ) {
     /** True wenn der Countdown gerade laeuft. */
     val isCountdownActive: Boolean
