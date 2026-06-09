@@ -23,6 +23,7 @@ object LobbyRoomLogic {
         if (room != null && room.roomId.isNotBlank()) {
             listOf(
                 LobbyEffect.SetRoomId(room.roomId),
+                LobbyEffect.SetJoinCode(room.joinCode),
                 LobbyEffect.NavigateToWaiting,
             )
         } else {
@@ -34,6 +35,7 @@ object LobbyRoomLogic {
         if (room != null && room.roomId.isNotBlank()) {
             listOf(
                 LobbyEffect.SetRoomId(room.roomId),
+                LobbyEffect.SetJoinCode(room.joinCode),
                 LobbyEffect.CloseJoinDialog,
                 LobbyEffect.NavigateToWaiting,
             )
@@ -46,6 +48,7 @@ object LobbyRoomLogic {
         if (room != null && room.roomId.isNotBlank()) {
             listOf(
                 LobbyEffect.SetRoomId(room.roomId),
+                LobbyEffect.SetJoinCode(room.joinCode),
                 LobbyEffect.NavigateToWaiting,
             )
         } else {

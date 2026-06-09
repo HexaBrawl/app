@@ -14,8 +14,15 @@ package at.aau.serg.websocketbrokerdemo.ui.lobby_modes
  * Elm-Cmd oder Spotify-Mobius.
  */
 sealed interface LobbyEffect {
-    /** Aktive Room-Id der GameSession setzen. */
+    /** Aktive Room-Id (UUID) der GameSession setzen. Wird fuer alle STOMP-Pfade verwendet. */
     data class SetRoomId(val roomId: String) : LobbyEffect
+
+    /**
+     * Aktiven JoinCode (6-Zeichen) der GameSession setzen.
+     * Wird parallel zur SetRoomId emittiert und ausschliesslich
+     * fuer Anzeige + Clipboard in der Wartelobby verwendet.
+     */
+    data class SetJoinCode(val joinCode: String) : LobbyEffect
 
     /** Eine Fehlermeldung im UI anzeigen. */
     data class ShowError(val message: String) : LobbyEffect
