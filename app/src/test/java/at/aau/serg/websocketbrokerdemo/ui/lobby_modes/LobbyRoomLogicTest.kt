@@ -11,11 +11,16 @@ class LobbyRoomLogicTest {
 
     @Test
     fun `effectsForCreateResult returns success effects when room is valid`() {
-        val room = RoomDTO(joinCode = "ROOM12", mode = GameMode.DUAL_VALLEY, players = emptyList())
+        val room = RoomDTO(
+            roomId = "uuid-create",
+            joinCode = "ROOM12",
+            mode = GameMode.DUAL_VALLEY
+        )
         val effects = LobbyRoomLogic.effectsForCreateResult(room)
 
-        assertEquals(2, effects.size)
-        assertTrue(effects.any { it is LobbyEffect.SetRoomId && it.roomId == "ROOM12" })
+        assertEquals(3, effects.size)
+        assertTrue(effects.any { it is LobbyEffect.SetRoomId && it.roomId == "uuid-create" })
+        assertTrue(effects.any { it is LobbyEffect.SetJoinCode && it.joinCode == "ROOM12" })
         assertTrue(effects.any { it is LobbyEffect.NavigateToWaiting })
     }
 
@@ -30,7 +35,11 @@ class LobbyRoomLogicTest {
 
     @Test
     fun `effectsForCreateResult returns error when roomId is blank`() {
-        val room = RoomDTO(joinCode = "  ", mode = GameMode.DUAL_VALLEY, players = emptyList())
+        val room = RoomDTO(
+            roomId = "  ",
+            joinCode = "ROOM12",
+            mode = GameMode.DUAL_VALLEY
+        )
         val effects = LobbyRoomLogic.effectsForCreateResult(room)
 
         assertEquals(1, effects.size)
@@ -40,11 +49,16 @@ class LobbyRoomLogicTest {
 
     @Test
     fun `effectsForJoinByCodeResult returns success effects when room is valid`() {
-        val room = RoomDTO(joinCode = "ROOM45", mode = GameMode.DUAL_VALLEY, players = emptyList())
+        val room = RoomDTO(
+            roomId = "uuid-join",
+            joinCode = "ROOM45",
+            mode = GameMode.DUAL_VALLEY
+        )
         val effects = LobbyRoomLogic.effectsForJoinByCodeResult(room, "123456")
 
-        assertEquals(3, effects.size)
-        assertTrue(effects.any { it is LobbyEffect.SetRoomId && it.roomId == "ROOM45" })
+        assertEquals(4, effects.size)
+        assertTrue(effects.any { it is LobbyEffect.SetRoomId && it.roomId == "uuid-join" })
+        assertTrue(effects.any { it is LobbyEffect.SetJoinCode && it.joinCode == "ROOM45" })
         assertTrue(effects.any { it is LobbyEffect.CloseJoinDialog })
         assertTrue(effects.any { it is LobbyEffect.NavigateToWaiting })
     }
@@ -57,7 +71,11 @@ class LobbyRoomLogicTest {
         assertTrue((effectsNull[0] as LobbyEffect.ShowError).message.contains("ABCDEF"))
 
         // Case 2: room is not null but roomId is blank
-        val roomBlank = RoomDTO(joinCode = "", mode = GameMode.DUAL_VALLEY, players = emptyList())
+        val roomBlank = RoomDTO(
+            roomId = "",
+            joinCode = "JOIN42",
+            mode = GameMode.DUAL_VALLEY
+        )
         val effectsBlank = LobbyRoomLogic.effectsForJoinByCodeResult(roomBlank, "EFGHIJ")
         assertEquals(1, effectsBlank.size)
         assertTrue((effectsBlank[0] as LobbyEffect.ShowError).message.contains("EFGHIJ"))
@@ -65,11 +83,16 @@ class LobbyRoomLogicTest {
 
     @Test
     fun `effectsForJoinRandomResult returns success effects when room is valid`() {
-        val room = RoomDTO(joinCode = "RAND12", mode = GameMode.DUAL_VALLEY, players = emptyList())
+        val room = RoomDTO(
+            roomId = "uuid-random",
+            joinCode = "RAND12",
+            mode = GameMode.DUAL_VALLEY
+        )
         val effects = LobbyRoomLogic.effectsForJoinRandomResult(room)
 
-        assertEquals(2, effects.size)
-        assertTrue(effects.any { it is LobbyEffect.SetRoomId && it.roomId == "RAND12" })
+        assertEquals(3, effects.size)
+        assertTrue(effects.any { it is LobbyEffect.SetRoomId && it.roomId == "uuid-random" })
+        assertTrue(effects.any { it is LobbyEffect.SetJoinCode && it.joinCode == "RAND12" })
         assertTrue(effects.any { it is LobbyEffect.NavigateToWaiting })
     }
 

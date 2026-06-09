@@ -40,9 +40,11 @@ class LobbyViewModelTest {
         Dispatchers.setMain(testDispatcher)
         apiClient = mockk()
         session = mockk(relaxed = true)
-        // Mocking the activeRoomId state
+        // Mocking the activeRoomId + activeJoinCode states
         val roomIdState = mutableStateOf("")
+        val joinCodeState = mutableStateOf("")
         every { session.activeRoomId } returns roomIdState
+        every { session.activeJoinCode } returns joinCodeState
 
         vm = LobbyViewModel(apiClient, session)
     }
@@ -88,7 +90,11 @@ class LobbyViewModelTest {
 
     @Test
     fun `createRoom calls API, sets session and triggers success`() {
-        val room = RoomDTO(joinCode = "GUID1", mode = GameMode.DUAL_VALLEY, players = emptyList())
+        val room = RoomDTO(
+            roomId = "uuid-GUID1",
+            joinCode = "CODE01",
+            mode = GameMode.DUAL_VALLEY
+        )
         coEvery { apiClient.createRoom(any()) } returns room
         var successCalled = false
 
@@ -98,7 +104,8 @@ class LobbyViewModelTest {
 
         assertFalse(vm.isLoading.value)
         assertNull(vm.lastError.value)
-        assertEquals("GUID1", session.activeRoomId.value)
+        assertEquals("uuid-GUID1", session.activeRoomId.value)
+        assertEquals("CODE01", session.activeJoinCode.value)
         assertTrue(successCalled)
     }
 
@@ -127,7 +134,11 @@ class LobbyViewModelTest {
     fun `tryJoinByCodeAsync calls API, sets session and closes dialog on success`() {
         vm.openJoinDialog()
         vm.onCodeChange("CODE12") // 6 chars
-        val room = RoomDTO(joinCode = "GUID2", mode = GameMode.DUAL_VALLEY, players = emptyList())
+        val room = RoomDTO(
+            roomId = "uuid-GUID2",
+            joinCode = "CODE12",
+            mode = GameMode.DUAL_VALLEY
+        )
         coEvery { apiClient.findByCode("CODE12") } returns room
         var successCalled = false
 
@@ -137,7 +148,8 @@ class LobbyViewModelTest {
 
         assertFalse(vm.state.value.showJoinDialog)
         assertNull(vm.lastError.value)
-        assertEquals("GUID2", session.activeRoomId.value)
+        assertEquals("uuid-GUID2", session.activeRoomId.value)
+        assertEquals("CODE12", session.activeJoinCode.value)
         assertTrue(successCalled)
     }
 

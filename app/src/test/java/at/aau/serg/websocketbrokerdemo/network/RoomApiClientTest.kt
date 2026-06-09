@@ -1,7 +1,6 @@
 package at.aau.serg.websocketbrokerdemo.network
 
 import at.aau.serg.websocketbrokerdemo.data.serverside.GameMode
-import at.aau.serg.websocketbrokerdemo.data.serverside.Player
 import at.aau.serg.websocketbrokerdemo.data.serverside.RoomDTO
 import com.google.gson.Gson
 import kotlinx.coroutines.runBlocking
@@ -37,7 +36,11 @@ class RoomApiClientTest {
 
     @Test
     fun `createRoom returns RoomDTO on success`() = runBlocking {
-        val mockRoom = RoomDTO("ABC123", GameMode.DUAL_VALLEY, emptyList())
+        val mockRoom = RoomDTO(
+            roomId = "uuid-1234",
+            joinCode = "ABC123",
+            mode = GameMode.DUAL_VALLEY
+        )
         mockWebServer.enqueue(
             MockResponse()
                 .setResponseCode(200)
@@ -47,6 +50,7 @@ class RoomApiClientTest {
         val result = client.createRoom(GameMode.DUAL_VALLEY)
 
         assertNotNull(result)
+        assertEquals("uuid-1234", result?.roomId)
         assertEquals("ABC123", result?.joinCode)
         assertEquals(GameMode.DUAL_VALLEY, result?.mode)
     }
@@ -62,7 +66,11 @@ class RoomApiClientTest {
 
     @Test
     fun `findByCode returns RoomDTO on success`() = runBlocking {
-        val mockRoom = RoomDTO("XYZ789", GameMode.TRIAD_OUTPOST, listOf(Player(name = "Host")))
+        val mockRoom = RoomDTO(
+            roomId = "uuid-5678",
+            joinCode = "XYZ789",
+            mode = GameMode.TRIAD_OUTPOST
+        )
         mockWebServer.enqueue(
             MockResponse()
                 .setResponseCode(200)
@@ -72,8 +80,9 @@ class RoomApiClientTest {
         val result = client.findByCode("XYZ789")
 
         assertNotNull(result)
+        assertEquals("uuid-5678", result?.roomId)
         assertEquals("XYZ789", result?.joinCode)
-        assertEquals(1, result?.players?.size)
+        assertEquals(GameMode.TRIAD_OUTPOST, result?.mode)
     }
 
     @Test
@@ -98,20 +107,21 @@ class RoomApiClientTest {
     fun `Gson smoke test with real server JSON`() {
         val json = """
             {
+                "roomId": "uuid-abc",
                 "joinCode": "CODE01",
                 "mode": "BATTLEFIELD_PEAKS",
-                "players": [
-                    { "name": "Alice", "color": "RED", "gold": 100 }
-                ]
+                "maxPlayers": 4,
+                "currentPlayers": 1
             }
         """.trimIndent()
 
         val room = gson.fromJson(json, RoomDTO::class.java)
 
         assertNotNull(room)
+        assertEquals("uuid-abc", room.roomId)
         assertEquals("CODE01", room.joinCode)
         assertEquals(GameMode.BATTLEFIELD_PEAKS, room.mode)
-        assertEquals(1, room.players.size)
-        assertEquals("Alice", room.players[0].name)
+        assertEquals(4, room.maxPlayers)
+        assertEquals(1, room.currentPlayers)
     }
 }
