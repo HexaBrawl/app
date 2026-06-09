@@ -105,6 +105,37 @@ class WaitingLobbyViewModel(
         updateSlots(newSlots)
     }
 
+    // ---- Fehler-Handling -----------------------------------------------
+
+    /**
+     * Setzt den lokalen Slot 0 explizit auf ready=false. Wird vom
+     * NetworkSync aufgerufen, wenn der Server den Beitritt mit
+     * COLOR_ALREADY_TAKEN abgelehnt hat -- damit ist der Slot wieder
+     * editierbar und der User kann eine andere Farbe waehlen.
+     */
+    fun clearLocalReady() {
+        val newSlots = _state.value.slots.map { slot ->
+            if (slot.isLocal) slot.copy(ready = false) else slot
+        }
+        updateSlots(newSlots)
+    }
+
+    /**
+     * Setzt eine Fehlermeldung, die der Screen als Snackbar anzeigen
+     * soll.
+     */
+    fun showError(message: String) {
+        _state.value = _state.value.copy(errorMessage = message)
+    }
+
+    /**
+     * Wird nach dem Schliessen der Snackbar aufgerufen, damit die
+     * gleiche Fehlermeldung nicht erneut auftaucht.
+     */
+    fun clearError() {
+        _state.value = _state.value.copy(errorMessage = null)
+    }
+
     // ---- Internes -------------------------------------------------------
 
     private fun updateSlots(newSlots: List<PlayerSlot>) {

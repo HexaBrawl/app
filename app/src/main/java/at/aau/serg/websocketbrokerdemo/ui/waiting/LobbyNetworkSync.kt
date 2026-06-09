@@ -6,6 +6,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import at.aau.serg.websocketbrokerdemo.data.serverside.ErrorCode
 import at.aau.serg.websocketbrokerdemo.data.serverside.GameStatus
 import at.aau.serg.websocketbrokerdemo.network.GameSession
 import at.aau.serg.websocketbrokerdemo.ui.navigation.Screen
@@ -86,5 +87,31 @@ fun LobbyNetworkSync(
                 popUpTo(Screen.Home.route) { inclusive = false }
             }
         }
+    }
+
+    // Server-Fehler beobachten und sinnvoll behandeln.
+    //
+    // Speziell COLOR_ALREADY_TAKEN: der lokale Spieler hat eine Farbe
+    // gewaehlt, die schon belegt war. Wir setzen den ready-Status zurueck
+    // (damit der User die Farbe wieder wechseln kann) und zeigen eine
+    // Snackbar mit einem klaren Hinweis.
+    //
+    // Andere Fehler werden 1:1 als Snackbar gezeigt; die App bleibt
+    // ansonsten im aktuellen State.
+    val lastError by session.lastError
+    LaunchedEffect(lastError) {
+        val error = lastError ?: return@LaunchedEffect
+        when (error.errorCode) {
+            ErrorCode.COLOR_ALREADY_TAKEN -> {
+                viewModel.clearLocalReady()
+                viewModel.showError(error.message)
+            }
+            else -> {
+                viewModel.showError(error.message)
+            }
+        }
+        // Error in der Session wieder loeschen, sonst triggert derselbe
+        // Effect bei jeder Recomposition erneut.
+        session.lastError.value = null
     }
 }

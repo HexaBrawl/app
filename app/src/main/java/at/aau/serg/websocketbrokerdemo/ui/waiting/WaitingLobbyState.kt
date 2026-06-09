@@ -23,13 +23,18 @@ import at.aau.serg.websocketbrokerdemo.ui.waiting.model.PlayerSlot
  *                      durchgelaufen ist, wechselt die App auf das
  *                      Spielfeld. Wird beim Start eines neuen Countdowns
  *                      wieder auf false gesetzt.
+ *  - errorMessage      Vom Server gemeldeter Fehler (z.B. "Diese Farbe
+ *                      ist bereits vergeben"). Wird vom WaitingLobby-
+ *                      Screen als Snackbar angezeigt und nach dem
+ *                      Verschwinden ueber clearError() zurueckgesetzt.
  */
 data class WaitingLobbyState(
     val roomId: String = "",
     val joinCode: String = "",
     val slots: List<PlayerSlot> = emptyList(),
     val countdown: Int = -1,
-    val countdownComplete: Boolean = false
+    val countdownComplete: Boolean = false,
+    val errorMessage: String? = null
 ) {
     /** True wenn der Countdown gerade laeuft. */
     val isCountdownActive: Boolean
