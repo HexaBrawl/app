@@ -26,12 +26,14 @@ import kotlinx.coroutines.launch
  */
 class WaitingLobbyViewModel(
     private val mode: GameMode,
-    private val initialRoomId: String = ""
+    private val initialRoomId: String = "",
+    private val initialJoinCode: String = ""
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(
         WaitingLobbyState(
             roomId = initialRoomId,
+            joinCode = initialJoinCode,
             slots = WaitingLobbyLogic.createInitialSlots(mode)
         )
     )

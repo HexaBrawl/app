@@ -9,11 +9,18 @@ import at.aau.serg.websocketbrokerdemo.ui.waiting.model.PlayerSlot
  * [WaitingLobbyScreen] liest ausschliesslich diesen State und ruft
  * Handler-Methoden des ViewModels auf -- keine Logik im Composable.
  *
- *  - [slots]      Aktuelle Spieler-Slots (lokal + remote + leer)
- *  - [countdown]  Sekunden bis zum Spielstart, -1 wenn nicht laeuft
+ *  - roomId     Technische Raum-Id (UUID). Wird intern fuer die
+ *               STOMP-Kommunikation gebraucht und i.d.R. NICHT in der UI
+ *               angezeigt.
+ *  - joinCode   Menschenlesbarer 6-Zeichen-Code. Wird in der Wartelobby
+ *               angezeigt und ist der Wert, den der User per Klick
+ *               kopieren bzw. seinen Mitspielern weitergeben kann.
+ *  - slots      Aktuelle Spieler-Slots (lokal + remote + leer)
+ *  - countdown  Sekunden bis zum Spielstart, -1 wenn nicht laeuft
  */
 data class WaitingLobbyState(
     val roomId: String = "",
+    val joinCode: String = "",
     val slots: List<PlayerSlot> = emptyList(),
     val countdown: Int = -1
 ) {
