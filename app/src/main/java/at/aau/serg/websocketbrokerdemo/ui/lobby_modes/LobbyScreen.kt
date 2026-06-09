@@ -13,8 +13,14 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Casino
 import androidx.compose.material.icons.filled.GroupAdd
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -25,7 +31,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.NavController
+import at.aau.serg.websocketbrokerdemo.network.GameSession
+import at.aau.serg.websocketbrokerdemo.network.RoomApiClient
 import at.aau.serg.websocketbrokerdemo.ui.components.PlayerCountBadge
 import at.aau.serg.websocketbrokerdemo.ui.components.RoundCoinIconButton
 import at.aau.serg.websocketbrokerdemo.ui.mainmenu.GameMode
@@ -44,89 +54,127 @@ import com.example.myapplication.R
 fun LobbyScreen(
     mode: GameMode,
     navController: NavController,
-    viewModel: LobbyViewModel = viewModel()
+    session: GameSession,
+    roomApi: RoomApiClient = remember { RoomApiClient() },
+    viewModel: LobbyViewModel = viewModel(
+        factory = viewModelFactory {
+            initializer { LobbyViewModel(roomApi, session) }
+        }
+    )
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
+    val lastError by viewModel.lastError.collectAsStateWithLifecycle()
+
+    val snackbarHostState = remember { SnackbarHostState() }
     val waitingScreen = LobbyLogic.toWaitingScreen(mode)
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    LaunchedEffect(lastError) {
+        lastError?.let {
+            snackbarHostState.showSnackbar(it)
+        }
+    }
 
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    brush = Brush.radialGradient(
-                        colors = listOf(WoodMedium, WoodDark),
-                        radius = 1500f
-                    )
-                )
-        )
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+    ) { padding ->
+        Box(modifier = Modifier.fillMaxSize().padding(padding)) {
 
-        Image(
-            painter = painterResource(id = mode.backgroundRes),
-            contentDescription = null,
-            contentScale = ContentScale.FillBounds,
-            modifier = Modifier.fillMaxSize()
-        )
-
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    brush = Brush.verticalGradient(
-                        colors = listOf(
-                            Color.Transparent,
-                            Color.Transparent,
-                            Color.Black.copy(alpha = 0.35f)
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        brush = Brush.radialGradient(
+                            colors = listOf(WoodMedium, WoodDark),
+                            radius = 1500f
                         )
                     )
+            )
+
+            Image(
+                painter = painterResource(id = mode.backgroundRes),
+                contentDescription = null,
+                contentScale = ContentScale.FillBounds,
+                modifier = Modifier.fillMaxSize()
+            )
+
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Transparent,
+                                Color.Transparent,
+                                Color.Black.copy(alpha = 0.35f)
+                            )
+                        )
+                    )
+            )
+
+            RoundCoinIconButton(
+                icon = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = stringResource(R.string.settings_back),
+                onClick = { navController.popBackStack() },
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(16.dp)
+            )
+
+            PlayerCountBadge(
+                count = mode.playerCount,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(16.dp)
+            )
+
+            Column(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 240.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                ActionCard(
+                    icon = Icons.Filled.Lock,
+                    title = stringResource(R.string.lobby_create_private),
+                    subtitle = stringResource(R.string.lobby_create_private_sub),
+                    sealColor = SealColor.Red,
+                    onClick = {
+                        viewModel.createRoom(mode) {
+                            navController.navigate(waitingScreen.route)
+                        }
+                    }
                 )
-        )
+                ActionCard(
+                    icon = Icons.Filled.GroupAdd,
+                    title = stringResource(R.string.lobby_join_with_code),
+                    subtitle = stringResource(R.string.lobby_join_with_code_sub),
+                    sealColor = SealColor.Blue,
+                    onClick = { viewModel.openJoinDialog() }
+                )
+                ActionCard(
+                    icon = Icons.Filled.Casino,
+                    title = stringResource(R.string.lobby_join_random),
+                    subtitle = stringResource(R.string.lobby_join_random_sub),
+                    sealColor = SealColor.Gold,
+                    onClick = {
+                        // TODO: Implement join random logic if needed, currently navigating to waiting
+                        navController.navigate(waitingScreen.route)
+                    }
+                )
+            }
 
-        RoundCoinIconButton(
-            icon = Icons.AutoMirrored.Filled.ArrowBack,
-            contentDescription = stringResource(R.string.settings_back),
-            onClick = { navController.popBackStack() },
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .padding(16.dp)
-        )
-
-        PlayerCountBadge(
-            count = mode.playerCount,
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(16.dp)
-        )
-
-        Column(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 240.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            ActionCard(
-                icon = Icons.Filled.Lock,
-                title = stringResource(R.string.lobby_create_private),
-                subtitle = stringResource(R.string.lobby_create_private_sub),
-                sealColor = SealColor.Red,
-                onClick = { navController.navigate(waitingScreen.route) }
-            )
-            ActionCard(
-                icon = Icons.Filled.GroupAdd,
-                title = stringResource(R.string.lobby_join_with_code),
-                subtitle = stringResource(R.string.lobby_join_with_code_sub),
-                sealColor = SealColor.Blue,
-                onClick = { viewModel.openJoinDialog() }
-            )
-            ActionCard(
-                icon = Icons.Filled.Casino,
-                title = stringResource(R.string.lobby_join_random),
-                subtitle = stringResource(R.string.lobby_join_random_sub),
-                sealColor = SealColor.Gold,
-                onClick = { navController.navigate(waitingScreen.route) }
-            )
+            if (isLoading) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.4f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = Color.White)
+                }
+            }
         }
     }
 
@@ -137,7 +185,9 @@ fun LobbyScreen(
             onCodeChange = viewModel::onCodeChange,
             onDismiss = viewModel::closeJoinDialog,
             onJoin = {
-                navController.navigate(waitingScreen.route)
+                viewModel.tryJoinByCodeAsync {
+                    navController.navigate(waitingScreen.route)
+                }
             }
         )
     }

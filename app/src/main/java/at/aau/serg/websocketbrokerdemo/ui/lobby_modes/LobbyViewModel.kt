@@ -5,48 +5,43 @@ import androidx.lifecycle.viewModelScope
 import at.aau.serg.websocketbrokerdemo.network.GameSession
 import at.aau.serg.websocketbrokerdemo.network.RoomApiClient
 import at.aau.serg.websocketbrokerdemo.ui.mainmenu.GameMode
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 /**
  * ViewModel der Modus-Lobby.
  *
- * Haelt den UI-State (Dialog-Sichtbarkeit, Code-Eingabe, Error, Loading)
- * und delegiert die Entscheidungs-Logik an [LobbyRoomLogic].
- *
- * Die eigentliche Navigation wird ueber den [effects]-Flow an den
- * [LobbyScreen] signalisiert, damit das ViewModel frei von Compose-
- * Navigation-Abhaengigkeiten bleibt.
+ * Haelt den UI-State (Dialog-Sichtbarkeit, Code-Eingabe) und delegiert
+ * die Entscheidungs-Logik an [LobbyRoomLogic].
  */
 class LobbyViewModel(
-    private val apiClient: RoomApiClient = RoomApiClient(),
-    private val session: GameSession? = null,
+    private val apiClient: RoomApiClient,
+    private val session: GameSession,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(LobbyState())
-
-    /** Public State, vom Composable ueber collectAsStateWithLifecycle gelesen. */
     val state: StateFlow<LobbyState> = _state.asStateFlow()
 
-    private val _effects = MutableSharedFlow<LobbyEffect>()
-    /** Einmalige Effekte (Navigation, Fehler-Snackbars etc.) */
-    val effects: SharedFlow<LobbyEffect> = _effects.asSharedFlow()
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
+    private val _lastError = MutableStateFlow<String?>(null)
+    val lastError: StateFlow<String?> = _lastError.asStateFlow()
 
     // ---- Dialog-Lifecycle ----------------------------------------------
 
     /** Oeffnet den "Beitreten via Code"-Dialog mit leerem Eingabefeld. */
     fun openJoinDialog() {
-        _state.value = LobbyState(showJoinDialog = true, code = "", error = null)
+        _state.value = _state.value.copy(showJoinDialog = true, code = "", error = null)
+        _lastError.value = null
     }
 
     /** Schliesst den Dialog ohne weitere Aktion (Cancel). */
     fun closeJoinDialog() {
         _state.value = _state.value.copy(showJoinDialog = false, error = null)
+        _lastError.value = null
     }
 
     // ---- Code-Eingabe --------------------------------------------------
@@ -57,42 +52,67 @@ class LobbyViewModel(
      */
     fun onCodeChange(rawInput: String) {
         _state.value = _state.value.copy(code = JoinByCodeLogic.normalize(rawInput), error = null)
+        _lastError.value = null
     }
 
     // ---- Beitritts-Aktionen --------------------------------------------
 
     /** Erstellt einen privaten Raum fuer den gewaehlten Modus. */
-    fun createPrivateGame(mode: GameMode) {
-        if (_state.value.isLoading) return
+    fun createRoom(mode: GameMode, onSuccess: () -> Unit) {
+        if (_isLoading.value) return
         viewModelScope.launch {
+            _isLoading.value = true
             _state.value = _state.value.copy(isLoading = true, error = null)
-            val room = apiClient.createRoom(mapUiToDataMode(mode))
-            applyEffects(LobbyRoomLogic.effectsForCreateResult(room))
+            _lastError.value = null
+            try {
+                val room = apiClient.createRoom(mapUiToDataMode(mode))
+                apply(LobbyRoomLogic.effectsForCreateResult(room), onSuccess)
+            } catch (e: Exception) {
+                _isLoading.value = false
+                _state.value = _state.value.copy(isLoading = false)
+                _lastError.value = "Netzwerkfehler: ${e.message}"
+            }
         }
     }
 
     /** Versucht via Code einem Raum beizutreten. */
-    fun tryJoinByCode() {
-        if (!LobbyRoomLogic.canAttemptJoin(_state.value)) return
+    fun tryJoinByCodeAsync(onSuccess: () -> Unit) {
+        if (!LobbyRoomLogic.canAttemptJoin(_state.value) || _isLoading.value) return
         val code = _state.value.code
 
         viewModelScope.launch {
+            _isLoading.value = true
             _state.value = _state.value.copy(isLoading = true, error = null)
-            val room = apiClient.findByCode(code)
-            applyEffects(LobbyRoomLogic.effectsForJoinByCodeResult(room, code))
+            _lastError.value = null
+            try {
+                val room = apiClient.findByCode(code)
+                apply(LobbyRoomLogic.effectsForJoinByCodeResult(room, code), onSuccess)
+            } catch (e: Exception) {
+                _isLoading.value = false
+                _state.value = _state.value.copy(isLoading = false)
+                _lastError.value = "Netzwerkfehler: ${e.message}"
+            }
         }
     }
 
     // ---- Internes -------------------------------------------------------
 
-    private suspend fun applyEffects(effects: List<LobbyEffect>) {
+    /**
+     * Reine Effect-Runner Funktion. Führt die fachlichen Entscheidungen aus
+     * [LobbyRoomLogic] auf den State und die Session aus.
+     */
+    private fun apply(effects: List<LobbyEffect>, onSuccess: () -> Unit) {
+        _isLoading.value = false
         _state.value = _state.value.copy(isLoading = false)
         effects.forEach { effect ->
             when (effect) {
-                is LobbyEffect.SetRoomId -> session?.activeRoomId?.value = effect.roomId
+                is LobbyEffect.SetRoomId -> session.activeRoomId.value = effect.roomId
                 is LobbyEffect.CloseJoinDialog -> _state.value = _state.value.copy(showJoinDialog = false)
-                is LobbyEffect.ShowError -> _state.value = _state.value.copy(error = effect.message)
-                is LobbyEffect.NavigateToWaiting -> _effects.emit(effect)
+                is LobbyEffect.ShowError -> {
+                    _lastError.value = effect.message
+                    _state.value = _state.value.copy(error = effect.message)
+                }
+                is LobbyEffect.NavigateToWaiting -> onSuccess()
             }
         }
     }

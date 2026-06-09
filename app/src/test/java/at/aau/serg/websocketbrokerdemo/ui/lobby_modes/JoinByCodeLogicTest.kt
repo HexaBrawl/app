@@ -24,7 +24,7 @@ class JoinByCodeLogicTest {
 
     @Test
     fun `normalize keeps digits`() {
-        assertEquals("12345678", JoinByCodeLogic.normalize("12345678"))
+        assertEquals("123456", JoinByCodeLogic.normalize("123456"))
     }
 
     @Test
@@ -45,11 +45,11 @@ class JoinByCodeLogicTest {
     }
 
     @Test
-    fun `normalize caps at 8 characters`() {
+    fun `normalize caps at 6 characters`() {
         // Auch wenn der User mehr tippt, der Code wird abgeschnitten.
         val tooLong = "ABCDEFGHIJKLMNOP"
-        assertEquals(8, JoinByCodeLogic.normalize(tooLong).length)
-        assertEquals("ABCDEFGH", JoinByCodeLogic.normalize(tooLong))
+        assertEquals(6, JoinByCodeLogic.normalize(tooLong).length)
+        assertEquals("ABCDEF", JoinByCodeLogic.normalize(tooLong))
     }
 
     @Test
@@ -72,29 +72,31 @@ class JoinByCodeLogicTest {
 
     @Test
     fun `isValid returns false for too short code`() {
-        // 3 Zeichen sind zu wenig (Min ist 4).
-        assertFalse(JoinByCodeLogic.isValid("ABC"))
+        // 5 Zeichen sind zu wenig (Min ist 6).
+        assertFalse(JoinByCodeLogic.isValid("ABCDE"))
     }
 
     @Test
     fun `isValid returns true at minimum length`() {
-        assertTrue(JoinByCodeLogic.isValid("ABCD"))
+        assertTrue(JoinByCodeLogic.isValid("123456"))
     }
 
     @Test
     fun `isValid returns true at maximum length`() {
-        assertTrue(JoinByCodeLogic.isValid("ABCDEFGH"))
+        assertTrue(JoinByCodeLogic.isValid("ABCDEF"))
     }
 
     @Test
     fun `isValid returns true for middle length`() {
-        assertTrue(JoinByCodeLogic.isValid("ABC123"))
+        // Da Min=Max=6, gibt es kein "middle" mehr in dem Sinne, 
+        // aber wir testen einen gemischten Code.
+        assertTrue(JoinByCodeLogic.isValid("AB1234"))
     }
 
     @Test
     fun `isValid returns false for too long code`() {
         // Auch wenn jemand das Limit umgeht (z. B. via Reflection), wird
-        // ein 9-Zeichen-Code als ungueltig zurueckgewiesen.
-        assertFalse(JoinByCodeLogic.isValid("ABCDEFGHI"))
+        // ein 7-Zeichen-Code als ungueltig zurueckgewiesen.
+        assertFalse(JoinByCodeLogic.isValid("ABCDEFG"))
     }
 }

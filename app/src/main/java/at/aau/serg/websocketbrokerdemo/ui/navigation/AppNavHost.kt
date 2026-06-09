@@ -47,7 +47,7 @@ fun AppNavHost(
         }
     }
 
-    NavHost(navController, startDestination = Screen.Game.route) {
+    NavHost(navController, startDestination = Screen.Home.route) {
 
         composable(Screen.Home.route) {
             HomeScreen(navController)
@@ -62,13 +62,13 @@ fun AppNavHost(
         }
 
         composable(Screen.LobbyDual.route) {
-            LobbyScreen(GameMode.DUAL_VALLEY, navController)
+            LobbyScreen(GameMode.DUAL_VALLEY, navController, session)
         }
         composable(Screen.LobbyTriad.route) {
-            LobbyScreen(GameMode.TRIAD_OUTPOST, navController)
+            LobbyScreen(GameMode.TRIAD_OUTPOST, navController, session)
         }
         composable(Screen.LobbyBattlefield.route) {
-            LobbyScreen(GameMode.BATTLEFIELD_PEAKS, navController)
+            LobbyScreen(GameMode.BATTLEFIELD_PEAKS, navController, session)
         }
 
         composable(Screen.WaitingDual.route) {

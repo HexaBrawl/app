@@ -14,8 +14,8 @@ package at.aau.serg.websocketbrokerdemo.ui.lobby_modes
 object JoinByCodeLogic {
 
     /** Erlaubte Code-Laenge (inklusive). */
-    const val MIN_LENGTH = 4
-    const val MAX_LENGTH = 8
+    const val MIN_LENGTH = 6
+    const val MAX_LENGTH = 6
 
     /**
      * Normalisiert eine Code-Eingabe.

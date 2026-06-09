@@ -100,4 +100,5 @@
     <string name="unit_cavalry">Kavallerie</string>
     <string name="placement_choose_cell">Waehle ein Feld fuer deine %1$s</string>
 
+    <string name="waiting_room_id">SCHLACHT-SIEGEL: %1$s</string>
 </resources>

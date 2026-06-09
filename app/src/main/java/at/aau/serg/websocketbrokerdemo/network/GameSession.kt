@@ -22,7 +22,7 @@ import at.aau.serg.websocketbrokerdemo.data.serverside.GameState
  */
 class GameSession(
     val endpoint: UnitMoveEndpoint,
-    val activeRoomId: MutableState<String> = mutableStateOf("game1"),
+    val activeRoomId: MutableState<String> = mutableStateOf(""),
     val gameState: MutableState<GameState?> = mutableStateOf(null),
     val lastError: MutableState<ErrorMessage?> = mutableStateOf(null),
     val localPlayerName: MutableState<String?> = mutableStateOf(null)

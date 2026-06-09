@@ -10,7 +10,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -22,8 +24,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -71,11 +75,12 @@ fun WaitingLobbyScreen(
     session: GameSession,
     viewModel: WaitingLobbyViewModel = viewModel(
         factory = viewModelFactory {
-            initializer { WaitingLobbyViewModel(mode) }
+            initializer { WaitingLobbyViewModel(mode, session.activeRoomId.value) }
         }
     )
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val clipboardManager = LocalClipboardManager.current
 
     LobbyNetworkSync(
         session = session,
@@ -158,6 +163,25 @@ fun WaitingLobbyScreen(
                     textAlign = TextAlign.Center
                 )
             )
+
+            if (state.roomId.isNotEmpty()) {
+                Text(
+                    text = stringResource(R.string.waiting_room_id, state.roomId),
+                    style = TextStyle(
+                        fontSize = 14.sp,
+                        color = GoldCoinLight.copy(alpha = 0.8f),
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.sp,
+                        textAlign = TextAlign.Center
+                    ),
+                    modifier = Modifier
+                        .background(Color.Black.copy(alpha = 0.3f), shape = RoundedCornerShape(4.dp))
+                        .clickable {
+                            clipboardManager.setText(AnnotatedString(state.roomId))
+                        }
+                        .padding(horizontal = 12.dp, vertical = 4.dp)
+                )
+            }
 
             Spacer(Modifier.height(4.dp))
 
