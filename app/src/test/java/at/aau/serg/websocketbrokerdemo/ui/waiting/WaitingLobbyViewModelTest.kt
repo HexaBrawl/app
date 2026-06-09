@@ -77,6 +77,19 @@ class WaitingLobbyViewModelTest {
         assertEquals(PlayerColor.GREEN, vm.localColor)
     }
 
+    @Test
+    fun `localReady is false initially`() {
+        val vm = WaitingLobbyViewModel(GameMode.DUAL_VALLEY)
+        assertFalse(vm.localReady)
+    }
+
+    @Test
+    fun `localReady becomes true after onReadyToggle`() {
+        val vm = WaitingLobbyViewModel(GameMode.DUAL_VALLEY)
+        vm.onReadyToggle(slotId = 0)
+        assertTrue(vm.localReady)
+    }
+
     // ---- User-Aktionen -------------------------------------------------
 
     @Test
@@ -209,6 +222,41 @@ class WaitingLobbyViewModelTest {
 
         assertEquals(-1, vm.state.value.countdown)
         assertFalse(vm.state.value.isCountdownActive)
+    }
+
+    @Test
+    fun `countdownComplete becomes true after countdown finishes`() = runTest {
+        val standardDispatcher = kotlinx.coroutines.test.StandardTestDispatcher(testScheduler)
+        Dispatchers.resetMain()
+        Dispatchers.setMain(standardDispatcher)
+
+        val vm = WaitingLobbyViewModel(GameMode.DUAL_VALLEY)
+        vm.applyRemoteState(listOf("Borian"))
+        vm.onReadyToggle(slotId = 0)
+        testScheduler.runCurrent()
+        assertFalse(vm.state.value.countdownComplete)
+
+        advanceTimeBy(3500)
+        testScheduler.runCurrent()
+        assertTrue(vm.state.value.countdownComplete)
+    }
+
+    @Test
+    fun `countdownComplete resets to false when countdown cancels`() = runTest {
+        val standardDispatcher = kotlinx.coroutines.test.StandardTestDispatcher(testScheduler)
+        Dispatchers.resetMain()
+        Dispatchers.setMain(standardDispatcher)
+
+        val vm = WaitingLobbyViewModel(GameMode.DUAL_VALLEY)
+        vm.applyRemoteState(listOf("Borian"))
+        vm.onReadyToggle(slotId = 0)
+        testScheduler.runCurrent()
+
+        // User klickt Ready wieder weg -> Countdown wird gecancelt
+        vm.onReadyToggle(slotId = 0)
+        testScheduler.runCurrent()
+
+        assertFalse(vm.state.value.countdownComplete)
     }
 
     @Test

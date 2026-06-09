@@ -39,4 +39,10 @@ class WaitingLobbyStateTest {
         val state = WaitingLobbyState(countdown = -1)
         assertFalse(state.isCountdownActive)
     }
+
+    @Test
+    fun `default state has countdownComplete false`() {
+        val state = WaitingLobbyState()
+        assertFalse(state.countdownComplete)
+    }
 }
