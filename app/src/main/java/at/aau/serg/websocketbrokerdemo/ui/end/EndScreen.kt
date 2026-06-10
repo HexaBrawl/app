@@ -58,8 +58,6 @@ fun EndScreen(
 
 /**
  * Wählt das passende Hintergrund-Drawable basierend auf Ergebnis und Sprache.
- * Aktuell werden _ger Versionen verwendet. Falls _en Versionen hinzugefügt werden,
- * kann dies hier einfach erweitert werden.
  */
 @Composable
 private fun getEndScreenBackground(isWin: Boolean): Int {
@@ -67,10 +65,10 @@ private fun getEndScreenBackground(isWin: Boolean): Int {
 
     return when (language) {
         "de" -> if (isWin) R.drawable.bg_winscreen_ger else R.drawable.bg_lossscreen_ger
-        // "en" -> if (isWin) R.drawable.bg_winscreen_en else R.drawable.bg_lossscreen_en
+        "en" -> if (isWin) R.drawable.bg_winscreen_eng else R.drawable.bg_losscreen_eng
         else -> {
-            // Fallback auf Deutsch, da Englisch noch nicht existiert
-            if (isWin) R.drawable.bg_winscreen_ger else R.drawable.bg_lossscreen_ger
+            // Fallback auf Englisch
+            if (isWin) R.drawable.bg_winscreen_eng else R.drawable.bg_losscreen_eng
         }
     }
 }
