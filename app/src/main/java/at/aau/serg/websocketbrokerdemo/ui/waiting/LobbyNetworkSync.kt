@@ -8,6 +8,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import at.aau.serg.websocketbrokerdemo.data.serverside.ErrorCode
 import at.aau.serg.websocketbrokerdemo.data.serverside.GameStatus
+import at.aau.serg.websocketbrokerdemo.data.serverside.PlayerColor
 import at.aau.serg.websocketbrokerdemo.network.GameSession
 import at.aau.serg.websocketbrokerdemo.ui.navigation.Screen
 
@@ -31,9 +32,15 @@ fun LobbyNetworkSync(
     navController: NavController
 ) {
     val viewModelState by viewModel.state.collectAsStateWithLifecycle()
-    val localName = viewModel.localName
-    val localColor = viewModel.localColor
-    val localReady = viewModel.localReady
+    // Lokale Werte direkt aus dem observed State ableiten -- damit Compose
+    // die Recomposition garantiert triggert, wenn der User Name, Farbe
+    // oder Ready-Status aendert. Direkte Aufrufe von viewModel.localXyz
+    // wurden zwar gelesen, aber nicht zuverlaessig fuer LaunchedEffect-Keys
+    // erfasst.
+    val localSlot = viewModelState.slots.firstOrNull { it.isLocal }
+    val localName = localSlot?.name.orEmpty()
+    val localColor = localSlot?.color ?: PlayerColor.RED
+    val localReady = localSlot?.ready ?: false
 
     DisposableEffect(session.activeRoomId.value) {
         val job = session.endpoint.subscribeToGameState(session.activeRoomId.value) { state ->
