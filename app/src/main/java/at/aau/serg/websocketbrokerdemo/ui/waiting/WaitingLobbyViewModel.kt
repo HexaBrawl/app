@@ -66,6 +66,12 @@ class WaitingLobbyViewModel(
     }
 
     fun onReadyToggle(slotId: Int) {
+        // Waehrend der 3-2-1-Countdown laeuft, ignorieren wir Ready-Toggles.
+        // Sonst kann der User sein "Bereit" kurz vor dem Spielstart wieder
+        // zuruecknehmen, der Server hat aber schon Auto-Start ausgeloest --
+        // dann wuerde die App ihn trotzdem ins Spiel navigieren und der
+        // User waere irritiert.
+        if (_state.value.isCountdownActive) return
         updateSlots(WaitingLobbyLogic.applyReadyToggle(_state.value.slots, slotId))
     }
 

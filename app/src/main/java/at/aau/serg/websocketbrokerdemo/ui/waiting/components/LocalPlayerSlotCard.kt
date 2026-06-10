@@ -53,11 +53,17 @@ import com.example.myapplication.R
 fun LocalPlayerSlotCard(
     slot: PlayerSlot,
     takenColors: Set<PlayerColor>,
+    countdownActive: Boolean,
     onNameChange: (String) -> Unit,
     onColorChange: (PlayerColor) -> Unit,
     onReadyToggle: () -> Unit
 ) {
-    val canBeReady = slot.name.isNotBlank()
+    // Waehrend des 3-2-1-Countdowns ist der "Bereit"-Button gesperrt.
+    // Der User kann sein "Bereit" nicht mehr zuruecknehmen, sobald der
+    // Spielstart unmittelbar bevorsteht -- so vermeiden wir, dass er
+    // im Spiel landet, obwohl er kurz vorher noch "nicht bereit"
+    // geklickt hatte.
+    val canBeReady = slot.name.isNotBlank() && !countdownActive
 
     Column(
         modifier = Modifier

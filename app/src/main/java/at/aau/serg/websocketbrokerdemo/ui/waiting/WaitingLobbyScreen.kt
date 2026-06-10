@@ -212,6 +212,7 @@ fun WaitingLobbyScreen(
                     slot.isLocal -> LocalPlayerSlotCard(
                         slot = slot,
                         takenColors = takenColors,
+                        countdownActive = state.isCountdownActive,
                         onNameChange = { viewModel.onNameChange(slot.id, it) },
                         onColorChange = { viewModel.onColorChange(slot.id, it) },
                         onReadyToggle = { viewModel.onReadyToggle(slot.id) }
