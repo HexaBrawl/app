@@ -285,7 +285,7 @@ class WaitingLobbyViewModelTest {
     }
 
     @Test
-    fun `countdown cancels when a player goes back to not-ready`() = runTest {
+    fun `countdown cancels when a remote player leaves`() = runTest {
         val standardDispatcher = kotlinx.coroutines.test.StandardTestDispatcher(testScheduler)
         Dispatchers.resetMain()
         Dispatchers.setMain(standardDispatcher)
@@ -296,11 +296,37 @@ class WaitingLobbyViewModelTest {
         testScheduler.runCurrent()
         assertTrue(vm.state.value.isCountdownActive)
 
-        vm.onReadyToggle(slotId = 0)
+        // Remote-Spieler verlaesst den Raum -> Server broadcastet einen
+        // GameState ohne ihn, applyRemoteState raeumt Slot 1 auf -> der
+        // Countdown wird gecancelt, weil nicht mehr alle Slots besetzt
+        // und bereit sind.
+        vm.applyRemoteState(emptyList())
         testScheduler.runCurrent()
 
         assertEquals(-1, vm.state.value.countdown)
         assertFalse(vm.state.value.isCountdownActive)
+    }
+
+    @Test
+    fun `onReadyToggle is ignored while countdown is active`() = runTest {
+        val standardDispatcher = kotlinx.coroutines.test.StandardTestDispatcher(testScheduler)
+        Dispatchers.resetMain()
+        Dispatchers.setMain(standardDispatcher)
+
+        val vm = WaitingLobbyViewModel(GameMode.DUAL_VALLEY)
+        vm.applyRemoteState(listOf(Player(name = "Borian", color = PlayerColor.BLUE)))
+        vm.onReadyToggle(slotId = 0)
+        testScheduler.runCurrent()
+        assertTrue(vm.state.value.isCountdownActive)
+
+        // Klick auf "nicht bereit" waehrend der Countdown laeuft soll
+        // ignoriert werden, damit der User nicht im letzten Moment
+        // ausgesteigt wird, obwohl der Server schon Auto-Start auslost hat.
+        vm.onReadyToggle(slotId = 0)
+        testScheduler.runCurrent()
+
+        assertTrue(vm.localReady)
+        assertTrue(vm.state.value.isCountdownActive)
     }
 
     @Test
