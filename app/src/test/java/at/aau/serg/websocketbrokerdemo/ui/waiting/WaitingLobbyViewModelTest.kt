@@ -137,6 +137,30 @@ class WaitingLobbyViewModelTest {
         assertNull(vm.state.value.errorMessage)
     }
 
+    @Test
+    fun `markJoinedServer sets joinedServer to true`() {
+        val vm = WaitingLobbyViewModel(GameMode.DUAL_VALLEY)
+        assertFalse(vm.state.value.joinedServer)
+
+        vm.markJoinedServer()
+
+        assertTrue(vm.state.value.joinedServer)
+    }
+
+    @Test
+    fun `markJoinedServer is idempotent`() {
+        val vm = WaitingLobbyViewModel(GameMode.DUAL_VALLEY)
+        vm.markJoinedServer()
+        val firstState = vm.state.value
+
+        vm.markJoinedServer()
+        val secondState = vm.state.value
+
+        // Zweiter Aufruf gibt den gleichen State-Snapshot zurueck --
+        // kein unnoetiges Recompose oder maybeStartCountdown-Re-Trigger.
+        assertEquals(firstState, secondState)
+    }
+
     // ---- User-Aktionen -------------------------------------------------
 
     @Test

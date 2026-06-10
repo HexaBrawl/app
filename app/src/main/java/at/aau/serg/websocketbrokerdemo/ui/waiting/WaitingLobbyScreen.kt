@@ -213,6 +213,7 @@ fun WaitingLobbyScreen(
                         slot = slot,
                         takenColors = takenColors,
                         countdownActive = state.isCountdownActive,
+                        joinedServer = state.joinedServer,
                         onNameChange = { viewModel.onNameChange(slot.id, it) },
                         onColorChange = { viewModel.onColorChange(slot.id, it) },
                         onReadyToggle = { viewModel.onReadyToggle(slot.id) }
