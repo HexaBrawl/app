@@ -3,6 +3,7 @@ package at.aau.serg.websocketbrokerdemo.ui.waiting
 import at.aau.serg.websocketbrokerdemo.ui.waiting.model.PlayerSlot
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
@@ -38,5 +39,17 @@ class WaitingLobbyStateTest {
     fun `isCountdownActive is false when countdown is negative`() {
         val state = WaitingLobbyState(countdown = -1)
         assertFalse(state.isCountdownActive)
+    }
+
+    @Test
+    fun `default state has countdownComplete false`() {
+        val state = WaitingLobbyState()
+        assertFalse(state.countdownComplete)
+    }
+
+    @Test
+    fun `default state has no errorMessage`() {
+        val state = WaitingLobbyState()
+        assertNull(state.errorMessage)
     }
 }

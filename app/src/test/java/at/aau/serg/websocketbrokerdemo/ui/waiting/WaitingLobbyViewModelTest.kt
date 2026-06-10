@@ -1,5 +1,6 @@
 package at.aau.serg.websocketbrokerdemo.ui.waiting
 
+import at.aau.serg.websocketbrokerdemo.data.serverside.Player
 import at.aau.serg.websocketbrokerdemo.data.serverside.PlayerColor
 import at.aau.serg.websocketbrokerdemo.ui.mainmenu.GameMode
 import at.aau.serg.websocketbrokerdemo.ui.waiting.model.SlotStatus
@@ -14,6 +15,8 @@ import kotlinx.coroutines.test.setMain
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNotEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -77,6 +80,87 @@ class WaitingLobbyViewModelTest {
         assertEquals(PlayerColor.GREEN, vm.localColor)
     }
 
+    @Test
+    fun `localReady is false initially`() {
+        val vm = WaitingLobbyViewModel(GameMode.DUAL_VALLEY)
+        assertFalse(vm.localReady)
+    }
+
+    @Test
+    fun `localReady becomes true after onReadyToggle`() {
+        val vm = WaitingLobbyViewModel(GameMode.DUAL_VALLEY)
+        vm.onReadyToggle(slotId = 0)
+        assertTrue(vm.localReady)
+    }
+
+    @Test
+    fun `clearLocalReady sets local slot ready to false`() {
+        val vm = WaitingLobbyViewModel(GameMode.DUAL_VALLEY)
+        vm.onReadyToggle(slotId = 0)
+        assertTrue(vm.localReady)
+
+        vm.clearLocalReady()
+        assertFalse(vm.localReady)
+    }
+
+    @Test
+    fun `clearLocalReady cancels a running countdown`() = runTest {
+        val standardDispatcher = kotlinx.coroutines.test.StandardTestDispatcher(testScheduler)
+        Dispatchers.resetMain()
+        Dispatchers.setMain(standardDispatcher)
+
+        val vm = WaitingLobbyViewModel(GameMode.DUAL_VALLEY)
+        vm.applyRemoteState(listOf(Player(name = "Borian", color = PlayerColor.BLUE)))
+        vm.onReadyToggle(slotId = 0)
+        testScheduler.runCurrent()
+        assertTrue(vm.state.value.isCountdownActive)
+
+        vm.clearLocalReady()
+        testScheduler.runCurrent()
+        assertFalse(vm.state.value.isCountdownActive)
+    }
+
+    // ---- Fehler-Handling -----------------------------------------------
+
+    @Test
+    fun `showError sets the errorMessage`() {
+        val vm = WaitingLobbyViewModel(GameMode.DUAL_VALLEY)
+        vm.showError("Test-Fehler")
+        assertEquals("Test-Fehler", vm.state.value.errorMessage)
+    }
+
+    @Test
+    fun `clearError removes the errorMessage`() {
+        val vm = WaitingLobbyViewModel(GameMode.DUAL_VALLEY)
+        vm.showError("Test-Fehler")
+        vm.clearError()
+        assertNull(vm.state.value.errorMessage)
+    }
+
+    @Test
+    fun `markJoinedServer sets joinedServer to true`() {
+        val vm = WaitingLobbyViewModel(GameMode.DUAL_VALLEY)
+        assertFalse(vm.state.value.joinedServer)
+
+        vm.markJoinedServer()
+
+        assertTrue(vm.state.value.joinedServer)
+    }
+
+    @Test
+    fun `markJoinedServer is idempotent`() {
+        val vm = WaitingLobbyViewModel(GameMode.DUAL_VALLEY)
+        vm.markJoinedServer()
+        val firstState = vm.state.value
+
+        vm.markJoinedServer()
+        val secondState = vm.state.value
+
+        // Zweiter Aufruf gibt den gleichen State-Snapshot zurueck --
+        // kein unnoetiges Recompose oder maybeStartCountdown-Re-Trigger.
+        assertEquals(firstState, secondState)
+    }
+
     // ---- User-Aktionen -------------------------------------------------
 
     @Test
@@ -113,7 +197,12 @@ class WaitingLobbyViewModelTest {
     @Test
     fun `applyRemoteState fills empty slots with remote player names`() {
         val vm = WaitingLobbyViewModel(GameMode.BATTLEFIELD_PEAKS)
-        vm.applyRemoteState(listOf("Borian", "Cassia"))
+        vm.applyRemoteState(
+            listOf(
+                Player(name = "Borian", color = PlayerColor.BLUE),
+                Player(name = "Cassia", color = PlayerColor.GREEN)
+            )
+        )
 
         val slots = vm.state.value.slots
         assertEquals("Borian", slots[1].name)
@@ -123,19 +212,46 @@ class WaitingLobbyViewModelTest {
     }
 
     @Test
-    fun `applyRemoteState assigns unique colors to remote players`() {
+    fun `applyRemoteState uses the colors from the server`() {
         val vm = WaitingLobbyViewModel(GameMode.BATTLEFIELD_PEAKS)
-        vm.applyRemoteState(listOf("Borian", "Cassia", "Domitian"))
+        vm.applyRemoteState(
+            listOf(
+                Player(name = "Borian", color = PlayerColor.BLUE),
+                Player(name = "Cassia", color = PlayerColor.GREEN),
+                Player(name = "Domitian", color = PlayerColor.YELLOW)
+            )
+        )
 
         val slots = vm.state.value.slots
-        val colors = slots.map { it.color }
-        assertEquals(4, colors.toSet().size)
+        // Slots 1..3 spiegeln die Server-Farben wider, nicht eine
+        // client-seitige Vergabe.
+        assertEquals(PlayerColor.BLUE, slots[1].color)
+        assertEquals(PlayerColor.GREEN, slots[2].color)
+        assertEquals(PlayerColor.YELLOW, slots[3].color)
+    }
+
+    @Test
+    fun `applyRemoteState reassigns local color if it collides with remote`() {
+        val vm = WaitingLobbyViewModel(GameMode.DUAL_VALLEY)
+        // Lokaler Slot 0 startet mit RED (default).
+        // Remote Player hat auch RED -> Auto-Reassign muss greifen.
+        vm.applyRemoteState(listOf(Player(name = "Borian", color = PlayerColor.RED)))
+        assertNotEquals(PlayerColor.RED, vm.localColor)
+    }
+
+    @Test
+    fun `applyRemoteState does not reassign local color when user is ready`() {
+        val vm = WaitingLobbyViewModel(GameMode.DUAL_VALLEY)
+        vm.onReadyToggle(slotId = 0)   // user wird ready mit default RED
+        vm.applyRemoteState(listOf(Player(name = "Borian", color = PlayerColor.RED)))
+        // Soll NICHT geaendert werden -- der User hat bewusst gewaehlt.
+        assertEquals(PlayerColor.RED, vm.localColor)
     }
 
     @Test
     fun `applyRemoteState empties slots when remote player leaves`() {
         val vm = WaitingLobbyViewModel(GameMode.DUAL_VALLEY)
-        vm.applyRemoteState(listOf("Borian"))
+        vm.applyRemoteState(listOf(Player(name = "Borian", color = PlayerColor.BLUE)))
         assertEquals(SlotStatus.Player, vm.state.value.slots[1].status)
 
         vm.applyRemoteState(emptyList())
@@ -159,7 +275,7 @@ class WaitingLobbyViewModelTest {
         Dispatchers.setMain(standardDispatcher)
 
         val vm = WaitingLobbyViewModel(GameMode.DUAL_VALLEY)
-        vm.applyRemoteState(listOf("Borian"))
+        vm.applyRemoteState(listOf(Player(name = "Borian", color = PlayerColor.BLUE)))
         vm.onReadyToggle(slotId = 0)
         testScheduler.runCurrent()
 
@@ -173,7 +289,7 @@ class WaitingLobbyViewModelTest {
         Dispatchers.setMain(standardDispatcher)
 
         val vm = WaitingLobbyViewModel(GameMode.DUAL_VALLEY)
-        vm.applyRemoteState(listOf("Borian"))
+        vm.applyRemoteState(listOf(Player(name = "Borian", color = PlayerColor.BLUE)))
         vm.onReadyToggle(slotId = 0)
         testScheduler.runCurrent()
 
@@ -193,22 +309,99 @@ class WaitingLobbyViewModelTest {
     }
 
     @Test
-    fun `countdown cancels when a player goes back to not-ready`() = runTest {
+    fun `countdown cancels when a remote player leaves`() = runTest {
         val standardDispatcher = kotlinx.coroutines.test.StandardTestDispatcher(testScheduler)
         Dispatchers.resetMain()
         Dispatchers.setMain(standardDispatcher)
 
         val vm = WaitingLobbyViewModel(GameMode.DUAL_VALLEY)
-        vm.applyRemoteState(listOf("Borian"))
+        vm.applyRemoteState(listOf(Player(name = "Borian", color = PlayerColor.BLUE)))
         vm.onReadyToggle(slotId = 0)
         testScheduler.runCurrent()
         assertTrue(vm.state.value.isCountdownActive)
 
-        vm.onReadyToggle(slotId = 0)
+        // Remote-Spieler verlaesst den Raum -> Server broadcastet einen
+        // GameState ohne ihn, applyRemoteState raeumt Slot 1 auf -> der
+        // Countdown wird gecancelt, weil nicht mehr alle Slots besetzt
+        // und bereit sind.
+        vm.applyRemoteState(emptyList())
         testScheduler.runCurrent()
 
         assertEquals(-1, vm.state.value.countdown)
         assertFalse(vm.state.value.isCountdownActive)
+    }
+
+    @Test
+    fun `onReadyToggle is ignored while countdown is active`() = runTest {
+        val standardDispatcher = kotlinx.coroutines.test.StandardTestDispatcher(testScheduler)
+        Dispatchers.resetMain()
+        Dispatchers.setMain(standardDispatcher)
+
+        val vm = WaitingLobbyViewModel(GameMode.DUAL_VALLEY)
+        vm.applyRemoteState(listOf(Player(name = "Borian", color = PlayerColor.BLUE)))
+        vm.onReadyToggle(slotId = 0)
+        testScheduler.runCurrent()
+        assertTrue(vm.state.value.isCountdownActive)
+
+        // Klick auf "nicht bereit" waehrend der Countdown laeuft soll
+        // ignoriert werden, damit der User nicht im letzten Moment
+        // ausgesteigt wird, obwohl der Server schon Auto-Start auslost hat.
+        vm.onReadyToggle(slotId = 0)
+        testScheduler.runCurrent()
+
+        assertTrue(vm.localReady)
+        assertTrue(vm.state.value.isCountdownActive)
+    }
+
+    @Test
+    fun `onReadyToggle is ignored when player is already ready`() {
+        val vm = WaitingLobbyViewModel(GameMode.DUAL_VALLEY)
+        vm.onReadyToggle(slotId = 0)
+        assertTrue(vm.localReady)
+
+        // Zweiter Klick soll ignoriert werden -- ready bleibt true.
+        // Server kennt keinen "leave"-Endpoint, daher kein Zurueck.
+        vm.onReadyToggle(slotId = 0)
+
+        assertTrue(vm.localReady)
+    }
+
+    @Test
+    fun `countdownComplete becomes true after countdown finishes`() = runTest {
+        val standardDispatcher = kotlinx.coroutines.test.StandardTestDispatcher(testScheduler)
+        Dispatchers.resetMain()
+        Dispatchers.setMain(standardDispatcher)
+
+        val vm = WaitingLobbyViewModel(GameMode.DUAL_VALLEY)
+        vm.applyRemoteState(listOf(Player(name = "Borian", color = PlayerColor.BLUE)))
+        vm.onReadyToggle(slotId = 0)
+        testScheduler.runCurrent()
+        assertFalse(vm.state.value.countdownComplete)
+
+        advanceTimeBy(3500)
+        testScheduler.runCurrent()
+        assertTrue(vm.state.value.countdownComplete)
+    }
+
+    @Test
+    fun `countdownComplete resets to false when countdown cancels`() = runTest {
+        val standardDispatcher = kotlinx.coroutines.test.StandardTestDispatcher(testScheduler)
+        Dispatchers.resetMain()
+        Dispatchers.setMain(standardDispatcher)
+
+        val vm = WaitingLobbyViewModel(GameMode.DUAL_VALLEY)
+        vm.applyRemoteState(listOf(Player(name = "Borian", color = PlayerColor.BLUE)))
+        vm.onReadyToggle(slotId = 0)
+        testScheduler.runCurrent()
+        assertTrue(vm.state.value.isCountdownActive)
+
+        // Remote-Spieler verlaesst den Raum -> Countdown wird gecancelt
+        // (onReadyToggle waere kein gueltiger Cancel-Pfad mehr, weil der
+        // Ready-Lock weitere Klicks ignoriert, sobald der User ready ist).
+        vm.applyRemoteState(emptyList())
+        testScheduler.runCurrent()
+
+        assertFalse(vm.state.value.countdownComplete)
     }
 
     @Test
@@ -231,7 +424,7 @@ class WaitingLobbyViewModelTest {
         Dispatchers.setMain(standardDispatcher)
 
         val vm = WaitingLobbyViewModel(GameMode.DUAL_VALLEY)
-        vm.applyRemoteState(listOf("Borian"))
+        vm.applyRemoteState(listOf(Player(name = "Borian", color = PlayerColor.BLUE)))
         vm.onReadyToggle(slotId = 0)
         testScheduler.runCurrent()
         assertTrue(vm.state.value.isCountdownActive)

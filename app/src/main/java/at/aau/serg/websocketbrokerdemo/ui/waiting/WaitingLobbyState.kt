@@ -15,14 +15,33 @@ import at.aau.serg.websocketbrokerdemo.ui.waiting.model.PlayerSlot
  *  - joinCode   Menschenlesbarer 6-Zeichen-Code. Wird in der Wartelobby
  *               angezeigt und ist der Wert, den der User per Klick
  *               kopieren bzw. seinen Mitspielern weitergeben kann.
- *  - slots      Aktuelle Spieler-Slots (lokal + remote + leer)
- *  - countdown  Sekunden bis zum Spielstart, -1 wenn nicht laeuft
+ *  - slots             Aktuelle Spieler-Slots (lokal + remote + leer)
+ *  - countdown         Sekunden bis zum Spielstart, -1 wenn nicht laeuft
+ *  - countdownComplete True, sobald der Countdown auf 0 runtergezaehlt
+ *                      hat. Dient als Signal fuer die Navigation zum
+ *                      GameScreen -- erst wenn der Countdown wirklich
+ *                      durchgelaufen ist, wechselt die App auf das
+ *                      Spielfeld. Wird beim Start eines neuen Countdowns
+ *                      wieder auf false gesetzt.
+ *  - errorMessage      Vom Server gemeldeter Fehler (z.B. "Diese Farbe
+ *                      ist bereits vergeben"). Wird vom WaitingLobby-
+ *                      Screen als Snackbar angezeigt und nach dem
+ *                      Verschwinden ueber clearError() zurueckgesetzt.
+ *  - joinedServer      True, sobald der Server den eigenen Spieler im
+ *                      GameState-Broadcast bestaetigt hat. Sperrt
+ *                      anschliessend Name- und Farbwahl, damit die
+ *                      lokale Anzeige nicht von der Server-Wahrheit
+ *                      abweicht. Der Ready-Toggle bleibt dagegen frei
+ *                      (User kann den Countdown jederzeit pausieren).
  */
 data class WaitingLobbyState(
     val roomId: String = "",
     val joinCode: String = "",
     val slots: List<PlayerSlot> = emptyList(),
-    val countdown: Int = -1
+    val countdown: Int = -1,
+    val countdownComplete: Boolean = false,
+    val errorMessage: String? = null,
+    val joinedServer: Boolean = false
 ) {
     /** True wenn der Countdown gerade laeuft. */
     val isCountdownActive: Boolean
