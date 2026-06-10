@@ -47,6 +47,7 @@ sonar {
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/waiting/components/**",
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/waiting/LobbyNetworkSync.kt",
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/waiting/WaitingLobbyScreen.kt",
+                "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/end/EndScreen.kt",
 
                 // Grid-Rendering (Canvas)
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/grid/HexGrid.kt",
