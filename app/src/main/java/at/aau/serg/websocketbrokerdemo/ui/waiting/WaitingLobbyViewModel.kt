@@ -102,60 +102,53 @@ class WaitingLobbyViewModel(
      * ein anderer Spieler schon hat.
      */
     fun applyRemoteState(remotePlayers: List<Player>) {
-        val withRemoteSlots = mapRemoteSlots(_state.value.slots, remotePlayers)
-        val finalSlots = autoReassignLocalColorIfNeeded(withRemoteSlots)
-        updateSlots(finalSlots)
-    }
+        val currentSlots = _state.value.slots
 
-    /**
-     * Setzt die Remote-Slots (alle nicht-lokalen Slots) auf den Server-
-     * Stand: Spieler-Daten falls vorhanden, Empty sonst. Der lokale
-     * Slot bleibt unangetastet.
-     */
-    private fun mapRemoteSlots(
-        currentSlots: List<PlayerSlot>,
-        remotePlayers: List<Player>
-    ): List<PlayerSlot> = currentSlots.mapIndexed { index, slot ->
-        if (slot.isLocal) slot
-        else applyRemoteToSlot(slot, remotePlayers.getOrNull(index - 1))
-    }
-
-    private fun applyRemoteToSlot(slot: PlayerSlot, remotePlayer: Player?): PlayerSlot =
-        if (remotePlayer == null) {
-            slot.copy(status = SlotStatus.Empty, name = "", ready = false)
-        } else {
-            slot.copy(
-                status = SlotStatus.Player,
-                name = remotePlayer.name,
-                color = remotePlayer.color,
-                ready = true,
-                isLocal = false
-            )
+        var newSlots = currentSlots.mapIndexed { index, slot ->
+            if (slot.isLocal) {
+                slot
+            } else {
+                val remoteIndex = index - 1
+                val remotePlayer = remotePlayers.getOrNull(remoteIndex)
+                if (remotePlayer == null) {
+                    slot.copy(status = SlotStatus.Empty, name = "", ready = false)
+                } else {
+                    slot.copy(
+                        status = SlotStatus.Player,
+                        name = remotePlayer.name,
+                        color = remotePlayer.color,
+                        ready = true,
+                        isLocal = false
+                    )
+                }
+            }
         }
 
-    /**
-     * Auto-Reassign: wenn der lokale Slot eine Farbe hat, die ein
-     * Remote-Spieler bereits belegt, UND der User noch nicht "ready"
-     * geklickt hat, vergeben wir automatisch die naechste freie Farbe.
-     * Damit muss der User nicht jedes Mal manuell wechseln, wenn sein
-     * RED-Default mit dem RED-Default des Hosts kollidiert.
-     *
-     * Wenn der User schon bewusst ready geklickt hat, lassen wir seine
-     * Wahl unangetastet -- ein Color-Konflikt wird dann vom Server ueber
-     * COLOR_ALREADY_TAKEN abgefangen.
-     */
-    private fun autoReassignLocalColorIfNeeded(slots: List<PlayerSlot>): List<PlayerSlot> {
-        val localSlot = slots.firstOrNull { it.isLocal } ?: return slots
-        if (localSlot.ready) return slots
+        // Auto-Reassign: wenn der lokale Slot eine Farbe hat, die ein
+        // Remote-Spieler bereits belegt, UND der User noch nicht "ready"
+        // geklickt hat, vergeben wir automatisch die naechste freie Farbe.
+        // Damit muss der User nicht jedes Mal manuell wechseln, wenn sein
+        // RED-Default mit dem RED-Default des Hosts kollidiert.
+        // Wenn der User schon bewusst ready geklickt hat, lassen wir seine
+        // Wahl unangetastet -- ein Color-Konflikt wird dann vom Server
+        // ueber COLOR_ALREADY_TAKEN abgefangen.
+        val localSlot = newSlots.firstOrNull { it.isLocal }
+        if (localSlot != null && !localSlot.ready) {
+            val remoteColors = newSlots
+                .filter { !it.isLocal && it.status != SlotStatus.Empty }
+                .map { it.color }
+                .toSet()
+            if (localSlot.color in remoteColors) {
+                val freeColor = PlayerColor.entries.firstOrNull { it !in remoteColors }
+                if (freeColor != null) {
+                    newSlots = newSlots.map { s ->
+                        if (s.isLocal) s.copy(color = freeColor) else s
+                    }
+                }
+            }
+        }
 
-        val remoteColors = slots
-            .filter { !it.isLocal && it.status != SlotStatus.Empty }
-            .map { it.color }
-            .toSet()
-        if (localSlot.color !in remoteColors) return slots
-
-        val freeColor = PlayerColor.entries.firstOrNull { it !in remoteColors } ?: return slots
-        return slots.map { if (it.isLocal) it.copy(color = freeColor) else it }
+        updateSlots(newSlots)
     }
 
     // ---- Fehler-Handling -----------------------------------------------
