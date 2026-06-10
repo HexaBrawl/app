@@ -27,6 +27,7 @@ import at.aau.serg.websocketbrokerdemo.ui.theme.WoodMedium
 fun DialogButton(
     text: String,
     primary: Boolean,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
     Button(
@@ -36,7 +37,7 @@ fun DialogButton(
             containerColor = if (primary) GoldCoin else WoodMedium,
             contentColor = if (primary) InkBlack else ParchmentLight
         ),
-        modifier = Modifier
+        modifier = modifier
             .height(46.dp)
             .border(2.dp, GoldCoinDark, RoundedCornerShape(8.dp))
     ) {
