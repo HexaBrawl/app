@@ -393,9 +393,12 @@ class WaitingLobbyViewModelTest {
         vm.applyRemoteState(listOf(Player(name = "Borian", color = PlayerColor.BLUE)))
         vm.onReadyToggle(slotId = 0)
         testScheduler.runCurrent()
+        assertTrue(vm.state.value.isCountdownActive)
 
-        // User klickt Ready wieder weg -> Countdown wird gecancelt
-        vm.onReadyToggle(slotId = 0)
+        // Remote-Spieler verlaesst den Raum -> Countdown wird gecancelt
+        // (onReadyToggle waere kein gueltiger Cancel-Pfad mehr, weil der
+        // Ready-Lock weitere Klicks ignoriert, sobald der User ready ist).
+        vm.applyRemoteState(emptyList())
         testScheduler.runCurrent()
 
         assertFalse(vm.state.value.countdownComplete)
