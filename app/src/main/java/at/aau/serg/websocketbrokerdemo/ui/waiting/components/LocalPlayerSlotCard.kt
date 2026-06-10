@@ -59,12 +59,12 @@ fun LocalPlayerSlotCard(
     onColorChange: (PlayerColor) -> Unit,
     onReadyToggle: () -> Unit
 ) {
-    // Waehrend des 3-2-1-Countdowns ist der "Bereit"-Button gesperrt.
-    // Der User kann sein "Bereit" nicht mehr zuruecknehmen, sobald der
-    // Spielstart unmittelbar bevorsteht -- so vermeiden wir, dass er
-    // im Spiel landet, obwohl er kurz vorher noch "nicht bereit"
-    // geklickt hatte.
-    val canBeReady = slot.name.isNotBlank() && !countdownActive
+    // Der Bereit-Button ist gesperrt sobald:
+    //  - der Slot bereits ready ist: Server kennt keinen "leave"-Endpoint,
+    //    daher koennen wir das Ready nicht zurueckziehen, ohne Inkonsistenz
+    //    zu erzeugen. Wer raus will, nutzt den BACK-Button.
+    //  - der 3-2-1-Countdown laeuft: kein Last-Second-Cancel mehr moeglich.
+    val canBeReady = slot.name.isNotBlank() && !countdownActive && !slot.ready
 
     Column(
         modifier = Modifier

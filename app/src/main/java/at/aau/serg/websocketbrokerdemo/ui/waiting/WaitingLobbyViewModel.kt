@@ -72,6 +72,19 @@ class WaitingLobbyViewModel(
         // dann wuerde die App ihn trotzdem ins Spiel navigieren und der
         // User waere irritiert.
         if (_state.value.isCountdownActive) return
+
+        // Sobald der lokale Slot ready ist, ignorieren wir weitere
+        // Toggle-Klicks. Der Server kennt keinen "leave"-Endpoint, der
+        // Auto-Start kann den lokalen Unready ueberholen, und der User
+        // landet in einem Game ohne den anderen Spieler oder umgekehrt.
+        // Wenn der User doch raus will, gibt es den BACK-Button.
+        //
+        // Die Recovery bei COLOR_ALREADY_TAKEN funktioniert weiter, weil
+        // clearLocalReady() den slot.ready direkt manipuliert (bypass
+        // dieses Checks).
+        val slot = _state.value.slots.firstOrNull { it.id == slotId }
+        if (slot?.ready == true) return
+
         updateSlots(WaitingLobbyLogic.applyReadyToggle(_state.value.slots, slotId))
     }
 

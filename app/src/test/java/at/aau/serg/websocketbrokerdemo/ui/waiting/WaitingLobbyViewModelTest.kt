@@ -354,6 +354,19 @@ class WaitingLobbyViewModelTest {
     }
 
     @Test
+    fun `onReadyToggle is ignored when player is already ready`() {
+        val vm = WaitingLobbyViewModel(GameMode.DUAL_VALLEY)
+        vm.onReadyToggle(slotId = 0)
+        assertTrue(vm.localReady)
+
+        // Zweiter Klick soll ignoriert werden -- ready bleibt true.
+        // Server kennt keinen "leave"-Endpoint, daher kein Zurueck.
+        vm.onReadyToggle(slotId = 0)
+
+        assertTrue(vm.localReady)
+    }
+
+    @Test
     fun `countdownComplete becomes true after countdown finishes`() = runTest {
         val standardDispatcher = kotlinx.coroutines.test.StandardTestDispatcher(testScheduler)
         Dispatchers.resetMain()
