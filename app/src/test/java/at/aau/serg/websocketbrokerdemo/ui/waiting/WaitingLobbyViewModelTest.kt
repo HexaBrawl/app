@@ -15,6 +15,7 @@ import kotlinx.coroutines.test.setMain
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -203,6 +204,24 @@ class WaitingLobbyViewModelTest {
         assertEquals(PlayerColor.BLUE, slots[1].color)
         assertEquals(PlayerColor.GREEN, slots[2].color)
         assertEquals(PlayerColor.YELLOW, slots[3].color)
+    }
+
+    @Test
+    fun `applyRemoteState reassigns local color if it collides with remote`() {
+        val vm = WaitingLobbyViewModel(GameMode.DUAL_VALLEY)
+        // Lokaler Slot 0 startet mit RED (default).
+        // Remote Player hat auch RED -> Auto-Reassign muss greifen.
+        vm.applyRemoteState(listOf(Player(name = "Borian", color = PlayerColor.RED)))
+        assertNotEquals(PlayerColor.RED, vm.localColor)
+    }
+
+    @Test
+    fun `applyRemoteState does not reassign local color when user is ready`() {
+        val vm = WaitingLobbyViewModel(GameMode.DUAL_VALLEY)
+        vm.onReadyToggle(slotId = 0)   // user wird ready mit default RED
+        vm.applyRemoteState(listOf(Player(name = "Borian", color = PlayerColor.RED)))
+        // Soll NICHT geaendert werden -- der User hat bewusst gewaehlt.
+        assertEquals(PlayerColor.RED, vm.localColor)
     }
 
     @Test

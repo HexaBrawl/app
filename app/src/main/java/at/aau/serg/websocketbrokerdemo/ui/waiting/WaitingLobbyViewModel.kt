@@ -85,7 +85,7 @@ class WaitingLobbyViewModel(
     fun applyRemoteState(remotePlayers: List<Player>) {
         val currentSlots = _state.value.slots
 
-        val newSlots = currentSlots.mapIndexed { index, slot ->
+        var newSlots = currentSlots.mapIndexed { index, slot ->
             if (slot.isLocal) {
                 slot
             } else {
@@ -101,6 +101,30 @@ class WaitingLobbyViewModel(
                         ready = true,
                         isLocal = false
                     )
+                }
+            }
+        }
+
+        // Auto-Reassign: wenn der lokale Slot eine Farbe hat, die ein
+        // Remote-Spieler bereits belegt, UND der User noch nicht "ready"
+        // geklickt hat, vergeben wir automatisch die naechste freie Farbe.
+        // Damit muss der User nicht jedes Mal manuell wechseln, wenn sein
+        // RED-Default mit dem RED-Default des Hosts kollidiert.
+        // Wenn der User schon bewusst ready geklickt hat, lassen wir seine
+        // Wahl unangetastet -- ein Color-Konflikt wird dann vom Server
+        // ueber COLOR_ALREADY_TAKEN abgefangen.
+        val localSlot = newSlots.firstOrNull { it.isLocal }
+        if (localSlot != null && !localSlot.ready) {
+            val remoteColors = newSlots
+                .filter { !it.isLocal && it.status != SlotStatus.Empty }
+                .map { it.color }
+                .toSet()
+            if (localSlot.color in remoteColors) {
+                val freeColor = PlayerColor.entries.firstOrNull { it !in remoteColors }
+                if (freeColor != null) {
+                    newSlots = newSlots.map { s ->
+                        if (s.isLocal) s.copy(color = freeColor) else s
+                    }
                 }
             }
         }
