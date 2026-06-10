@@ -169,6 +169,18 @@ class WaitingLobbyViewModel(
         _state.value = _state.value.copy(errorMessage = null)
     }
 
+    /**
+     * Wird vom NetworkSync aufgerufen, sobald der Server den lokalen
+     * Spieler in einem GameState-Broadcast bestaetigt. Setzt das
+     * joinedServer-Flag, das im UI Name- und Farbwahl sperrt.
+     *
+     * Idempotent: ein zweiter Aufruf aendert nichts mehr.
+     */
+    fun markJoinedServer() {
+        if (_state.value.joinedServer) return
+        _state.value = _state.value.copy(joinedServer = true)
+    }
+
     // ---- Internes -------------------------------------------------------
 
     private fun updateSlots(newSlots: List<PlayerSlot>) {

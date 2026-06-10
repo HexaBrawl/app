@@ -27,6 +27,12 @@ import at.aau.serg.websocketbrokerdemo.ui.waiting.model.PlayerSlot
  *                      ist bereits vergeben"). Wird vom WaitingLobby-
  *                      Screen als Snackbar angezeigt und nach dem
  *                      Verschwinden ueber clearError() zurueckgesetzt.
+ *  - joinedServer      True, sobald der Server den eigenen Spieler im
+ *                      GameState-Broadcast bestaetigt hat. Sperrt
+ *                      anschliessend Name- und Farbwahl, damit die
+ *                      lokale Anzeige nicht von der Server-Wahrheit
+ *                      abweicht. Der Ready-Toggle bleibt dagegen frei
+ *                      (User kann den Countdown jederzeit pausieren).
  */
 data class WaitingLobbyState(
     val roomId: String = "",
@@ -34,7 +40,8 @@ data class WaitingLobbyState(
     val slots: List<PlayerSlot> = emptyList(),
     val countdown: Int = -1,
     val countdownComplete: Boolean = false,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val joinedServer: Boolean = false
 ) {
     /** True wenn der Countdown gerade laeuft. */
     val isCountdownActive: Boolean

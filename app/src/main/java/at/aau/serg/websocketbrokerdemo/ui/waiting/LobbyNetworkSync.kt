@@ -76,6 +76,16 @@ fun LobbyNetworkSync(
     LaunchedEffect(gameState) {
         val state = gameState ?: return@LaunchedEffect
 
+        // Lokalen Spieler im Server-State erkennen -> Name + Farbe locken.
+        // Wir verlassen uns nicht auf den joinGame-Send, sondern auf den
+        // tatsaechlichen Broadcast: wenn der Server den Spieler ablehnt
+        // (z.B. COLOR_ALREADY_TAKEN), taucht er nicht in der Liste auf
+        // und der Lock bleibt offen, sodass der User die Farbe wechseln
+        // kann.
+        if (state.players.any { it.name == localName }) {
+            viewModel.markJoinedServer()
+        }
+
         // Komplette Player-Objekte (mit Server-Farbe) weitergeben, damit
         // der Color-Picker im Wartelobby-UI konsistent zur Realitaet ist.
         val remotePlayers = state.players.filter { it.name != localName }
