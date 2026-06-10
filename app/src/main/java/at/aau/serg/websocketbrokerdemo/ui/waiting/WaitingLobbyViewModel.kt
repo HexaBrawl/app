@@ -2,6 +2,7 @@ package at.aau.serg.websocketbrokerdemo.ui.waiting
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import at.aau.serg.websocketbrokerdemo.data.serverside.Player
 import at.aau.serg.websocketbrokerdemo.data.serverside.PlayerColor
 import at.aau.serg.websocketbrokerdemo.ui.mainmenu.GameMode
 import at.aau.serg.websocketbrokerdemo.ui.waiting.model.PlayerSlot
@@ -73,28 +74,30 @@ class WaitingLobbyViewModel(
     /**
      * Wird vom NetworkSync aufgerufen, wenn der Server eine neue
      * Spielerliste schickt. Aktualisiert die Slots 1..n (nicht den
-     * lokalen Slot 0) und weist ihnen die noch freien Farben zu.
+     * lokalen Slot 0).
+     *
+     * Wichtig: die Farben der Remote-Spieler werden 1:1 aus dem Server-
+     * GameState uebernommen -- damit sieht der Color-Picker in jeder
+     * App konsistent welche Farben schon belegt sind, und der User kann
+     * keinen Konflikt mehr ausloesen, indem er eine Farbe waehlt, die
+     * ein anderer Spieler schon hat.
      */
-    fun applyRemoteState(remotePlayerNames: List<String>) {
+    fun applyRemoteState(remotePlayers: List<Player>) {
         val currentSlots = _state.value.slots
-        val localSlot = currentSlots.firstOrNull { it.isLocal } ?: return
-        val takenColors = mutableSetOf(localSlot.color)
 
         val newSlots = currentSlots.mapIndexed { index, slot ->
             if (slot.isLocal) {
                 slot
             } else {
                 val remoteIndex = index - 1
-                val remoteName = remotePlayerNames.getOrNull(remoteIndex)
-                if (remoteName == null) {
+                val remotePlayer = remotePlayers.getOrNull(remoteIndex)
+                if (remotePlayer == null) {
                     slot.copy(status = SlotStatus.Empty, name = "", ready = false)
                 } else {
-                    val color = PlayerColor.entries.first { it !in takenColors }
-                    takenColors += color
                     slot.copy(
                         status = SlotStatus.Player,
-                        name = remoteName,
-                        color = color,
+                        name = remotePlayer.name,
+                        color = remotePlayer.color,
                         ready = true,
                         isLocal = false
                     )

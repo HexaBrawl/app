@@ -1,5 +1,6 @@
 package at.aau.serg.websocketbrokerdemo.ui.waiting
 
+import at.aau.serg.websocketbrokerdemo.data.serverside.Player
 import at.aau.serg.websocketbrokerdemo.data.serverside.PlayerColor
 import at.aau.serg.websocketbrokerdemo.ui.mainmenu.GameMode
 import at.aau.serg.websocketbrokerdemo.ui.waiting.model.SlotStatus
@@ -108,7 +109,7 @@ class WaitingLobbyViewModelTest {
         Dispatchers.setMain(standardDispatcher)
 
         val vm = WaitingLobbyViewModel(GameMode.DUAL_VALLEY)
-        vm.applyRemoteState(listOf("Borian"))
+        vm.applyRemoteState(listOf(Player(name = "Borian", color = PlayerColor.BLUE)))
         vm.onReadyToggle(slotId = 0)
         testScheduler.runCurrent()
         assertTrue(vm.state.value.isCountdownActive)
@@ -171,7 +172,12 @@ class WaitingLobbyViewModelTest {
     @Test
     fun `applyRemoteState fills empty slots with remote player names`() {
         val vm = WaitingLobbyViewModel(GameMode.BATTLEFIELD_PEAKS)
-        vm.applyRemoteState(listOf("Borian", "Cassia"))
+        vm.applyRemoteState(
+            listOf(
+                Player(name = "Borian", color = PlayerColor.BLUE),
+                Player(name = "Cassia", color = PlayerColor.GREEN)
+            )
+        )
 
         val slots = vm.state.value.slots
         assertEquals("Borian", slots[1].name)
@@ -181,19 +187,28 @@ class WaitingLobbyViewModelTest {
     }
 
     @Test
-    fun `applyRemoteState assigns unique colors to remote players`() {
+    fun `applyRemoteState uses the colors from the server`() {
         val vm = WaitingLobbyViewModel(GameMode.BATTLEFIELD_PEAKS)
-        vm.applyRemoteState(listOf("Borian", "Cassia", "Domitian"))
+        vm.applyRemoteState(
+            listOf(
+                Player(name = "Borian", color = PlayerColor.BLUE),
+                Player(name = "Cassia", color = PlayerColor.GREEN),
+                Player(name = "Domitian", color = PlayerColor.YELLOW)
+            )
+        )
 
         val slots = vm.state.value.slots
-        val colors = slots.map { it.color }
-        assertEquals(4, colors.toSet().size)
+        // Slots 1..3 spiegeln die Server-Farben wider, nicht eine
+        // client-seitige Vergabe.
+        assertEquals(PlayerColor.BLUE, slots[1].color)
+        assertEquals(PlayerColor.GREEN, slots[2].color)
+        assertEquals(PlayerColor.YELLOW, slots[3].color)
     }
 
     @Test
     fun `applyRemoteState empties slots when remote player leaves`() {
         val vm = WaitingLobbyViewModel(GameMode.DUAL_VALLEY)
-        vm.applyRemoteState(listOf("Borian"))
+        vm.applyRemoteState(listOf(Player(name = "Borian", color = PlayerColor.BLUE)))
         assertEquals(SlotStatus.Player, vm.state.value.slots[1].status)
 
         vm.applyRemoteState(emptyList())
@@ -217,7 +232,7 @@ class WaitingLobbyViewModelTest {
         Dispatchers.setMain(standardDispatcher)
 
         val vm = WaitingLobbyViewModel(GameMode.DUAL_VALLEY)
-        vm.applyRemoteState(listOf("Borian"))
+        vm.applyRemoteState(listOf(Player(name = "Borian", color = PlayerColor.BLUE)))
         vm.onReadyToggle(slotId = 0)
         testScheduler.runCurrent()
 
@@ -231,7 +246,7 @@ class WaitingLobbyViewModelTest {
         Dispatchers.setMain(standardDispatcher)
 
         val vm = WaitingLobbyViewModel(GameMode.DUAL_VALLEY)
-        vm.applyRemoteState(listOf("Borian"))
+        vm.applyRemoteState(listOf(Player(name = "Borian", color = PlayerColor.BLUE)))
         vm.onReadyToggle(slotId = 0)
         testScheduler.runCurrent()
 
@@ -257,7 +272,7 @@ class WaitingLobbyViewModelTest {
         Dispatchers.setMain(standardDispatcher)
 
         val vm = WaitingLobbyViewModel(GameMode.DUAL_VALLEY)
-        vm.applyRemoteState(listOf("Borian"))
+        vm.applyRemoteState(listOf(Player(name = "Borian", color = PlayerColor.BLUE)))
         vm.onReadyToggle(slotId = 0)
         testScheduler.runCurrent()
         assertTrue(vm.state.value.isCountdownActive)
@@ -276,7 +291,7 @@ class WaitingLobbyViewModelTest {
         Dispatchers.setMain(standardDispatcher)
 
         val vm = WaitingLobbyViewModel(GameMode.DUAL_VALLEY)
-        vm.applyRemoteState(listOf("Borian"))
+        vm.applyRemoteState(listOf(Player(name = "Borian", color = PlayerColor.BLUE)))
         vm.onReadyToggle(slotId = 0)
         testScheduler.runCurrent()
         assertFalse(vm.state.value.countdownComplete)
@@ -293,7 +308,7 @@ class WaitingLobbyViewModelTest {
         Dispatchers.setMain(standardDispatcher)
 
         val vm = WaitingLobbyViewModel(GameMode.DUAL_VALLEY)
-        vm.applyRemoteState(listOf("Borian"))
+        vm.applyRemoteState(listOf(Player(name = "Borian", color = PlayerColor.BLUE)))
         vm.onReadyToggle(slotId = 0)
         testScheduler.runCurrent()
 
@@ -324,7 +339,7 @@ class WaitingLobbyViewModelTest {
         Dispatchers.setMain(standardDispatcher)
 
         val vm = WaitingLobbyViewModel(GameMode.DUAL_VALLEY)
-        vm.applyRemoteState(listOf("Borian"))
+        vm.applyRemoteState(listOf(Player(name = "Borian", color = PlayerColor.BLUE)))
         vm.onReadyToggle(slotId = 0)
         testScheduler.runCurrent()
         assertTrue(vm.state.value.isCountdownActive)

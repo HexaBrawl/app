@@ -69,11 +69,11 @@ fun LobbyNetworkSync(
     LaunchedEffect(gameState) {
         val state = gameState ?: return@LaunchedEffect
 
-        val remotePlayerNames = state.players
-            .filter { it.name != localName }
-            .map { it.name }
+        // Komplette Player-Objekte (mit Server-Farbe) weitergeben, damit
+        // der Color-Picker im Wartelobby-UI konsistent zur Realitaet ist.
+        val remotePlayers = state.players.filter { it.name != localName }
 
-        viewModel.applyRemoteState(remotePlayerNames)
+        viewModel.applyRemoteState(remotePlayers)
     }
 
     // Zum GameScreen navigieren -- aber erst NACHDEM der Countdown
