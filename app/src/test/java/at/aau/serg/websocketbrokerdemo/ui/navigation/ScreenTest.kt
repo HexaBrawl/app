@@ -106,11 +106,11 @@ class ScreenTest {
     }
 
     @Test
-    fun `all list contains exactly 10 screens`() {
+    fun `all list contains exactly 12 screens`() {
         // Sanity-Check: wenn jemand einen neuen Screen anlegt, muss er
         // ihn auch in Screen.all eintragen. Dieser Test bricht und
         // erinnert daran. Beim absichtlichen Hinzufügen muss die Zahl
         // hier angepasst werden.
-        assertEquals(10, Screen.all.size)
+        assertEquals(12, Screen.all.size)
     }
 }
