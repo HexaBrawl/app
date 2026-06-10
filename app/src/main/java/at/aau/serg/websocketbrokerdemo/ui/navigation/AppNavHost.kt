@@ -11,6 +11,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import at.aau.serg.websocketbrokerdemo.audio.MusicManager
 import at.aau.serg.websocketbrokerdemo.network.GameSession
 import at.aau.serg.websocketbrokerdemo.ui.game.GameScreen
+import at.aau.serg.websocketbrokerdemo.ui.end.EndScreen
 import at.aau.serg.websocketbrokerdemo.ui.home.HomeScreen
 import at.aau.serg.websocketbrokerdemo.ui.lobby_modes.LobbyScreen
 import at.aau.serg.websocketbrokerdemo.ui.mainmenu.GameMode
@@ -84,6 +85,14 @@ fun AppNavHost(
         composable(Screen.Game.route) {
             // TODO: Modus dynamisch ableiten sobald Server ihn liefert.
             GameScreen(session = session, mode = GameMode.BATTLEFIELD_PEAKS)
+        }
+
+        composable(Screen.EndWin.route) {
+            EndScreen(isWin = true, navController = navController)
+        }
+
+        composable(Screen.EndLoss.route) {
+            EndScreen(isWin = false, navController = navController)
         }
     }
 }
