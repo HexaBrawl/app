@@ -12,6 +12,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import androidx.navigation.NavController
 import at.aau.serg.websocketbrokerdemo.data.serverside.GameStatus
 import at.aau.serg.websocketbrokerdemo.grid.MapLayouts
 import at.aau.serg.websocketbrokerdemo.network.GameSession
@@ -20,6 +21,8 @@ import at.aau.serg.websocketbrokerdemo.ui.game.bottomhud.components.PlacementOve
 import at.aau.serg.websocketbrokerdemo.ui.game.camera.CameraState
 import at.aau.serg.websocketbrokerdemo.ui.game.tophud.TopHud
 import at.aau.serg.websocketbrokerdemo.ui.mainmenu.GameMode
+import androidx.compose.runtime.LaunchedEffect
+import at.aau.serg.websocketbrokerdemo.ui.navigation.Screen
 
 /**
  * GameScreen -- der eigentliche Spielbildschirm.
@@ -41,7 +44,8 @@ import at.aau.serg.websocketbrokerdemo.ui.mainmenu.GameMode
 @Composable
 fun GameScreen(
     session: GameSession,
-    mode: GameMode = GameMode.DUAL_VALLEY
+    mode: GameMode = GameMode.DUAL_VALLEY,
+    navController: NavController
 ) {
     val viewModel: GameViewModel = viewModel(
         factory = viewModelFactory {
@@ -68,6 +72,18 @@ fun GameScreen(
     val pendingGift = gameState?.pendingGift
     val currentTurn = gameState?.currentTurn
     val status = gameState?.status ?: GameStatus.WAITING_FOR_PLAYERS
+
+    LaunchedEffect(status) {
+        if (status == GameStatus.FINISHED) {
+            val winner = gameState?.winner
+            val isWin = winner == localName
+            val route = if (isWin) Screen.EndWin.route else Screen.EndLoss.route
+            navController.navigate(route) {
+                // Clear the backstack up to Home to avoid going back into the finished game
+                popUpTo(Screen.Home.route) { inclusive = false }
+            }
+        }
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         GameMap(
