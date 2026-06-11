@@ -42,9 +42,10 @@ object NavigationLogic {
             Screen.MainMenu,
             Screen.LobbyDual,
             Screen.LobbyTriad,
-            Screen.LobbyBattlefield,
-            Screen.EndWin,
-            Screen.EndLoss -> MusicTrack.Menu
+            Screen.LobbyBattlefield -> MusicTrack.Menu
+
+            Screen.EndWin -> MusicTrack.Victory
+            Screen.EndLoss -> MusicTrack.Defeat
         }
     }
 }

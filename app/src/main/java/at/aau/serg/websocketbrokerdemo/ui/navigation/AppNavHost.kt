@@ -46,6 +46,8 @@ fun AppNavHost(
             MusicTrack.Menu -> MusicManager.playMenuMusic(context)
             MusicTrack.Tournament -> MusicManager.playTournamentMusic(context)
             MusicTrack.Battle -> MusicManager.playBattleMusic(context)
+            MusicTrack.Victory -> MusicManager.playVictoryMusic(context)
+            MusicTrack.Defeat -> MusicManager.playDefeatMusic(context)
         }
     }
 
