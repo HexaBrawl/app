@@ -401,6 +401,30 @@ class MusicManagerTest {
 
 
     @Test
+    fun `playVictoryMusic creates player and starts playback when enabled`() {
+        setPrivate("musicEnabled", true)
+        setPrivate("currentTrack", 0)
+
+        MusicManager.playVictoryMusic(context)
+
+        verify { MediaPlayer.create(appContext, any<Int>()) }
+        verify { mediaPlayer.isLooping = true }
+        verify { mediaPlayer.start() }
+    }
+
+    @Test
+    fun `playDefeatMusic creates player and starts playback when enabled`() {
+        setPrivate("musicEnabled", true)
+        setPrivate("currentTrack", 0)
+
+        MusicManager.playDefeatMusic(context)
+
+        verify { MediaPlayer.create(appContext, any<Int>()) }
+        verify { mediaPlayer.isLooping = true }
+        verify { mediaPlayer.start() }
+    }
+
+    @Test
     fun `playSwordBlock delegates to playSfx`() {
         setPrivate("soundPoolReady", true)
         setPrivate("soundPool", soundPool)
