@@ -82,30 +82,6 @@ class LobbyRoomLogicTest {
     }
 
     @Test
-    fun `effectsForJoinRandomResult returns success effects when room is valid`() {
-        val room = RoomDTO(
-            roomId = "uuid-random",
-            joinCode = "RAND12",
-            mode = GameMode.DUAL_VALLEY
-        )
-        val effects = LobbyRoomLogic.effectsForJoinRandomResult(room)
-
-        assertEquals(3, effects.size)
-        assertTrue(effects.any { it is LobbyEffect.SetRoomId && it.roomId == "uuid-random" })
-        assertTrue(effects.any { it is LobbyEffect.SetJoinCode && it.joinCode == "RAND12" })
-        assertTrue(effects.any { it is LobbyEffect.NavigateToWaiting })
-    }
-
-    @Test
-    fun `effectsForJoinRandomResult returns error when room is null`() {
-        val effects = LobbyRoomLogic.effectsForJoinRandomResult(null)
-
-        assertEquals(1, effects.size)
-        val effect = effects[0] as LobbyEffect.ShowError
-        assertTrue(effect.message.contains("Kein freier Raum"))
-    }
-
-    @Test
     fun `canAttemptJoin returns state canJoin`() {
         // JoinByCodeLogic.isValid now requires exactly 6 chars
         val stateJoinable = LobbyState(code = "123456")

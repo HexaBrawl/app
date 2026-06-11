@@ -43,18 +43,6 @@ object LobbyRoomLogic {
             listOf(LobbyEffect.ShowError("Kein Raum mit Code '$code' gefunden"))
         }
 
-    /** Effekte fuer das Ergebnis eines joinRandom-Aufrufs. */
-    fun effectsForJoinRandomResult(room: RoomDTO?): List<LobbyEffect> =
-        if (room != null && room.roomId.isNotBlank()) {
-            listOf(
-                LobbyEffect.SetRoomId(room.roomId),
-                LobbyEffect.SetJoinCode(room.joinCode),
-                LobbyEffect.NavigateToWaiting,
-            )
-        } else {
-            listOf(LobbyEffect.ShowError("Kein freier Raum gefunden"))
-        }
-
     /**
      * Prueft, ob ein Join-Versuch ueberhaupt gestartet werden darf.
      * Wird vom ViewModel als Gate vor dem API-Call genutzt -- damit
