@@ -51,12 +51,10 @@
     <string name="lobby_create_private_sub">Versiegelte Schlacht mit Verbündeten</string>
     <string name="lobby_join_with_code">Mit Code beitreten</string>
     <string name="lobby_join_with_code_sub">Gib das Siegel eines Verbündeten ein</string>
-    <string name="lobby_join_random">Zufällig beitreten</string>
-    <string name="lobby_join_random_sub">Wirf die Würfel des Schicksals</string>
 
     <!-- Code-Dialog -->
     <string name="dialog_enter_code">Schlacht-Siegel eingeben</string>
-    <string name="dialog_enter_code_sub">4 bis 8 Zeichen, von deinem Verbündeten</string>
+    <string name="dialog_enter_code_sub">6 Zeichen, von deinem Verbündeten</string>
 
     <!-- Wartelobby -->
     <string name="waiting_headline">— VERSAMMLUNG DER GENERÄLE —</string>

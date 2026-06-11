@@ -51,12 +51,10 @@
     <string name="lobby_create_private_sub">Forge a sealed war with friends</string>
     <string name="lobby_join_with_code">Join with Code</string>
     <string name="lobby_join_with_code_sub">Enter the seal of an ally</string>
-    <string name="lobby_join_random">Join Random Battle</string>
-    <string name="lobby_join_random_sub">Throw the dice of fate</string>
 
     <!-- Code dialog -->
     <string name="dialog_enter_code">Enter Battle Seal</string>
-    <string name="dialog_enter_code_sub">4 to 8 characters, sent by your ally</string>
+    <string name="dialog_enter_code_sub">6 characters, sent by your ally</string>
 
     <!-- Waiting Lobby -->
     <string name="waiting_headline">— ASSEMBLY OF GENERALS —</string>
