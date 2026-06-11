@@ -83,6 +83,16 @@ object MusicManager {
         play(context, R.raw.fighting_theme)
     }
 
+    /** Sieg-Track (End-Screen). */
+    fun playVictoryMusic(context: Context) {
+        play(context, R.raw.endscreen_vic)
+    }
+
+    /** Niederlage-Track (End-Screen). */
+    fun playDefeatMusic(context: Context) {
+        play(context, R.raw.endscreen_loss)
+    }
+
     /**
      * Wechselt den Track.
      *
