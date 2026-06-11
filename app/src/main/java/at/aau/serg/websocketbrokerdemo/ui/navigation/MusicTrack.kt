@@ -20,5 +20,11 @@ enum class MusicTrack {
     Tournament,
 
     /** Kampf-Musik (im Spiel). */
-    Battle
+    Battle,
+
+    /** Musik für den Sieg-Bildschirm. */
+    Victory,
+
+    /** Musik für den Niederlage-Bildschirm. */
+    Defeat
 }

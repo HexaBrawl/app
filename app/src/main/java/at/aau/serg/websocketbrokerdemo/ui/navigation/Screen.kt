@@ -53,6 +53,10 @@ sealed class Screen(val route: String) {
     /** Das eigentliche Spiel. */
     object Game : Screen("game")
 
+    /** Endscreen nach einem Sieg oder einer Niederlage. */
+    object EndWin : Screen("end_win")
+    object EndLoss : Screen("end_loss")
+
     companion object {
 
         /**
@@ -69,7 +73,7 @@ sealed class Screen(val route: String) {
                 Home, Settings, MainMenu,
                 LobbyDual, LobbyTriad, LobbyBattlefield,
                 WaitingDual, WaitingTriad, WaitingBattlefield,
-                Game
+                Game, EndWin, EndLoss
             )
         }
 

@@ -11,6 +11,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import at.aau.serg.websocketbrokerdemo.audio.MusicManager
 import at.aau.serg.websocketbrokerdemo.network.GameSession
 import at.aau.serg.websocketbrokerdemo.ui.game.GameScreen
+import at.aau.serg.websocketbrokerdemo.ui.end.EndScreen
 import at.aau.serg.websocketbrokerdemo.ui.home.HomeScreen
 import at.aau.serg.websocketbrokerdemo.ui.lobby_modes.LobbyScreen
 import at.aau.serg.websocketbrokerdemo.ui.mainmenu.GameMode
@@ -45,6 +46,8 @@ fun AppNavHost(
             MusicTrack.Menu -> MusicManager.playMenuMusic(context)
             MusicTrack.Tournament -> MusicManager.playTournamentMusic(context)
             MusicTrack.Battle -> MusicManager.playBattleMusic(context)
+            MusicTrack.Victory -> MusicManager.playVictoryMusic(context)
+            MusicTrack.Defeat -> MusicManager.playDefeatMusic(context)
         }
     }
 
@@ -90,7 +93,15 @@ fun AppNavHost(
             // richtigen Modus springt.
             val mode = session.gameState.value?.gameMode?.toUiMode()
                 ?: GameMode.DUAL_VALLEY
-            GameScreen(session = session, mode = mode)
+            GameScreen(session = session, mode = mode, navController = navController)
+        }
+
+        composable(Screen.EndWin.route) {
+            EndScreen(isWin = true, navController = navController)
+        }
+
+        composable(Screen.EndLoss.route) {
+            EndScreen(isWin = false, navController = navController)
         }
     }
 }

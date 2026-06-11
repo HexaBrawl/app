@@ -102,4 +102,7 @@
     <string name="placement_choose_cell">Pick a cell for your %1$s</string>
 
     <string name="waiting_room_id">BATTLE SEAL: %1$s</string>
+
+    <!-- EndScreen -->
+    <string name="end_screen_home">HOME</string>
 </resources>

@@ -43,6 +43,9 @@ object NavigationLogic {
             Screen.LobbyDual,
             Screen.LobbyTriad,
             Screen.LobbyBattlefield -> MusicTrack.Menu
+
+            Screen.EndWin -> MusicTrack.Victory
+            Screen.EndLoss -> MusicTrack.Defeat
         }
     }
 }
