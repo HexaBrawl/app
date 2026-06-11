@@ -91,7 +91,7 @@ fun AppNavHost(
             // richtigen Modus springt.
             val mode = session.gameState.value?.gameMode?.toUiMode()
                 ?: GameMode.DUAL_VALLEY
-            GameScreen(session = session, mode = mode)
+            GameScreen(session = session, mode = mode, navController = navController)
         }
 
         composable(Screen.EndWin.route) {
