@@ -19,6 +19,8 @@
     <!-- MainMenu -->
     <string name="menu_info">Information</string>
     <string name="menu_choose_battlefield">CHOOSE YOUR BATTLEFIELD</string>
+
+    <!--suppress PluralsCandidate -->
     <string name="menu_player_count">%d players</string>
 
     <!-- Game modes -->
@@ -65,7 +67,6 @@
     <string name="waiting_not_ready">NOT READY</string>
     <string name="waiting_empty_slot">Awaiting ally…</string>
     <string name="waiting_remote_ally">Connected ally</string>
-    <string name="waiting_bot_ally">Bot ally</string>
 
     <!-- EN / values-en/strings.xml -->
     <string name="hud_per_round">/ round</string>
@@ -85,7 +86,9 @@
     <string name="cheat_steal_yes">Steal</string>
     <string name="cheat_steal_no">Let it go</string>
 
+    <!--suppress PluralsCandidate -->
     <string name="cheat_waiting_won">You would gain %1$d gold!</string>
+    <!--suppress PluralsCandidate -->
     <string name="cheat_waiting_lost">You would lose %1$d gold!</string>
     <string name="cheat_waiting_subtitle">But beware — you might get robbed.</string>
     <string name="cheat_waiting_for_opponent">Waiting for opponent…</string>
