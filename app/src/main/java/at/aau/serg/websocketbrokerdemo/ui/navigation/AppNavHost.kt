@@ -16,6 +16,7 @@ import at.aau.serg.websocketbrokerdemo.ui.home.HomeScreen
 import at.aau.serg.websocketbrokerdemo.ui.lobby_modes.LobbyScreen
 import at.aau.serg.websocketbrokerdemo.ui.mainmenu.GameMode
 import at.aau.serg.websocketbrokerdemo.ui.mainmenu.MainMenuScreen
+import at.aau.serg.websocketbrokerdemo.ui.mainmenu.toUiMode
 import at.aau.serg.websocketbrokerdemo.ui.settings.SettingsScreen
 import at.aau.serg.websocketbrokerdemo.ui.waiting.WaitingLobbyScreen
 
@@ -83,8 +84,14 @@ fun AppNavHost(
         }
 
         composable(Screen.Game.route) {
-            // TODO: Modus dynamisch ableiten sobald Server ihn liefert.
-            GameScreen(session = session, mode = GameMode.BATTLEFIELD_PEAKS)
+            // Modus aus dem Server-GameState lesen. Solange noch kein
+            // Broadcast eingetroffen ist, faellt der Modus auf
+            // DUAL_VALLEY zurueck -- der GameScreen rendert dann ein
+            // gueltiges Board, das mit dem ersten echten Update auf den
+            // richtigen Modus springt.
+            val mode = session.gameState.value?.gameMode?.toUiMode()
+                ?: GameMode.DUAL_VALLEY
+            GameScreen(session = session, mode = mode)
         }
 
         composable(Screen.EndWin.route) {

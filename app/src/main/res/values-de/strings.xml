@@ -19,6 +19,8 @@
     <!-- MainMenu -->
     <string name="menu_info">Information</string>
     <string name="menu_choose_battlefield">WÄHLE DEIN SCHLACHTFELD</string>
+
+    <!--suppress PluralsCandidate -->
     <string name="menu_player_count">%d Spieler</string>
 
     <!-- Spielmodi -->
@@ -51,12 +53,10 @@
     <string name="lobby_create_private_sub">Versiegelte Schlacht mit Verbündeten</string>
     <string name="lobby_join_with_code">Mit Code beitreten</string>
     <string name="lobby_join_with_code_sub">Gib das Siegel eines Verbündeten ein</string>
-    <string name="lobby_join_random">Zufällig beitreten</string>
-    <string name="lobby_join_random_sub">Wirf die Würfel des Schicksals</string>
 
     <!-- Code-Dialog -->
     <string name="dialog_enter_code">Schlacht-Siegel eingeben</string>
-    <string name="dialog_enter_code_sub">4 bis 8 Zeichen, von deinem Verbündeten</string>
+    <string name="dialog_enter_code_sub">6 Zeichen, von deinem Verbündeten</string>
 
     <!-- Wartelobby -->
     <string name="waiting_headline">— VERSAMMLUNG DER GENERÄLE —</string>
@@ -67,7 +67,6 @@
     <string name="waiting_not_ready">NICHT BEREIT</string>
     <string name="waiting_empty_slot">Warte auf Verbündeten…</string>
     <string name="waiting_remote_ally">Verbundener Verbündeter</string>
-    <string name="waiting_bot_ally">Bot-Verbündeter</string>
 
     <!-- DE / Default -->
     <string name="hud_per_round">/ Runde</string>
@@ -87,7 +86,9 @@
     <string name="cheat_steal_yes">Stehlen</string>
     <string name="cheat_steal_no">Lass los</string>
 
+    <!--suppress PluralsCandidate -->
     <string name="cheat_waiting_won">Du wuerdest %1$d Gold gewinnen!</string>
+    <!--suppress PluralsCandidate -->
     <string name="cheat_waiting_lost">Du wuerdest %1$d Gold verlieren!</string>
     <string name="cheat_waiting_subtitle">Aber pass auf — vielleicht wirst du beklaut.</string>
     <string name="cheat_waiting_for_opponent">Warte auf Gegner…</string>
@@ -98,7 +99,7 @@
     <string name="unit_infantry">Infanterie</string>
     <string name="unit_archer">Bogenschuetze</string>
     <string name="unit_cavalry">Kavallerie</string>
-    <string name="placement_choose_cell">Waehle ein Feld fuer deine %1$s</string>
+    <string name="placement_choose_cell">Wähle ein Feld für deine %1$s</string>
 
     <string name="waiting_room_id">SCHLACHT-SIEGEL: %1$s</string>
 

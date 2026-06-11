@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Casino
 import androidx.compose.material.icons.filled.GroupAdd
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.CircularProgressIndicator
@@ -152,16 +151,6 @@ fun LobbyScreen(
                     subtitle = stringResource(R.string.lobby_join_with_code_sub),
                     sealColor = SealColor.Blue,
                     onClick = { viewModel.openJoinDialog() }
-                )
-                ActionCard(
-                    icon = Icons.Filled.Casino,
-                    title = stringResource(R.string.lobby_join_random),
-                    subtitle = stringResource(R.string.lobby_join_random_sub),
-                    sealColor = SealColor.Gold,
-                    onClick = {
-                        // TODO: Implement join random logic if needed
-                        navController.navigate(waitingScreen.route)
-                    }
                 )
             }
 

@@ -53,11 +53,18 @@ import com.example.myapplication.R
 fun LocalPlayerSlotCard(
     slot: PlayerSlot,
     takenColors: Set<PlayerColor>,
+    countdownActive: Boolean,
+    joinedServer: Boolean,
     onNameChange: (String) -> Unit,
     onColorChange: (PlayerColor) -> Unit,
     onReadyToggle: () -> Unit
 ) {
-    val canBeReady = slot.name.isNotBlank()
+    // Der Bereit-Button ist gesperrt sobald:
+    //  - der Slot bereits ready ist: Server kennt keinen "leave"-Endpoint,
+    //    daher koennen wir das Ready nicht zurueckziehen, ohne Inkonsistenz
+    //    zu erzeugen. Wer raus will, nutzt den BACK-Button.
+    //  - der 3-2-1-Countdown laeuft: kein Last-Second-Cancel mehr moeglich.
+    val canBeReady = slot.name.isNotBlank() && !countdownActive && !slot.ready
 
     Column(
         modifier = Modifier
@@ -106,7 +113,7 @@ fun LocalPlayerSlotCard(
             value = slot.name,
             onValueChange = onNameChange,
             singleLine = true,
-            enabled = !slot.ready,
+            enabled = !slot.ready && !joinedServer,
             keyboardOptions = KeyboardOptions.Default,
             label = {
                 Text(stringResource(R.string.waiting_your_name), style = TextStyle(fontSize = 12.sp))
@@ -151,7 +158,7 @@ fun LocalPlayerSlotCard(
                 ColorSeal(
                     color = color,
                     selected = slot.color == color,
-                    disabled = color in takenColors || slot.ready,
+                    disabled = color in takenColors || slot.ready || joinedServer,
                     onClick = { onColorChange(color) }
                 )
             }
