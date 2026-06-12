@@ -2,6 +2,7 @@ package at.aau.serg.websocketbrokerdemo.ui.game
 
 import androidx.compose.ui.unit.IntSize
 import androidx.lifecycle.ViewModel
+import at.aau.serg.websocketbrokerdemo.audio.MusicManager
 import at.aau.serg.websocketbrokerdemo.data.serverside.GameUnit
 import at.aau.serg.websocketbrokerdemo.data.serverside.Move
 import at.aau.serg.websocketbrokerdemo.data.serverside.UnitType
@@ -63,6 +64,9 @@ class GameViewModel(
             }
 
             is GameScreenLogic.TapAction.ExecuteMove -> {
+                if (GameScreenLogic.isAttackMove(action.move, units, localName)) {
+                    MusicManager.playSwordBlock()
+                }
                 sendMove(action.move)
                 _uiState.value = state.copy(selected = null)
             }
