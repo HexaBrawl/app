@@ -1,10 +1,14 @@
 package at.aau.serg.websocketbrokerdemo.ui.game
 
 import androidx.compose.ui.unit.IntSize
+import at.aau.serg.websocketbrokerdemo.data.serverside.Field
 import at.aau.serg.websocketbrokerdemo.data.serverside.GameUnit
 import at.aau.serg.websocketbrokerdemo.data.serverside.Move
 import at.aau.serg.websocketbrokerdemo.data.serverside.UnitType
+import at.aau.serg.websocketbrokerdemo.grid.HexGridLogic
+import at.aau.serg.websocketbrokerdemo.grid.MapLayout
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -211,5 +215,149 @@ class GameScreenLogicTest {
             placementMode = null
         )
         assertEquals(GameScreenLogic.TapAction.Ignore, action)
+    }
+
+    @Test
+    fun `tapping own BASE returns Ignore, not Select`() {
+        val base = GameUnit(player = alice, x = 4, y = 4, type = UnitType.BASE)
+        val action = GameScreenLogic.decideTapAction(
+            col = 4, row = 4,
+            units = listOf(base),
+            localName = alice,
+            currentlySelected = null,
+            placementMode = null
+        )
+        assertEquals(GameScreenLogic.TapAction.Ignore, action)
+    }
+
+    @Test
+    fun `tapping own BASE with another unit selected stays Ignore`() {
+        val base = GameUnit(player = alice, x = 4, y = 4, type = UnitType.BASE)
+        val selected = ownInf(2, 2)
+        val action = GameScreenLogic.decideTapAction(
+            col = 4, row = 4,
+            units = listOf(base, selected),
+            localName = alice,
+            currentlySelected = selected,
+            placementMode = null
+        )
+        assertEquals(GameScreenLogic.TapAction.Ignore, action)
+    }
+
+    // ---- reachableCells ----------------------------------------------
+
+    private val testLayout = MapLayout(rows = 7, cols = 7, hexSize = 10f, name = "test")
+
+    private fun field(x: Int, y: Int, owner: String?) = Field(x = x, y = y, owner = owner)
+
+    @Test
+    fun `reachableCells leer wenn Einheit bereits gezogen`() {
+        val unit = ownInf(3, 3).copy(hasMovedThisTurn = true)
+        val fields = listOf(field(3, 3, alice))
+        val result = GameScreenLogic.reachableCells(unit, fields, testLayout)
+        assertTrue(result.isEmpty())
+    }
+
+    @Test
+    fun `reachableCells fuer BASE leer (Basis bewegt sich nicht)`() {
+        val baseUnit = GameUnit(player = alice, x = 3, y = 3, type = UnitType.BASE)
+        val fields = listOf(field(3, 3, alice))
+        val result = GameScreenLogic.reachableCells(baseUnit, fields, testLayout)
+        assertTrue(result.isEmpty())
+    }
+
+    @Test
+    fun `reachableCells liefert IMMER die 6 direkten Nachbarn`() {
+        val unit = ownInf(3, 3)
+        // Nichts ist eigen -> dist-2 ausgeschlossen, aber dist-1 muss bleiben
+        val result = GameScreenLogic.reachableCells(unit, emptyList(), testLayout)
+        assertEquals(6, result.size)
+    }
+
+    @Test
+    fun `reachableCells erlaubt dist-1 unabhaengig vom Owner`() {
+        val unit = ownInf(3, 3)
+        val neighborEnemy = 3 to 2 // dist 1 von (3,3)
+        val fields = listOf(field(neighborEnemy.first, neighborEnemy.second, bob))
+        val result = GameScreenLogic.reachableCells(unit, fields, testLayout)
+        assertTrue(result.contains(neighborEnemy))
+    }
+
+    @Test
+    fun `reachableCells erlaubt dist-2 wenn ein Zwischenfeld eigen ist`() {
+        val unit = ownInf(3, 3)
+        // (3,3)->(2,3)->(1,3): (2,3) ist gemeinsamer Nachbar von Source und Target.
+        val stepStone = 2 to 3
+        val target = 1 to 3
+        val fields = listOf(field(stepStone.first, stepStone.second, alice))
+        val result = GameScreenLogic.reachableCells(unit, fields, testLayout)
+        assertTrue(result.contains(target))
+    }
+
+    @Test
+    fun `reachableCells erlaubt dist-2 auf NEUTRALES Ziel ueber eigenes Zwischenfeld`() {
+        val unit = ownInf(3, 3)
+        val stepStone = 2 to 3
+        val neutralTarget = 1 to 3
+        val fields = listOf(
+            field(stepStone.first, stepStone.second, alice),
+            field(neutralTarget.first, neutralTarget.second, null)
+        )
+        val result = GameScreenLogic.reachableCells(unit, fields, testLayout)
+        assertTrue(result.contains(neutralTarget))
+    }
+
+    @Test
+    fun `reachableCells erlaubt dist-2 auf FEINDLICHES Ziel ueber eigenes Zwischenfeld`() {
+        val unit = ownInf(3, 3)
+        val stepStone = 2 to 3
+        val enemyTarget = 1 to 3
+        val fields = listOf(
+            field(stepStone.first, stepStone.second, alice),
+            field(enemyTarget.first, enemyTarget.second, bob)
+        )
+        val result = GameScreenLogic.reachableCells(unit, fields, testLayout)
+        assertTrue(result.contains(enemyTarget))
+    }
+
+    @Test
+    fun `reachableCells verbietet dist-2 wenn KEIN Zwischenfeld eigen ist`() {
+        val unit = ownInf(3, 3)
+        // Niemand ist eigen -> keine 2-Feld-Bewegung
+        val target = 1 to 3
+        val result = GameScreenLogic.reachableCells(unit, emptyList(), testLayout)
+        assertFalse(result.contains(target))
+    }
+
+    @Test
+    fun `reachableCells verbietet dist-2 auf EIGENES Ziel wenn Pfad nicht eigen ist`() {
+        val unit = ownInf(3, 3)
+        // Target ist eigen, aber die Zwischenfelder (3,2) [nur einer hier]
+        // sind nicht eigen -> nicht erreichbar.
+        val target = 3 to 1
+        val fields = listOf(field(target.first, target.second, alice))
+        val result = GameScreenLogic.reachableCells(unit, fields, testLayout)
+        assertFalse(result.contains(target))
+    }
+
+    @Test
+    fun `reachableCells voll umringt von eigenem Gebiet ergibt 18 Felder`() {
+        val unit = ownInf(3, 3)
+        // alle Felder dem Spieler zuordnen -> 6 Nachbarn + 12 dist-2 = 18
+        val fields = HexGridLogic.allCells(testLayout).map { (c, r) -> field(c, r, alice) }.toList()
+        val result = GameScreenLogic.reachableCells(unit, fields, testLayout)
+        assertEquals(18, result.size)
+        assertFalse(result.contains(3 to 3))
+    }
+
+    @Test
+    fun `reachableCells clamped auf Map-Bounds`() {
+        val unit = ownInf(0, 0)
+        val result = GameScreenLogic.reachableCells(unit, emptyList(), testLayout)
+        assertTrue(result.isNotEmpty())
+        result.forEach { (col, row) ->
+            assertTrue(col in 0 until testLayout.cols)
+            assertTrue(row in 0 until testLayout.rows)
+        }
     }
 }
