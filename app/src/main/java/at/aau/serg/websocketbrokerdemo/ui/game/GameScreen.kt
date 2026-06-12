@@ -36,6 +36,8 @@ import at.aau.serg.websocketbrokerdemo.ui.navigation.Screen
  *
  * Reine UI-Schicht. Reicht den serverseitigen GameState an die
  * Sub-Composables weiter und delegiert Taps an das ViewModel.
+ * Die Hex-Felder (fields) gehen mit an die GameMap, damit eroberte
+ * Zellen in der Spielerfarbe markiert werden (subssue #123).
  *
  * Erhaelt den Spielmodus per Parameter, weil der Server bisher keine
  * Map-Konfiguration zurueck schickt -- das Frontend leitet das Brett
@@ -90,6 +92,7 @@ fun GameScreen(
             layout = layout,
             units = units,
             buildings = gameState?.buildings.orEmpty(),
+            fields = gameState?.fields.orEmpty(),
             players = players,
             camera = camera,
             onCellTapped = { tapX, tapY, pixelToCell ->

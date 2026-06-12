@@ -39,4 +39,21 @@ object PlayerColorMap {
 
     /** Direkt-Mapping von PlayerColor zu Compose-Farbe. */
     fun colorFor(color: PlayerColor): Color = color.main
+
+    /**
+     * -subissue #123
+     * Liefert die halbtransparente Füll-Farbe für ein erobertes Feld.
+     *
+     * Gleiche Namens-Auflösung wie [colorFor], nur mit reduziertem
+     * Alpha, damit der Karten-Hintergrund unter der Markierung sichtbar
+     * bleibt.
+     *
+     * @param playerName Spielername wie vom Server gemeldet
+     * @param players    Spieler-Liste aus dem aktuellen GameState
+     * @param alpha      Deckkraft der Fuellung (Default 0.5 = 50 %)
+     * @return Spielerfarbe (oder [DEFAULT_COLOR]) mit angewendetem Alpha
+     */
+    fun cellFillFor(playerName: String, players: List<Player>, alpha: Float = 0.5f): Color =
+        colorFor(playerName, players).copy(alpha = alpha)
+
 }

@@ -4,11 +4,13 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.painter.Painter
 import at.aau.serg.websocketbrokerdemo.data.serverside.Building
 import at.aau.serg.websocketbrokerdemo.data.serverside.BuildingType
+import at.aau.serg.websocketbrokerdemo.data.serverside.Field
 import at.aau.serg.websocketbrokerdemo.data.serverside.GameUnit
 import at.aau.serg.websocketbrokerdemo.data.serverside.Player
 import at.aau.serg.websocketbrokerdemo.data.serverside.PlayerColor
@@ -25,9 +27,16 @@ class HexRenderer {
     /**
      * Zeichnet alle Zellen und die darauf stehenden Einheiten/Gebaeude.
      *
+     * Reihenfolge pro Zelle: Fuellung eroberter Felder -> Hex-Rand ->
+     * Gebaeude -> Einheit, damit Rand und Icons immer ueber der Markierung liegen.
+     *
+     *
      * @param layout  Hex-Geometrie der aktuellen Karte
      * @param units   Liste der Einheiten (GameUnit)
      * @param buildings Liste der Gebaeude (Building)
+     * @param fields  Hex-Felder mit Besitzer-Info aus dem GameState;
+     *                eroberte Felder (owner != null) werden halbtransparent
+     *                in der Spielerfarbe gefuellt (subissue #123)
      * @param players Volle Spieler-Liste aus dem GameState fuer das
      *                Farb-Mapping
      * @param unitPainters Vorab geladene Painter fuer die Einheiten-Icons
@@ -37,16 +46,25 @@ class HexRenderer {
         layout: MapLayout,
         units: List<GameUnit>,
         buildings: List<Building>,
+        fields: List<Field>,
         players: List<Player>,
         unitPainters: Map<Pair<PlayerColor, UnitType>, Painter>,
         buildingPainters: Map<Pair<PlayerColor, BuildingType>, Painter>
     ) {
         val unitsByPosition = units.associateBy { it.x to it.y }
         val buildingsByPosition = buildings.associateBy { it.x to it.y }
+        val fieldsByPosition = fields.associateBy { it.x to it.y }
         val playerMap = players.associateBy { it.name }
 
         for ((col, row) in HexGridLogic.allCells(layout)) {
             val (cx, cy) = HexGridLogic.cellCenter(col, row, layout)
+
+            // Eroberte Felder zuerst fuellen, damit Rand und Icons
+            // darueber liegen
+            fieldsByPosition[col to row]?.owner?.let { owner ->
+                val fillColor = PlayerColorMap.cellFillFor(owner, players)
+                drawCellFill(cx, cy, layout.hexSize, fillColor)
+            }
 
             drawHex(cx, cy, layout.hexSize)
 
@@ -63,6 +81,19 @@ class HexRenderer {
                 drawUnit(unit, color, unitPainters, cx, cy, layout.hexSize)
             }
         }
+    }
+
+    /**
+     * Fuellt ein Hex vollflaechig in der (bereits halbtransparenten)
+     * Besitzer-Farbe, siehe [PlayerColorMap.cellFillFor].
+     */
+    private fun DrawScope.drawCellFill(cx: Float, cy: Float, size: Float, color: Color) {
+        val path = Path()
+        HexGridLogic.hexCorners(cx, cy, size).forEachIndexed { i, (x, y) ->
+            if (i == 0) path.moveTo(x, y) else path.lineTo(x, y)
+        }
+        path.close()
+        drawPath(path, color, style = Fill)
     }
 
     /** Einzelner Hex als geschlossener Pfad mit schwarzem Rand. */

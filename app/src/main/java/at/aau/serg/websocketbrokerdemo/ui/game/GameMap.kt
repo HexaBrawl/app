@@ -15,6 +15,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.IntSize
 import at.aau.serg.websocketbrokerdemo.data.serverside.Building
+import at.aau.serg.websocketbrokerdemo.data.serverside.Field
 import at.aau.serg.websocketbrokerdemo.data.serverside.GameUnit
 import at.aau.serg.websocketbrokerdemo.data.serverside.Player
 import at.aau.serg.websocketbrokerdemo.grid.HexGrid
@@ -26,6 +27,10 @@ import com.example.myapplication.R
 
 /**
  * Composable fuer die Spielkarte (Hintergrund + Hex-Grid + Kamera).
+ *
+ * Reicht die Hex-Felder (fields) mit Besitzer-Info ans [HexGrid]
+ * weiter, damit eroberte Zellen halbtransparent in der Spielerfarbe
+ * eingefaerbt werden (subissue #123).
  *
  * Background-Image liegt INNERHALB des cameraControls-Layers, damit
  * sich Hintergrund und Hex-Grid beim Zoomen gemeinsam bewegen --
@@ -46,6 +51,7 @@ fun GameMap(
     layout: MapLayout,
     units: List<GameUnit>,
     buildings: List<Building>,
+    fields: List<Field>,
     players: List<Player>,
     camera: CameraState,
     onCellTapped: (tapX: Float, tapY: Float, pixelToCell: (Float, Float) -> Pair<Int, Int>?) -> Unit,
@@ -80,6 +86,7 @@ fun GameMap(
                     layout = layout,
                     units = units,
                     buildings = buildings,
+                    fields = fields,
                     players = players,
                     modifier = Modifier.wrapContentSize()
                 )
