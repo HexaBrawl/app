@@ -183,4 +183,52 @@ class HexGridLogicTest {
         assertTrue(cells.contains(1 to 0))
         assertTrue(cells.contains(1 to 1))
     }
+
+    // ---- hexDistance --------------------------------------------------
+
+    @Test
+    fun `hexDistance gleiche Zelle ist 0`() {
+        assertEquals(0, HexGridLogic.hexDistance(2, 3, 2, 3))
+    }
+
+    @Test
+    fun `hexDistance Nachbar in gleicher Spalte ist 1`() {
+        assertEquals(1, HexGridLogic.hexDistance(2, 2, 2, 3))
+        assertEquals(1, HexGridLogic.hexDistance(2, 2, 2, 1))
+    }
+
+    @Test
+    fun `hexDistance Nachbarn gerader Spalte ueber Spaltengrenze ist 1`() {
+        // (2,2) ist gerade Spalte: Nachbarn (1,1), (1,2), (3,1), (3,2)
+        assertEquals(1, HexGridLogic.hexDistance(2, 2, 1, 1))
+        assertEquals(1, HexGridLogic.hexDistance(2, 2, 1, 2))
+        assertEquals(1, HexGridLogic.hexDistance(2, 2, 3, 1))
+        assertEquals(1, HexGridLogic.hexDistance(2, 2, 3, 2))
+    }
+
+    @Test
+    fun `hexDistance Nachbarn ungerader Spalte ist 1`() {
+        // (1,1) ist ungerade Spalte (nach unten verschoben).
+        // Nachbarn: (0,1),(0,2),(2,1),(2,2),(1,0),(1,2)
+        assertEquals(1, HexGridLogic.hexDistance(1, 1, 0, 1))
+        assertEquals(1, HexGridLogic.hexDistance(1, 1, 0, 2))
+        assertEquals(1, HexGridLogic.hexDistance(1, 1, 2, 1))
+        assertEquals(1, HexGridLogic.hexDistance(1, 1, 2, 2))
+        assertEquals(1, HexGridLogic.hexDistance(1, 1, 1, 0))
+        assertEquals(1, HexGridLogic.hexDistance(1, 1, 1, 2))
+    }
+
+    @Test
+    fun `hexDistance ist symmetrisch`() {
+        assertEquals(
+            HexGridLogic.hexDistance(0, 0, 3, 4),
+            HexGridLogic.hexDistance(3, 4, 0, 0)
+        )
+    }
+
+    @Test
+    fun `hexDistance fuer zwei Schritte ist 2`() {
+        assertEquals(2, HexGridLogic.hexDistance(2, 2, 2, 0))
+        assertEquals(2, HexGridLogic.hexDistance(2, 2, 4, 1))
+    }
 }

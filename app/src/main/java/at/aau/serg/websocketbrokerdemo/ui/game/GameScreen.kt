@@ -14,6 +14,7 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.NavController
 import at.aau.serg.websocketbrokerdemo.data.serverside.GameStatus
+import at.aau.serg.websocketbrokerdemo.grid.HexGridLogic
 import at.aau.serg.websocketbrokerdemo.grid.MapLayouts
 import at.aau.serg.websocketbrokerdemo.network.GameSession
 import at.aau.serg.websocketbrokerdemo.ui.game.bottomhud.BottomHud
@@ -70,10 +71,22 @@ fun GameScreen(
 
     val units = gameState?.units.orEmpty()
     val players = gameState?.players.orEmpty()
+    val fields = gameState?.fields.orEmpty()
     val localName = session.localPlayerName.value
     val pendingGift = gameState?.pendingGift
     val currentTurn = gameState?.currentTurn
     val status = gameState?.status ?: GameStatus.WAITING_FOR_PLAYERS
+
+    // Wenn eine eigene Einheit selektiert ist, dunkle alle Felder ab,
+    // die NICHT in Reichweite sind. Range = 2 nur wenn die Einheit auf
+    // einem eigenen (Field.owner == player) Feld steht, sonst 1.
+    val darkenedCells: Set<Pair<Int, Int>> = uiState.selected?.let { selected ->
+        val reachable = GameScreenLogic.reachableCells(selected, fields, layout)
+        if (reachable.isEmpty()) emptySet()
+        else HexGridLogic.allCells(layout).toSet() -
+            reachable -
+            setOf(selected.x to selected.y)
+    } ?: emptySet()
 
     LaunchedEffect(status) {
         if (status == GameStatus.FINISHED) {
@@ -92,7 +105,7 @@ fun GameScreen(
             layout = layout,
             units = units,
             buildings = gameState?.buildings.orEmpty(),
-            fields = gameState?.fields.orEmpty(),
+            fields = fields,
             players = players,
             camera = camera,
             onCellTapped = { tapX, tapY, pixelToCell ->
@@ -100,7 +113,8 @@ fun GameScreen(
                 if (cell != null) {
                     viewModel.onCellTapped(cell.first, cell.second, units)
                 }
-            }
+            },
+            darkenedCells = darkenedCells
         )
 
         TopHud(

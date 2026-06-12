@@ -49,7 +49,8 @@ class HexRenderer {
         fields: List<Field>,
         players: List<Player>,
         unitPainters: Map<Pair<PlayerColor, UnitType>, Painter>,
-        buildingPainters: Map<Pair<PlayerColor, BuildingType>, Painter>
+        buildingPainters: Map<Pair<PlayerColor, BuildingType>, Painter>,
+        darkenedCells: Set<Pair<Int, Int>> = emptySet()
     ) {
         val unitsByPosition = units.associateBy { it.x to it.y }
         val buildingsByPosition = buildings.associateBy { it.x to it.y }
@@ -79,6 +80,17 @@ class HexRenderer {
                 val player = playerMap[unit.player]
                 val color = player?.color ?: PlayerColor.RED // Fallback
                 drawUnit(unit, color, unitPainters, cx, cy, layout.hexSize)
+            }
+        }
+
+        // Outside-Range-Overlay als letzter Schritt -- darunter sind
+        // Owner-Farbe, Hex-Rand und Einheiten/Gebaeude schon gezeichnet,
+        // der dunkle Overlay legt sich darueber und signalisiert
+        // "ausserhalb der Reichweite".
+        if (darkenedCells.isNotEmpty()) {
+            for ((col, row) in darkenedCells) {
+                val (cx, cy) = HexGridLogic.cellCenter(col, row, layout)
+                drawCellFill(cx, cy, layout.hexSize, Color(0f, 0f, 0f, 0.45f))
             }
         }
     }

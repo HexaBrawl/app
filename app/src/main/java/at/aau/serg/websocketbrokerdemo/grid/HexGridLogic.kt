@@ -1,5 +1,6 @@
 package at.aau.serg.websocketbrokerdemo.grid
 
+import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
@@ -81,6 +82,26 @@ object HexGridLogic {
      * Etwas kleiner als der Hex selbst, damit Rand sichtbar bleibt.
      */
     fun unitRadius(size: Float): Float = size / 2.5f
+
+    /**
+     * Hex-Distanz zwischen zwei Zellen in offset-Koordinaten.
+     *
+     * Konvertiert intern in Cube-Koordinaten (odd-q, ungerade Spalten
+     * sind nach unten verschoben — passend zu [cellCenter]). Liefert die
+     * minimale Anzahl an Hex-Schritten zwischen den beiden Feldern.
+     */
+    fun hexDistance(col1: Int, row1: Int, col2: Int, row2: Int): Int {
+        val (ax, ay, az) = oddQToCube(col1, row1)
+        val (bx, by, bz) = oddQToCube(col2, row2)
+        return (abs(ax - bx) + abs(ay - by) + abs(az - bz)) / 2
+    }
+
+    private fun oddQToCube(col: Int, row: Int): Triple<Int, Int, Int> {
+        val x = col
+        val z = row - (col - (col and 1)) / 2
+        val y = -x - z
+        return Triple(x, y, z)
+    }
 
     /**
      * Iteriert alle Zellen einer Karte. Aktuell ein einfaches Rechteck;
