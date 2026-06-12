@@ -8,6 +8,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import at.aau.serg.websocketbrokerdemo.data.serverside.Building
 import at.aau.serg.websocketbrokerdemo.data.serverside.BuildingType
+import at.aau.serg.websocketbrokerdemo.data.serverside.Field
 import at.aau.serg.websocketbrokerdemo.data.serverside.GameUnit
 import at.aau.serg.websocketbrokerdemo.data.serverside.Player
 import at.aau.serg.websocketbrokerdemo.data.serverside.PlayerColor
@@ -19,6 +20,8 @@ import at.aau.serg.websocketbrokerdemo.data.serverside.UnitType
  * @param layout  Hex-Geometrie der aktuellen Karte
  * @param units   Liste der Einheiten (GameUnit) fuers Rendering
  * @param buildings Liste der Gebaeude (Building) fuers Rendering
+ * @param fields  Hex-Felder mit Besitzer-Info fuer die Einfaerbung
+ *                eroberter Zellen (subissue #123)
  * @param players Volle Spieler-Liste fuer das Farb-Mapping
  */
 @Composable
@@ -26,6 +29,7 @@ fun HexGrid(
     layout: MapLayout,
     units: List<GameUnit>,
     buildings: List<Building>,
+    fields: List<Field>,
     players: List<Player>,
     modifier: Modifier = Modifier
 ) {
@@ -52,7 +56,7 @@ fun HexGrid(
 
     Canvas(modifier = modifier) {
         with(renderer) {
-            render(layout, units, buildings, players, unitPainters, buildingPainters)
+            render(layout, units, buildings, fields, players, unitPainters, buildingPainters)
         }
     }
 }
