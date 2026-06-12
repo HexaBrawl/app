@@ -14,6 +14,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import at.aau.serg.websocketbrokerdemo.data.serverside.Field
+import at.aau.serg.websocketbrokerdemo.data.serverside.GameUnit
 import at.aau.serg.websocketbrokerdemo.data.serverside.PendingGift
 import at.aau.serg.websocketbrokerdemo.data.serverside.Player
 import at.aau.serg.websocketbrokerdemo.network.GameSession
@@ -22,6 +24,7 @@ import at.aau.serg.websocketbrokerdemo.ui.game.tophud.components.HudMenuButton
 import at.aau.serg.websocketbrokerdemo.ui.game.tophud.components.HudMenuPopup
 import at.aau.serg.websocketbrokerdemo.ui.game.tophud.components.InGameSettingsPopup
 import at.aau.serg.websocketbrokerdemo.ui.game.tophud.components.IncomeAndGiftDisplay
+import at.aau.serg.websocketbrokerdemo.ui.game.tophud.components.IncomeDetailsPopup
 import at.aau.serg.websocketbrokerdemo.ui.game.tophud.components.InfoPopup
 import at.aau.serg.websocketbrokerdemo.ui.game.tophud.components.StealPopup
 import at.aau.serg.websocketbrokerdemo.ui.game.tophud.components.WaitingForOpponentOverlay
@@ -30,7 +33,7 @@ import at.aau.serg.websocketbrokerdemo.ui.game.tophud.components.WaitingForOppon
  * Top-HUD des GameScreens.
  *
  * Drei freischwebende Boxen am oberen Bildschirmrand plus die Popups
- * fuer Menue/Info/Settings/Steal/Waiting.
+ * fuer Menue/Info/Settings/Income/Steal/Waiting.
  *
  * Der Schummel-Geschenk-Flow:
  *  - Klick aufs Geschenk-Icon laeuft ueber [CheatGiftViewModel]
@@ -41,10 +44,18 @@ import at.aau.serg.websocketbrokerdemo.ui.game.tophud.components.WaitingForOppon
  *  - Sobald pendingGift weg ist, wird der lokale "schon entschieden"-
  *    State zurueckgesetzt fuer ein eventuelles naechstes Geschenk
  *    eines anderen Spielers.
+ *
+ * Der Einkommen-Detail-Flow:
+ *  - Klick auf die Einkommen-Box oeffnet das [IncomeDetailsPopup]
+ *  - View-State wird live aus [players], [units] und [fields] gebaut,
+ *    damit Server-Updates (Feld erobert, Truppe verloren) direkt im
+ *    offenen Popup sichtbar sind.
  */
 @Composable
 fun TopHud(
     players: List<Player>,
+    units: List<GameUnit>,
+    fields: List<Field>,
     localName: String?,
     pendingGift: PendingGift?,
     session: GameSession,
@@ -60,10 +71,9 @@ fun TopHud(
     val cheatState by cheatViewModel.state.collectAsStateWithLifecycle()
 
     val gold = TopHudLogic.goldFor(players, localName)
-    val income = TopHudLogic.incomeFor(players, localName)
+    val income = TopHudLogic.netIncomeFor(players, localName)
     val giftEnabled = CheatGiftLogic.canUseGift(players, localName)
 
-    // Bei aufgeloestem pendingGift den hasResponded-Flag zuruecksetzen.
     LaunchedEffect(pendingGift) {
         if (pendingGift == null) {
             cheatViewModel.onPendingGiftCleared()
@@ -83,6 +93,7 @@ fun TopHud(
         IncomeAndGiftDisplay(
             income = income,
             giftEnabled = giftEnabled,
+            onIncomeClick = viewModel::showIncome,
             onGiftClick = { localName?.let { cheatViewModel.onGiftClick(it) } }
         )
 
@@ -91,7 +102,6 @@ fun TopHud(
         HudMenuButton(onClick = viewModel::openMenu)
     }
 
-    // Settings-/Menue-/Info-Popups
     when (state.popup) {
         HudPopup.None -> Unit
         HudPopup.Menu -> HudMenuPopup(
@@ -101,9 +111,12 @@ fun TopHud(
         )
         HudPopup.Info -> InfoPopup(onDismiss = viewModel::closePopup)
         HudPopup.Settings -> InGameSettingsPopup(onDismiss = viewModel::closePopup)
+        HudPopup.Income -> IncomeDetailsPopup(
+            breakdown = IncomeBreakdownLogic.buildBreakdown(players, units, fields, localName),
+            onDismiss = viewModel::closePopup
+        )
     }
 
-    // Schummel-Geschenk-Popups
     if (pendingGift != null) {
         when {
             CheatGiftLogic.shouldShowWaitingOverlay(pendingGift, localName) -> {
