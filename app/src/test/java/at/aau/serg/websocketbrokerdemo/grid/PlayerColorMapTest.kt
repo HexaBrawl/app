@@ -53,6 +53,30 @@ class PlayerColorMapTest {
     }
 
     @Test
+    fun `cellFillFor applies 50 percent alpha by default`() {
+        assertEquals(
+            PlayerColor.RED.main.copy(alpha = 0.5f),
+            PlayerColorMap.cellFillFor("Alice", allPlayers)
+        )
+    }
+
+    @Test
+    fun `cellFillFor respects custom alpha`() {
+        assertEquals(
+            PlayerColor.BLUE.main.copy(alpha = 0.25f),
+            PlayerColorMap.cellFillFor("Bob", allPlayers, alpha = 0.25f)
+        )
+    }
+
+    @Test
+    fun `cellFillFor falls back to translucent default color for unknown player`() {
+        assertEquals(
+            PlayerColorMap.DEFAULT_COLOR.copy(alpha = 0.5f),
+            PlayerColorMap.cellFillFor("Ghost", allPlayers)
+        )
+    }
+
+    @Test
     fun `colorFor is deterministic for same input`() {
         // Mehrfacher Aufruf gibt das gleiche Ergebnis (keine versteckte
         // State-Mutation).
