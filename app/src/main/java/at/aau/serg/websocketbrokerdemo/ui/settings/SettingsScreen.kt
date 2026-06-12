@@ -76,7 +76,7 @@ fun SettingsScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(vertical = 140.dp)
+                .padding(vertical = 100.dp)
                 .padding(35.dp),
             verticalArrangement = Arrangement.spacedBy(15.dp)
         ) {
