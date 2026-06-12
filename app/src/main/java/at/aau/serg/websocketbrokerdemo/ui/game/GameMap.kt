@@ -55,6 +55,7 @@ fun GameMap(
     players: List<Player>,
     camera: CameraState,
     onCellTapped: (tapX: Float, tapY: Float, pixelToCell: (Float, Float) -> Pair<Int, Int>?) -> Unit,
+    darkenedCells: Set<Pair<Int, Int>> = emptySet(),
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -88,6 +89,7 @@ fun GameMap(
                     buildings = buildings,
                     fields = fields,
                     players = players,
+                    darkenedCells = darkenedCells,
                     modifier = Modifier.wrapContentSize()
                 )
             }
