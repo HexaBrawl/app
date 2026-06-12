@@ -45,6 +45,18 @@ import at.aau.serg.websocketbrokerdemo.ui.settings.components.SettingsOptionSwit
 import at.aau.serg.websocketbrokerdemo.ui.settings.components.SettingsSectionTitle
 
 
+/**
+ * Settings-Screen — globale Einstellungen ausserhalb des Spiels.
+ *
+ * Bietet Sprach-Auswahl (Deutsch / Englisch) und Audio-Toggles
+ * (Musik an/aus + Lautstaerke, SFX an/aus). Aenderungen werden vom
+ * [SettingsViewModel] sofort in den DataStore geschrieben und an den
+ * [at.aau.serg.websocketbrokerdemo.audio.MusicManager] propagiert.
+ *
+ * Sprachwechsel triggert ein `activity.recreate()`, damit der neue
+ * Locale-Kontext sauber durchgereicht wird — das Composable selbst hat
+ * sonst keine Logik (UI-only).
+ */
 @Composable
 fun SettingsScreen(
     navController: NavController,
