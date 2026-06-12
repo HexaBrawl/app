@@ -32,6 +32,14 @@ class TopHudViewModel : ViewModel() {
         _state.value = TopHudState(popup = HudPopup.Settings)
     }
 
+    /**
+     * Oeffnet das Einkommen-Detail-Popup. Wird durch Klick auf die
+     * Einkommen-Box im Top-HUD ausgeloest.
+     */
+    fun showIncome() {
+        _state.value = TopHudState(popup = HudPopup.Income)
+    }
+
     /** Schliesst alle Popups. */
     fun closePopup() {
         _state.value = TopHudState(popup = HudPopup.None)
