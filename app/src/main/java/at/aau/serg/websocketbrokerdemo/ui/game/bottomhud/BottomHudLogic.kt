@@ -1,7 +1,5 @@
 package at.aau.serg.websocketbrokerdemo.ui.game.bottomhud
 
-import at.aau.serg.websocketbrokerdemo.data.serverside.Building
-import at.aau.serg.websocketbrokerdemo.data.serverside.BuildingType
 import at.aau.serg.websocketbrokerdemo.data.serverside.GameStatus
 import at.aau.serg.websocketbrokerdemo.data.serverside.Player
 import at.aau.serg.websocketbrokerdemo.data.serverside.PlayerColor
@@ -42,22 +40,28 @@ object BottomHudLogic {
                 currentTurn != null &&
                 currentTurn == localName
 
-    /** Anzahl der Farms des lokalen Spielers. */
-    fun farmCountOf(buildings: List<Building>, localName: String?): Int {
+    /**
+     * Anzahl der Farms des lokalen Spielers (Server-Truth via Player.farms).
+     *
+     * Wichtig: vorher zaehlte diese Funktion Buildings -- aber der Server
+     * inkrementiert beim Farm-Kauf nur Player.farms und legt keinen
+     * Building-Eintrag an. Player.farms ist die einzig korrekte Quelle.
+     */
+    fun farmCountOf(players: List<Player>, localName: String?): Int {
         if (localName == null) return 0
-        return buildings.count { it.player == localName && it.type == BuildingType.FARM }
+        return players.firstOrNull { it.name == localName }?.farms ?: 0
     }
 
     /** Dynamischer Farm-Preis: erste kostet 10, jede weitere +1. */
-    fun farmPrice(buildings: List<Building>, localName: String?): Int {
-        val count = farmCountOf(buildings, localName)
+    fun farmPrice(players: List<Player>, localName: String?): Int {
+        val count = farmCountOf(players, localName)
         return 10 + count
     }
 
     /** Darf ich eine Farm kaufen? (mit dynamischem Preis) */
-    fun canBuyFarm(gold: Int, isMyTurn: Boolean, buildings: List<Building>, localName: String?): Boolean {
+    fun canBuyFarm(gold: Int, isMyTurn: Boolean, players: List<Player>, localName: String?): Boolean {
         if (!isMyTurn) return false
-        return gold >= farmPrice(buildings, localName)
+        return gold >= farmPrice(players, localName)
     }
 
     /** Darf ich gerade diese Einheit kaufen? */
