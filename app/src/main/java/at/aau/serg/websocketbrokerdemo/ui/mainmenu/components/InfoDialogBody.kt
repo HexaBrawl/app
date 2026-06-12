@@ -17,7 +17,7 @@ import at.aau.serg.websocketbrokerdemo.ui.theme.InkBrown
  * Wird für jede Spielregel-Kategorie (Kampf/Wirtschaft/etc.) wiederverwendet.
  */
 @Composable
-fun InfoRow(label: String, body: String) {
+fun InfoDialogBody(label: String, body: String) {
     Column(modifier = Modifier.padding(vertical = 6.dp)) {
         Text(
             text = label,

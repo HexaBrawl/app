@@ -53,19 +53,19 @@ fun InfoDialog(onDismiss: () -> Unit) {
                     )
                 )
                 Spacer(Modifier.height(12.dp))
-                InfoRow(
+                InfoDialogBody(
                     label = stringResource(R.string.info_combat_label),
                     body = stringResource(R.string.info_combat)
                 )
-                InfoRow(
+                InfoDialogBody(
                     label = stringResource(R.string.info_economy_label),
                     body = stringResource(R.string.info_economy)
                 )
-                InfoRow(
+                InfoDialogBody(
                     label = stringResource(R.string.info_supply_label),
                     body = stringResource(R.string.info_supply)
                 )
-                InfoRow(
+                InfoDialogBody(
                     label = stringResource(R.string.info_terrain_label),
                     body = stringResource(R.string.info_terrain)
                 )
