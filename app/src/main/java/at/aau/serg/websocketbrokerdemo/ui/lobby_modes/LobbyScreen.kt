@@ -74,114 +74,123 @@ fun LobbyScreen(
         }
     }
 
-    Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) }
-    ) { padding ->
-        Box(modifier = Modifier.fillMaxSize().padding(padding)) {
+    Box(modifier = Modifier.fillMaxSize()) {
 
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(
-                        brush = Brush.radialGradient(
-                            colors = listOf(WoodMedium, WoodDark),
-                            radius = 1500f
+        // Hintergrund-Layer fuellen den ganzen Screen edge-to-edge,
+        // damit oben/unten unter den System-Bars kein Weiss durchblitzt.
+        // Das Scaffold darueber ist transparent und reicht uns nur das
+        // Inset-Padding fuer die Vordergrund-Elemente.
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    brush = Brush.radialGradient(
+                        colors = listOf(WoodMedium, WoodDark),
+                        radius = 1500f
+                    )
+                )
+        )
+
+        Image(
+            painter = painterResource(id = mode.backgroundRes),
+            contentDescription = null,
+            contentScale = ContentScale.FillBounds,
+            modifier = Modifier.fillMaxSize()
+        )
+
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            Color.Transparent,
+                            Color.Transparent,
+                            Color.Black.copy(alpha = 0.35f)
                         )
                     )
-            )
-
-            Image(
-                painter = painterResource(id = mode.backgroundRes),
-                contentDescription = null,
-                contentScale = ContentScale.FillBounds,
-                modifier = Modifier.fillMaxSize()
-            )
-
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(
-                        brush = Brush.verticalGradient(
-                            colors = listOf(
-                                Color.Transparent,
-                                Color.Transparent,
-                                Color.Black.copy(alpha = 0.35f)
-                            )
-                        )
-                    )
-            )
-
-            RoundCoinIconButton(
-                icon = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = stringResource(R.string.settings_back),
-                onClick = { navController.popBackStack() },
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .padding(16.dp)
-            )
-
-            PlayerCountBadge(
-                count = mode.playerCount,
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(16.dp)
-            )
-
-            Column(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 240.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                ActionCard(
-                    icon = Icons.Filled.Lock,
-                    title = stringResource(R.string.lobby_create_private),
-                    subtitle = stringResource(R.string.lobby_create_private_sub),
-                    sealColor = SealColor.Red,
-                    onClick = {
-                        viewModel.createRoom(mode) {
-                            navController.navigate(waitingScreen.route)
-                        }
-                    }
                 )
-                ActionCard(
-                    icon = Icons.Filled.GroupAdd,
-                    title = stringResource(R.string.lobby_join_with_code),
-                    subtitle = stringResource(R.string.lobby_join_with_code_sub),
-                    sealColor = SealColor.Blue,
-                    onClick = { viewModel.openJoinDialog() }
-                )
-            }
+        )
 
-            if (isLoading) {
-                Box(
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            containerColor = Color.Transparent,
+            snackbarHost = { SnackbarHost(snackbarHostState) }
+        ) { padding ->
+            Box(modifier = Modifier.fillMaxSize().padding(padding)) {
+
+                RoundCoinIconButton(
+                    icon = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = stringResource(R.string.settings_back),
+                    onClick = { navController.popBackStack() },
                     modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.Black.copy(alpha = 0.4f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(color = Color.White)
-                }
-            }
-
-            // "Mit Code beitreten"-Dialog. Wird angezeigt, sobald der User
-            // die zugehoerige ActionCard klickt und das ViewModel
-            // showJoinDialog auf true setzt. Schliesst sich automatisch,
-            // wenn der Beitritt erfolgreich war (LobbyEffect.CloseJoinDialog)
-            // oder der User onDismiss triggert.
-            if (state.showJoinDialog) {
-                JoinByCodeDialog(
-                    code = state.code,
-                    canJoin = state.canJoin,
-                    onCodeChange = { viewModel.onCodeChange(it) },
-                    onDismiss = { viewModel.closeJoinDialog() },
-                    onJoin = {
-                        viewModel.tryJoinByCodeAsync {
-                            navController.navigate(waitingScreen.route)
-                        }
-                    }
+                        .align(Alignment.TopStart)
+                        .padding(16.dp)
                 )
+
+                PlayerCountBadge(
+                    count = mode.playerCount,
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(16.dp)
+                )
+
+                Column(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 240.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    ActionCard(
+                        icon = Icons.Filled.Lock,
+                        title = stringResource(R.string.lobby_create_private),
+                        subtitle = stringResource(R.string.lobby_create_private_sub),
+                        sealColor = SealColor.Red,
+                        onClick = {
+                            viewModel.createRoom(mode) {
+                                navController.navigate(waitingScreen.route)
+                            }
+                        }
+                    )
+                    ActionCard(
+                        icon = Icons.Filled.GroupAdd,
+                        title = stringResource(R.string.lobby_join_with_code),
+                        subtitle = stringResource(R.string.lobby_join_with_code_sub),
+                        sealColor = SealColor.Blue,
+                        onClick = { viewModel.openJoinDialog() }
+                    )
+                }
+
+                if (isLoading) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.Black.copy(alpha = 0.4f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(color = Color.White)
+                    }
+                }
+
+                // "Mit Code beitreten"-Dialog. Wird angezeigt, sobald der User
+                // die zugehoerige ActionCard klickt und das ViewModel
+                // showJoinDialog auf true setzt. Schliesst sich automatisch,
+                // wenn der Beitritt erfolgreich war (LobbyEffect.CloseJoinDialog)
+                // oder der User onDismiss triggert.
+                if (state.showJoinDialog) {
+                    JoinByCodeDialog(
+                        code = state.code,
+                        canJoin = state.canJoin && !isLoading,
+                        onCodeChange = { viewModel.onCodeChange(it) },
+                        onDismiss = { viewModel.closeJoinDialog() },
+                        onJoin = {
+                            viewModel.tryJoinByCodeAsync {
+                                navController.navigate(waitingScreen.route)
+                            }
+                        }
+                    )
+                }
             }
         }
     }
