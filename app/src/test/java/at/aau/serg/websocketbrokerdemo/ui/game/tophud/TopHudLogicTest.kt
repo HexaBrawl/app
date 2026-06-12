@@ -52,4 +52,41 @@ class TopHudLogicTest {
     fun `incomeFor returns 0 for empty players list`() {
         assertEquals(0, TopHudLogic.incomeFor(emptyList(), "Alice"))
     }
+
+    @Test
+    fun `netIncomeFor returns income minus upkeep`() {
+        val players = listOf(
+            Player(name = "Alice", color = PlayerColor.RED, gold = 3250, income = 120, upkeep = 50)
+        )
+        assertEquals(70, TopHudLogic.netIncomeFor(players, "Alice"))
+    }
+
+    @Test
+    fun `netIncomeFor returns negative value on insolvency`() {
+        val players = listOf(
+            Player(name = "Alice", color = PlayerColor.RED, gold = 0, income = 6, upkeep = 12)
+        )
+        assertEquals(-6, TopHudLogic.netIncomeFor(players, "Alice"))
+    }
+
+    @Test
+    fun `netIncomeFor returns 0 when local player is unknown`() {
+        val players = listOf(
+            Player(name = "Alice", color = PlayerColor.RED, gold = 3250, income = 120, upkeep = 50)
+        )
+        assertEquals(0, TopHudLogic.netIncomeFor(players, "Ghost"))
+    }
+
+    @Test
+    fun `netIncomeFor returns 0 when local name is null`() {
+        val players = listOf(
+            Player(name = "Alice", color = PlayerColor.RED, gold = 3250, income = 120, upkeep = 50)
+        )
+        assertEquals(0, TopHudLogic.netIncomeFor(players, null))
+    }
+
+    @Test
+    fun `netIncomeFor returns 0 for empty players list`() {
+        assertEquals(0, TopHudLogic.netIncomeFor(emptyList(), "Alice"))
+    }
 }

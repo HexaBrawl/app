@@ -10,7 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -88,7 +88,7 @@ fun IncomeDetailsPopup(
             )
 
             Spacer(Modifier.height(8.dp))
-            Divider(color = GoldCoinDark, thickness = 1.dp)
+            HorizontalDivider(thickness = 1.dp, color = GoldCoinDark)
             Spacer(Modifier.height(8.dp))
 
             IncomeRow(
@@ -98,7 +98,7 @@ fun IncomeDetailsPopup(
             )
 
             Spacer(Modifier.height(8.dp))
-            Divider(color = GoldCoinDark, thickness = 1.dp)
+            HorizontalDivider(thickness = 1.dp, color = GoldCoinDark)
             Spacer(Modifier.height(8.dp))
 
             IncomeSectionHeader(label = stringResource(R.string.income_upkeep))
@@ -111,7 +111,7 @@ fun IncomeDetailsPopup(
             )
 
             Spacer(Modifier.height(8.dp))
-            Divider(color = GoldCoinDark, thickness = 1.dp)
+            HorizontalDivider(thickness = 1.dp, color = GoldCoinDark)
             Spacer(Modifier.height(8.dp))
 
             IncomeRow(
