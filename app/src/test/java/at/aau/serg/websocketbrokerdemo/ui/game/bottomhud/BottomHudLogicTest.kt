@@ -1,7 +1,5 @@
 package at.aau.serg.websocketbrokerdemo.ui.game.bottomhud
 
-import at.aau.serg.websocketbrokerdemo.data.serverside.Building
-import at.aau.serg.websocketbrokerdemo.data.serverside.BuildingType
 import at.aau.serg.websocketbrokerdemo.data.serverside.GameStatus
 import at.aau.serg.websocketbrokerdemo.data.serverside.Player
 import at.aau.serg.websocketbrokerdemo.data.serverside.PlayerColor
@@ -102,32 +100,27 @@ class BottomHudLogicTest {
     // ---- farmCountOf ---------------------------------------------------
 
     @Test
-    fun `farmCountOf returns 0 when player has no buildings`() {
-        val buildings = emptyList<Building>()
-        val result = BottomHudLogic.farmCountOf(buildings, "A")
+    fun `farmCountOf returns 0 when player has no farms`() {
+        val players = listOf(Player(name = "A", farms = 0))
+        val result = BottomHudLogic.farmCountOf(players, "A")
         assertEquals(0, result)
     }
 
     @Test
-    fun `farmCountOf counts only farms of the local player`() {
-        val buildings = listOf(
-            Building(player = "A", type = BuildingType.FARM),
-            Building(player = "A", type = BuildingType.FARM),
-            Building(player = "B", type = BuildingType.FARM),   // anderer Spieler
-            Building(player = "A", type = BuildingType.CASTLE)  // kein Farm
+    fun `farmCountOf returns the farm count of the local player`() {
+        val players = listOf(
+            Player(name = "A", farms = 2),
+            Player(name = "B", farms = 5)
         )
 
-        val result = BottomHudLogic.farmCountOf(buildings, "A")
+        val result = BottomHudLogic.farmCountOf(players, "A")
         assertEquals(2, result)
     }
 
     @Test
     fun `farmCountOf returns 0 when localName is null`() {
-        val buildings = listOf(
-            Building(player = "A", type = BuildingType.FARM)
-        )
-
-        val result = BottomHudLogic.farmCountOf(buildings, null)
+        val players = listOf(Player(name = "A", farms = 3))
+        val result = BottomHudLogic.farmCountOf(players, null)
         assertEquals(0, result)
     }
 
@@ -135,31 +128,27 @@ class BottomHudLogicTest {
 
     @Test
     fun `farmPrice is 10 when player owns no farms`() {
-        val buildings = emptyList<Building>()
-        val result = BottomHudLogic.farmPrice(buildings, "A")
+        val players = listOf(Player(name = "A", farms = 0))
+        val result = BottomHudLogic.farmPrice(players, "A")
         assertEquals(10, result)
     }
 
     @Test
     fun `farmPrice increases by 1 for each owned farm`() {
-        val buildings = listOf(
-            Building(player = "A", type = BuildingType.FARM),
-            Building(player = "A", type = BuildingType.FARM),
-            Building(player = "A", type = BuildingType.FARM)
-        )
+        val players = listOf(Player(name = "A", farms = 3))
         // 3 Farms → Preis = 10 + 3 = 13
-        val result = BottomHudLogic.farmPrice(buildings, "A")
+        val result = BottomHudLogic.farmPrice(players, "A")
         assertEquals(13, result)
     }
 
     @Test
     fun `farmPrice ignores farms of other players`() {
-        val buildings = listOf(
-            Building(player = "B", type = BuildingType.FARM),
-            Building(player = "B", type = BuildingType.FARM)
+        val players = listOf(
+            Player(name = "A", farms = 0),
+            Player(name = "B", farms = 2)
         )
         // Spieler A hat 0 Farms → Preis = 10
-        val result = BottomHudLogic.farmPrice(buildings, "A")
+        val result = BottomHudLogic.farmPrice(players, "A")
         assertEquals(10, result)
     }
 
@@ -169,12 +158,12 @@ class BottomHudLogicTest {
 
     @Test
     fun `canBuyFarm is true when affordable and my turn`() {
-        val buildings = emptyList<Building>() // 0 Farms → Preis = 10
+        val players = listOf(Player(name = "A", farms = 0)) // Preis = 10
         assertTrue(
             BottomHudLogic.canBuyFarm(
                 gold = 100,
                 isMyTurn = true,
-                buildings = buildings,
+                players = players,
                 localName = "A"
             )
         )
@@ -182,12 +171,12 @@ class BottomHudLogicTest {
 
     @Test
     fun `canBuyFarm is false when not enough gold`() {
-        val buildings = emptyList<Building>() // Preis = 10
+        val players = listOf(Player(name = "A", farms = 0)) // Preis = 10
         assertFalse(
             BottomHudLogic.canBuyFarm(
                 gold = 9,
                 isMyTurn = true,
-                buildings = buildings,
+                players = players,
                 localName = "A"
             )
         )
@@ -195,12 +184,12 @@ class BottomHudLogicTest {
 
     @Test
     fun `canBuyFarm is false when not my turn`() {
-        val buildings = emptyList<Building>()
+        val players = listOf(Player(name = "A", farms = 0))
         assertFalse(
             BottomHudLogic.canBuyFarm(
                 gold = 100,
                 isMyTurn = false,
-                buildings = buildings,
+                players = players,
                 localName = "A"
             )
         )
@@ -208,12 +197,12 @@ class BottomHudLogicTest {
 
     @Test
     fun `canBuyFarm is true exactly at price boundary`() {
-        val buildings = emptyList<Building>() // Preis = 10
+        val players = listOf(Player(name = "A", farms = 0)) // Preis = 10
         assertTrue(
             BottomHudLogic.canBuyFarm(
                 gold = 10,
                 isMyTurn = true,
-                buildings = buildings,
+                players = players,
                 localName = "A"
             )
         )
@@ -221,16 +210,13 @@ class BottomHudLogicTest {
 
     @Test
     fun `canBuyFarm increases price with number of owned farms`() {
-        val buildings = listOf(
-            Building(player = "A", type = BuildingType.FARM),
-            Building(player = "A", type = BuildingType.FARM)
-        )
+        val players = listOf(Player(name = "A", farms = 2))
         // 2 Farms → Preis = 10 + 2 = 12
         assertTrue(
             BottomHudLogic.canBuyFarm(
                 gold = 12,
                 isMyTurn = true,
-                buildings = buildings,
+                players = players,
                 localName = "A"
             )
         )
@@ -238,16 +224,13 @@ class BottomHudLogicTest {
 
     @Test
     fun `canBuyFarm is false when gold is below dynamic price`() {
-        val buildings = listOf(
-            Building(player = "A", type = BuildingType.FARM),
-            Building(player = "A", type = BuildingType.FARM)
-        )
+        val players = listOf(Player(name = "A", farms = 2))
         // Preis = 12, Gold = 11 → false
         assertFalse(
             BottomHudLogic.canBuyFarm(
                 gold = 11,
                 isMyTurn = true,
-                buildings = buildings,
+                players = players,
                 localName = "A"
             )
         )

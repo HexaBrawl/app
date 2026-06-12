@@ -80,6 +80,16 @@
     <string name="hud_info_cheat_body">Wenn du oft auf das Geschenk-Symbol drückst, kannst du Gold gewinnen oder verlieren. Aber pass auf: dein Gegner sieht es und kann versuchen dein Geschenk zu stehlen!</string>
     <string name="dialog_close">Schließen</string>
 
+    <!--suppress PluralsCandidate -->
+    <string name="income_dialog_title">Einkommen pro Runde</string>
+    <string name="income_farms">Farmen</string>
+    <string name="income_fields">Felder</string>
+    <string name="income_gold">Gold</string>
+    <string name="income_gross">Einkommen brutto</string>
+    <string name="income_troops_with_count">%d Truppen</string>
+    <string name="income_upkeep">Truppenunterhalt</string>
+    <string name="income_net">Netto pro Runde</string>
+
     <!-- DE (values-de/strings.xml) -->
     <string name="cheat_steal_title">Ein Geschenk!</string>
     <string name="cheat_steal_body">%1$s hat ein verdaechtiges Geschenk geoeffnet. Willst du es stehlen? Du weisst nicht ob du Gold gewinnst oder verlierst — riskiere es!</string>

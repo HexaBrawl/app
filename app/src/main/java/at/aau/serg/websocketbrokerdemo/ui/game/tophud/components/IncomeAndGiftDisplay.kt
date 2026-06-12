@@ -33,16 +33,20 @@ import com.example.myapplication.R
 /**
  * Mittlere HUD-Box: Einkommen pro Runde + Geschenk-Button.
  *
- *  - [income]        Goldeinkommen pro Runde
- *  - [giftEnabled]   false = Spieler hat sein Geschenk bereits benutzt
- *                    (Server-Truth via Player.hasUsedGift); das Icon
- *                    wird dann grayed out und nicht mehr klickbar.
- *  - [onGiftClick]   Wird beim 5. Klick zum Auswerfen verwendet.
+ *  - [income]         Goldeinkommen pro Runde.
+ *  - [giftEnabled]    false = Spieler hat sein Geschenk bereits benutzt
+ *                     (Server-Truth via Player.hasUsedGift); das Icon
+ *                     wird dann grayed out und nicht mehr klickbar.
+ *  - [onIncomeClick]  Wird ausgeloest, wenn der Spieler auf die
+ *                     "+X /Runde" Box tippt. Oeffnet das Income-Detail-
+ *                     Popup mit der Aufschluesselung.
+ *  - [onGiftClick]    Wird beim 5. Klick zum Auswerfen verwendet.
  */
 @Composable
 fun IncomeAndGiftDisplay(
     income: Int,
     giftEnabled: Boolean,
+    onIncomeClick: () -> Unit,
     onGiftClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -57,23 +61,28 @@ fun IncomeAndGiftDisplay(
             .border(2.dp, GoldCoinDark, RoundedCornerShape(10.dp))
             .padding(horizontal = 12.dp, vertical = 4.dp)
     ) {
-        Text(
-            text = "+$income",
-            style = TextStyle(
-                fontSize = 22.sp,
-                fontWeight = FontWeight.ExtraBold,
-                color = Color(0xFF2D7A1F)
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.clickable(onClick = onIncomeClick)
+        ) {
+            Text(
+                text = if (income >= 0) "+$income" else "$income",
+                style = TextStyle(
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = if (income >= 0) Color(0xFF2D7A1F) else Color(0xFFB22222)
+                )
             )
-        )
-        Spacer(Modifier.width(4.dp))
-        Text(
-            text = stringResource(R.string.hud_per_round),
-            style = TextStyle(
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                color = InkBlack
+            Spacer(Modifier.width(4.dp))
+            Text(
+                text = stringResource(R.string.hud_per_round),
+                style = TextStyle(
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = InkBlack
+                )
             )
-        )
+        }
         Spacer(Modifier.width(10.dp))
 
         val giftModifier = Modifier

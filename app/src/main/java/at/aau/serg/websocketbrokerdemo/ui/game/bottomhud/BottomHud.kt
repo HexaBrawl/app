@@ -18,7 +18,6 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import at.aau.serg.websocketbrokerdemo.data.serverside.Building
 import at.aau.serg.websocketbrokerdemo.data.serverside.GameStatus
 import at.aau.serg.websocketbrokerdemo.data.serverside.Player
 import at.aau.serg.websocketbrokerdemo.data.serverside.UnitType
@@ -46,7 +45,6 @@ import at.aau.serg.websocketbrokerdemo.ui.theme.WoodMedium
 @Composable
 fun BottomHud(
     players: List<Player>,
-    buildings: List<Building>,
     localName: String?,
     currentTurn: String?,
     status: GameStatus,
@@ -59,7 +57,7 @@ fun BottomHud(
     val gold = BottomHudLogic.goldOf(players, localName)
     val playerColor = BottomHudLogic.colorOf(players, localName)
     val isMyTurn = BottomHudLogic.isMyTurn(currentTurn, status, localName)
-    val farmPrice = BottomHudLogic.farmPrice(buildings, localName)
+    val farmPrice = BottomHudLogic.farmPrice(players, localName)
 
     Box(
         modifier = modifier
@@ -103,7 +101,7 @@ fun BottomHud(
                 .padding(horizontal = 10.dp)
         ) {
             FarmButton(
-                enabled = BottomHudLogic.canBuyFarm(gold, isMyTurn, buildings, localName),
+                enabled = BottomHudLogic.canBuyFarm(gold, isMyTurn, players, localName),
                 price = farmPrice,
                 onClick = onBuyFarm
             )

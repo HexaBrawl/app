@@ -80,6 +80,16 @@
     <string name="hud_info_cheat_body">If you tap the gift icon multiple times, you may win or lose gold. But careful: your opponent can see it and might try to steal your gift!</string>
     <string name="dialog_close">Close</string>
 
+    <!--suppress PluralsCandidate -->
+    <string name="income_dialog_title">Income per round</string>
+    <string name="income_farms">Farms</string>
+    <string name="income_fields">Fields</string>
+    <string name="income_gold">Gold</string>
+    <string name="income_gross">Gross income</string>
+    <string name="income_troops_with_count">%d troops</string>
+    <string name="income_upkeep">Troop upkeep</string>
+    <string name="income_net">Net per round</string>
+
     <!-- EN (values/strings.xml) -->
     <string name="cheat_steal_title">A gift!</string>
     <string name="cheat_steal_body">%1$s opened a suspicious gift. Want to steal it? You don\'t know if you\'ll win or lose gold — risk it!</string>

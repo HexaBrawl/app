@@ -14,12 +14,18 @@ package at.aau.serg.websocketbrokerdemo.data.serverside
  *  - color        Spielerfarbe. Wird in der Lobby beim Join gewaehlt
  *                 und ist im Match einzigartig pro Raum.
  *  - gold         Aktueller Gold-Bestand. Wird fuer Kaeufe (Farm, Einheit)
- *                 verbraucht und am Rundenende durch income aufgestockt.
+ *                 verbraucht und am Rundenende durch income aufgestockt
+ *                 sowie um upkeep verringert.
  *  - farms        Anzahl der vom Spieler bereits gekauften Farmen.
  *                 Wird vom Server zur Berechnung des naechsten Farm-Preises
  *                 benutzt: cost = FARM_BASE_COST + farms * FARM_COST_INCREMENT.
- *  - income       Gold-Einkommen pro Runde (steigt mit eroberten Feldern,
- *                 gebauten Farmen, ...).
+ *  - income       Brutto-Gold-Einkommen pro Runde. Server-Truth, gerechnet als
+ *                 farms * FARM_INCOME_PER_ROUND + ownedFields * FIELD_INCOME_PER_ROUND
+ *                 (Skelett-Felder zaehlen nicht).
+ *  - upkeep       Truppenunterhalt pro Runde. Server-Truth, gerechnet als
+ *                 (0 until unitCount).sumOf { 3 + it } -- die erste Kampf-
+ *                 Einheit kostet 3 Gold, jede weitere +1. Reicht das Gold
+ *                 am Rundenende nicht, werden alle Truppen zu Skeletten.
  *  - hasUsedGift  Ob der Spieler die Schummel-Geschenk-Funktion in
  *                 diesem Match bereits einmal benutzt hat. Server-Truth,
  *                 damit der Geschenk-Button im HUD nicht client-side
@@ -32,5 +38,6 @@ data class Player(
     val gold: Int = 0,
     val farms: Int = 0,
     val income: Int = 0,
+    val upkeep: Int = 0,
     val hasUsedGift: Boolean = false
 )

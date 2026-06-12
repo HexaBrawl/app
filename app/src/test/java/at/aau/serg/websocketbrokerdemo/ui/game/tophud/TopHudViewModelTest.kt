@@ -52,4 +52,17 @@ class TopHudViewModelTest {
         vm.showSettings()
         assertEquals(HudPopup.Settings, vm.state.value.popup)
     }
+
+    @Test
+    fun `showIncome sets popup to Income`() {
+        vm.showIncome()
+        assertEquals(HudPopup.Income, vm.state.value.popup)
+    }
+
+    @Test
+    fun `showIncome from Menu replaces popup`() {
+        vm.openMenu()
+        vm.showIncome()
+        assertEquals(HudPopup.Income, vm.state.value.popup)
+    }
 }

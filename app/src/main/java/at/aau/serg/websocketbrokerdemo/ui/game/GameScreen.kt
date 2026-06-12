@@ -70,8 +70,8 @@ fun GameScreen(
     }
 
     val units = gameState?.units.orEmpty()
-    val players = gameState?.players.orEmpty()
     val fields = gameState?.fields.orEmpty()
+    val players = gameState?.players.orEmpty()
     val localName = session.localPlayerName.value
     val pendingGift = gameState?.pendingGift
     val currentTurn = gameState?.currentTurn
@@ -119,6 +119,8 @@ fun GameScreen(
 
         TopHud(
             players = players,
+            units = units,
+            fields = fields,
             localName = localName,
             pendingGift = pendingGift,
             session = session,
@@ -127,7 +129,6 @@ fun GameScreen(
 
         BottomHud(
             players = players,
-            buildings = gameState?.buildings.orEmpty(),
             localName = localName,
             currentTurn = currentTurn,
             status = status,
