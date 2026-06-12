@@ -64,19 +64,7 @@ fun HomeScreen(navController: NavController) {
 
     Box(modifier = Modifier.fillMaxSize()) {
 
-        // 1) Hintergrund-Holzfläche
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    brush = Brush.radialGradient(
-                        colors = listOf(WoodMedium, WoodDark),
-                        radius = 1500f
-                    )
-                )
-        )
-
-        // 2) Hintergrundbild
+        // 1) Hintergrundbild
         Image(
             painter = painterResource(id = R.drawable.bg_homescreen),
             contentDescription = null,
@@ -99,12 +87,25 @@ fun HomeScreen(navController: NavController) {
                 )
         )
 
-        // 4) Settings-Button oben
+        // 4) Logo oben mittig — etwas tiefer und groesser, sodass die
+        // untere Spitze in Hoehe des Settings-Buttons sitzt und der
+        // Button optisch davon "haengt".
+        Image(
+            painter = painterResource(id = R.drawable.start_logo),
+            contentDescription = null,
+            contentScale = ContentScale.Fit,
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .padding(top = 24.dp)
+                .height(220.dp)
+        )
+
+        // 5) Settings-Button oben
         IconButton(
             onClick = { HomeScreenLogic.onSettingsClicked(navController) },
             modifier = Modifier
                 .align(Alignment.TopCenter)
-                .padding(156.dp)
+                .padding(top = 155.dp)
                 .size(56.dp)
                 .shadow(6.dp, CircleShape)
                 .background(
@@ -121,7 +122,7 @@ fun HomeScreen(navController: NavController) {
             )
         }
 
-        // 5) PLAY mittig als Goldmünze
+        // 6) PLAY Button mittig
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
