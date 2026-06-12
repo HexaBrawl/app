@@ -98,4 +98,13 @@ object GameScreenLogic {
      */
     private fun findClickableUnit(units: List<GameUnit>, col: Int, row: Int): GameUnit? =
         units.firstOrNull { it.x == col && it.y == row && it.type != UnitType.SKELETON }
+
+    /**
+     * True, wenn der Zug auf eine feindliche Einheit (nicht Skelett) zielt —
+     * also ein Angriff ist. Wird genutzt um den Kampf-SFX auszuloesen.
+     */
+    fun isAttackMove(move: Move, units: List<GameUnit>, localName: String?): Boolean {
+        val target = findClickableUnit(units, move.toX, move.toY) ?: return false
+        return target.player != localName
+    }
 }
