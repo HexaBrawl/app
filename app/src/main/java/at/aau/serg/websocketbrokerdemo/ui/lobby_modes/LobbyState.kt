@@ -10,14 +10,20 @@ package at.aau.serg.websocketbrokerdemo.ui.lobby_modes
  *
  *  - [showJoinDialog] Ob der "Mit Code beitreten"-Dialog gerade sichtbar ist
  *  - [code]           Aktueller Inhalt des Code-Eingabefelds (normalisiert)
+ *
+ * Loading- und Error-State leben bewusst als eigene StateFlows
+ * (`isLoading`, `lastError`) am ViewModel, weil sie an Coroutine-Aufrufe
+ * gekoppelt sind und gegenueber UI-Inputs eine andere Lebensdauer haben.
  */
 data class LobbyState(
     val showJoinDialog: Boolean = false,
-    val code: String = "",
-    val isLoading: Boolean = false,
-    val error: String? = null
+    val code: String = ""
 ) {
-    /** True wenn der aktuelle Code gueltig ist (4-8 Zeichen) und nicht geladen wird. */
+    /**
+     * True wenn der aktuelle Code-Inhalt akzeptabel ist (genau
+     * [JoinByCodeLogic.MIN_LENGTH] Zeichen). Der Loading-Guard kommt
+     * zusaetzlich im Screen/ViewModel dazu.
+     */
     val canJoin: Boolean
-        get() = !isLoading && JoinByCodeLogic.isValid(code)
+        get() = JoinByCodeLogic.isValid(code)
 }

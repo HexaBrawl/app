@@ -34,13 +34,13 @@ class LobbyViewModel(
 
     /** Oeffnet den "Beitreten via Code"-Dialog mit leerem Eingabefeld. */
     fun openJoinDialog() {
-        _state.value = _state.value.copy(showJoinDialog = true, code = "", error = null)
+        _state.value = _state.value.copy(showJoinDialog = true, code = "")
         _lastError.value = null
     }
 
     /** Schliesst den Dialog ohne weitere Aktion (Cancel). */
     fun closeJoinDialog() {
-        _state.value = _state.value.copy(showJoinDialog = false, error = null)
+        _state.value = _state.value.copy(showJoinDialog = false)
         _lastError.value = null
     }
 
@@ -51,7 +51,7 @@ class LobbyViewModel(
      * an, damit der State stets in einem gueltigen Format bleibt.
      */
     fun onCodeChange(rawInput: String) {
-        _state.value = _state.value.copy(code = JoinByCodeLogic.normalize(rawInput), error = null)
+        _state.value = _state.value.copy(code = JoinByCodeLogic.normalize(rawInput))
         _lastError.value = null
     }
 
@@ -62,14 +62,12 @@ class LobbyViewModel(
         if (_isLoading.value) return
         viewModelScope.launch {
             _isLoading.value = true
-            _state.value = _state.value.copy(isLoading = true, error = null)
             _lastError.value = null
             try {
                 val room = apiClient.createRoom(mapUiToDataMode(mode))
                 apply(LobbyRoomLogic.effectsForCreateResult(room), onSuccess)
             } catch (e: Exception) {
                 _isLoading.value = false
-                _state.value = _state.value.copy(isLoading = false)
                 _lastError.value = "Netzwerkfehler: ${e.message}"
             }
         }
@@ -82,14 +80,12 @@ class LobbyViewModel(
 
         viewModelScope.launch {
             _isLoading.value = true
-            _state.value = _state.value.copy(isLoading = true, error = null)
             _lastError.value = null
             try {
                 val room = apiClient.findByCode(code)
                 apply(LobbyRoomLogic.effectsForJoinByCodeResult(room, code), onSuccess)
             } catch (e: Exception) {
                 _isLoading.value = false
-                _state.value = _state.value.copy(isLoading = false)
                 _lastError.value = "Netzwerkfehler: ${e.message}"
             }
         }
@@ -103,7 +99,6 @@ class LobbyViewModel(
      */
     private fun apply(effects: List<LobbyEffect>, onSuccess: () -> Unit) {
         _isLoading.value = false
-        _state.value = _state.value.copy(isLoading = false)
         effects.forEach { effect ->
             when (effect) {
                 is LobbyEffect.SetRoomId -> {
@@ -116,10 +111,7 @@ class LobbyViewModel(
                 }
                 is LobbyEffect.SetJoinCode -> session.activeJoinCode.value = effect.joinCode
                 is LobbyEffect.CloseJoinDialog -> _state.value = _state.value.copy(showJoinDialog = false)
-                is LobbyEffect.ShowError -> {
-                    _lastError.value = effect.message
-                    _state.value = _state.value.copy(error = effect.message)
-                }
+                is LobbyEffect.ShowError -> _lastError.value = effect.message
                 is LobbyEffect.NavigateToWaiting -> onSuccess()
             }
         }

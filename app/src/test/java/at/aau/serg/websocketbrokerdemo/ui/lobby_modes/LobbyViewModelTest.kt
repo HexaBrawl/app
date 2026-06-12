@@ -61,9 +61,7 @@ class LobbyViewModelTest {
         val state = vm.state.value
         assertFalse(state.showJoinDialog)
         assertEquals("", state.code)
-        assertNull(state.error)
-        assertFalse(state.isLoading)
-        
+
         assertFalse(vm.isLoading.value)
         assertNull(vm.lastError.value)
     }
@@ -82,7 +80,6 @@ class LobbyViewModelTest {
         vm.closeJoinDialog()
         vm.openJoinDialog()
         assertEquals("", vm.state.value.code)
-        assertNull(vm.state.value.error)
         assertNull(vm.lastError.value)
     }
 
@@ -117,7 +114,6 @@ class LobbyViewModelTest {
 
         assertFalse(vm.isLoading.value)
         assertEquals("Raum konnte nicht erstellt werden", vm.lastError.value)
-        assertEquals("Raum konnte nicht erstellt werden", vm.state.value.error)
     }
 
     @Test
