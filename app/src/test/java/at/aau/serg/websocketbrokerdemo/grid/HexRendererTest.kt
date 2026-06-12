@@ -2,9 +2,12 @@ package at.aau.serg.websocketbrokerdemo.grid
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.Fill
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.painter.Painter
 import at.aau.serg.websocketbrokerdemo.data.serverside.Building
 import at.aau.serg.websocketbrokerdemo.data.serverside.BuildingType
+import at.aau.serg.websocketbrokerdemo.data.serverside.Field
 import at.aau.serg.websocketbrokerdemo.data.serverside.GameUnit
 import at.aau.serg.websocketbrokerdemo.data.serverside.Player
 import at.aau.serg.websocketbrokerdemo.data.serverside.PlayerColor
@@ -35,7 +38,7 @@ class HexRendererTest {
     fun setUp() {
         renderer = HexRenderer()
         scope = mockk(relaxed = true)
-        
+
         unitPainters = PlayerColor.entries.flatMap { color ->
             UnitType.entries.map { type ->
                 (color to type) to mockk<Painter>(relaxed = true)
@@ -54,10 +57,11 @@ class HexRendererTest {
     private fun draw(
         units: List<GameUnit> = emptyList(),
         buildings: List<Building> = emptyList(),
+        fields: List<Field> = emptyList(),
         players: List<Player> = emptyList()
     ) {
         with(renderer) {
-            scope.render(tinyLayout, units, buildings, players, unitPainters, buildingPainters)
+            scope.render(tinyLayout, units, buildings, fields, players, unitPainters, buildingPainters)
         }
     }
 
@@ -109,13 +113,56 @@ class HexRendererTest {
         }
     }
 
+    // ---- Feld-Markierungen (subissue #123) ----------------------------------
+
+    @Test
+    fun `fills owned fields exactly once`() {
+        val fields = listOf(Field(x = 0, y = 0, owner = "Alice"))
+
+        draw(fields = fields, players = listOf(alice))
+
+        // Genau EINE Fuellung (nur das eroberte Feld). Kein eq()-Vergleich
+        // der Farbe: Compose-Color ist eine value class, deren Argumente
+        // MockK nur als rohen Long aufzeichnet -- die konkrete 50%-Farbe
+        // ist durch PlayerColorMapTest.cellFillFor abgedeckt.
+        verify(exactly = 1) {
+            scope.drawPath(any(), any<Color>(), any(), eq(Fill), any(), any())
+        }
+    }
+
+    @Test
+    fun `does not fill neutral fields`() {
+        val fields = listOf(Field(x = 0, y = 0, owner = null))
+
+        draw(fields = fields, players = listOf(alice))
+
+        // nur die 4 Hex-Raender, keine zusaetzliche Fuellung
+        verify(exactly = 4) {
+            scope.drawPath(any(), any<Color>(), any(), any(), any(), any())
+        }
+    }
+
+    @Test
+    fun `draws fill before hex outline`() {
+        val fields = listOf(Field(x = 0, y = 0, owner = "Alice"))
+
+        draw(fields = fields, players = listOf(alice))
+
+        // Unterscheidung ueber den Zeichenstil (Fill vs. Stroke), weil
+        // Color-Argumente von MockK nicht per eq() vergleichbar sind.
+        verifyOrder {
+            scope.drawPath(any(), any<Color>(), any(), eq(Fill), any(), any())
+            scope.drawPath(any(), any<Color>(), any(), ofType<Stroke>(), any(), any())
+        }
+    }
+
     // ---- Rendering Order -----------------------------------------------
 
     @Test
     fun `draws buildings before units on the same cell`() {
         val buildings = listOf(Building(player = "Alice", x = 0, y = 0, type = BuildingType.CASTLE))
         val units = listOf(GameUnit(player = "Alice", x = 0, y = 0, type = UnitType.INFANTRY))
-        
+
         draw(units = units, buildings = buildings, players = listOf(alice))
 
         val castlePainter = buildingPainters[PlayerColor.RED to BuildingType.CASTLE]!!
