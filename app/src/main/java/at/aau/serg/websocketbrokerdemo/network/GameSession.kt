@@ -2,6 +2,7 @@ package at.aau.serg.websocketbrokerdemo.network
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import at.aau.serg.websocketbrokerdemo.data.SessionRepository
 import at.aau.serg.websocketbrokerdemo.data.serverside.ErrorMessage
 import at.aau.serg.websocketbrokerdemo.data.serverside.GameState
 
@@ -24,6 +25,13 @@ import at.aau.serg.websocketbrokerdemo.data.serverside.GameState
  *  - [localPlayerName]   Name des lokalen Spielers, vom WaitingLobby-
  *                        Screen gesetzt sobald der User seinen Namen
  *                        bestaetigt hat.
+ *  - [sessionRepository] In-Memory-Spiegel von roomId / joinCode /
+ *                        playerName fuer Reconnect- und Leave-Calls.
+ *                        Die einzelnen MutableState-Felder oben bleiben
+ *                        Source-of-Truth fuer die UI; das Repository
+ *                        wird parallel beschrieben, damit Endpoints
+ *                        ohne UI-Bezug (Activity-Lifecycle, Auto-
+ *                        Reconnect-Callback) sauberen Zugriff haben.
  */
 class GameSession(
     val endpoint: UnitMoveEndpoint,
@@ -31,5 +39,6 @@ class GameSession(
     val activeJoinCode: MutableState<String> = mutableStateOf(""),
     val gameState: MutableState<GameState?> = mutableStateOf(null),
     val lastError: MutableState<ErrorMessage?> = mutableStateOf(null),
-    val localPlayerName: MutableState<String?> = mutableStateOf(null)
+    val localPlayerName: MutableState<String?> = mutableStateOf(null),
+    val sessionRepository: SessionRepository = SessionRepository()
 )
