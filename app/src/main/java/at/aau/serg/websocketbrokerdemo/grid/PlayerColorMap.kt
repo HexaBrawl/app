@@ -25,6 +25,14 @@ object PlayerColorMap {
     val DEFAULT_COLOR: Color = Color.Gray
 
     /**
+     * Anteil von Grau in der Skelett-Fuellfarbe.
+     * 0.55 = 55 % Grau, 45 % Spielerfarbe -- entsaettigt sichtbar,
+     * laesst aber den Hue der Spielerfarbe noch erkennbar, sodass
+     * RED/BLUE/GREEN/YELLOW weiterhin auseinanderzuhalten sind.
+     */
+    private const val GRAY_MIX_FACTOR: Float = 0.55f
+
+    /**
      * Liefert die Compose-Farbe eines Spielers anhand seines Namens.
      *
      * @param playerName Spielername wie vom Server gemeldet
@@ -56,4 +64,44 @@ object PlayerColorMap {
     fun cellFillFor(playerName: String, players: List<Player>, alpha: Float = 0.5f): Color =
         colorFor(playerName, players).copy(alpha = alpha)
 
+    /**
+     * Liefert die halbtransparente Fuell-Farbe fuer ein abgeschnittenes
+     * (Skelett-)Feld.
+     *
+     * Selbe Namens-Aufloesung wie [cellFillFor]. Anschliessend wird die
+     * Spielerfarbe linear mit [Color.Gray] gemischt (Anteil
+     * [GRAY_MIX_FACTOR]) und Alpha gesetzt. Ergebnis: entsaettigte,
+     * "totere" Variante der Spielerfarbe -- die vier Spielerfarben
+     * bleiben unterscheidbar, der Skelett-Charakter ist aber deutlich
+     * sichtbar.
+     *
+     * @param playerName Spielername wie vom Server gemeldet
+     * @param players    Spieler-Liste aus dem aktuellen GameState
+     * @param alpha      Deckkraft der Fuellung (Default 0.5 = 50 %)
+     * @return Entsaettigte Spielerfarbe (oder die [DEFAULT_COLOR]-
+     *         Variante) mit angewendetem Alpha
+     */
+    fun skeletonCellFillFor(
+        playerName: String,
+        players: List<Player>,
+        alpha: Float = 0.5f
+    ): Color {
+        val base = colorFor(playerName, players)
+        return mixWithGray(base, GRAY_MIX_FACTOR).copy(alpha = alpha)
+    }
+
+    /**
+     * Linearer Farbmix im sRGB-Raum: f=0 → unveraendert, f=1 → reines Grau.
+     * Alpha wird hier auf 1f gesetzt, das finale Alpha setzt der Aufrufer.
+     */
+    private fun mixWithGray(color: Color, factor: Float): Color {
+        val gray = Color.Gray
+        val keep = 1f - factor
+        return Color(
+            red = color.red * keep + gray.red * factor,
+            green = color.green * keep + gray.green * factor,
+            blue = color.blue * keep + gray.blue * factor,
+            alpha = 1f
+        )
+    }
 }
