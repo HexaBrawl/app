@@ -30,6 +30,14 @@ package at.aau.serg.websocketbrokerdemo.data.serverside
  *                 diesem Match bereits einmal benutzt hat. Server-Truth,
  *                 damit der Geschenk-Button im HUD nicht client-side
  *                 umgangen werden kann.
+ *  - connected    Ob die WebSocket-Verbindung des Spielers gerade
+ *                 lebt. Default true (Server sendet auch im Reconnect-
+ *                 Pfad nichts auf alten Clients, dann gilt true). Wird
+ *                 vom Server auf false gesetzt sobald die Heartbeats
+ *                 ausbleiben; geht nach erfolgreichem /reconnect
+ *                 zurueck auf true oder verschwindet (Hard-Delete nach
+ *                 30s Grace-Period). UI zeigt waehrenddessen den
+ *                 DisconnectedPlayerOverlay.
  */
 data class Player(
     val name: String = "",
@@ -39,5 +47,6 @@ data class Player(
     val farms: Int = 0,
     val income: Int = 0,
     val upkeep: Int = 0,
-    val hasUsedGift: Boolean = false
+    val hasUsedGift: Boolean = false,
+    val connected: Boolean = true
 )
