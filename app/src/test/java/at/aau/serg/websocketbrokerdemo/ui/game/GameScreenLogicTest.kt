@@ -4,6 +4,7 @@ import androidx.compose.ui.unit.IntSize
 import at.aau.serg.websocketbrokerdemo.data.serverside.Field
 import at.aau.serg.websocketbrokerdemo.data.serverside.GameUnit
 import at.aau.serg.websocketbrokerdemo.data.serverside.Move
+import at.aau.serg.websocketbrokerdemo.data.serverside.Player
 import at.aau.serg.websocketbrokerdemo.data.serverside.UnitType
 import at.aau.serg.websocketbrokerdemo.grid.HexGridLogic
 import at.aau.serg.websocketbrokerdemo.grid.MapLayout
@@ -359,5 +360,51 @@ class GameScreenLogicTest {
             assertTrue(col in 0 until testLayout.cols)
             assertTrue(row in 0 until testLayout.rows)
         }
+    }
+
+    // ---- disconnectedOtherPlayerNames --------------------------------
+
+    private fun player(name: String, connected: Boolean) =
+        Player(name = name, connected = connected)
+
+    @Test
+    fun `disconnectedOtherPlayerNames leer wenn alle connected`() {
+        val players = listOf(player(alice, true), player(bob, true))
+        val result = GameScreenLogic.disconnectedOtherPlayerNames(players, alice)
+        assertTrue(result.isEmpty())
+    }
+
+    @Test
+    fun `disconnectedOtherPlayerNames listet andere disconnectete Spieler`() {
+        val players = listOf(player(alice, true), player(bob, false))
+        val result = GameScreenLogic.disconnectedOtherPlayerNames(players, alice)
+        assertEquals(listOf(bob), result)
+    }
+
+    @Test
+    fun `disconnectedOtherPlayerNames ignoriert den lokalen Spieler selbst`() {
+        val players = listOf(player(alice, false), player(bob, true))
+        val result = GameScreenLogic.disconnectedOtherPlayerNames(players, alice)
+        // Alice ist der lokale Spieler -> der eigene Reconnecting-Overlay
+        // uebernimmt; diese Liste soll nur die ANDEREN abdecken.
+        assertTrue(result.isEmpty())
+    }
+
+    @Test
+    fun `disconnectedOtherPlayerNames listet mehrere Disconnects`() {
+        val players = listOf(
+            player(alice, true),
+            player(bob, false),
+            player("Carol", false)
+        )
+        val result = GameScreenLogic.disconnectedOtherPlayerNames(players, alice)
+        assertEquals(listOf(bob, "Carol"), result)
+    }
+
+    @Test
+    fun `disconnectedOtherPlayerNames mit null localName behandelt alle als andere`() {
+        val players = listOf(player(alice, false), player(bob, false))
+        val result = GameScreenLogic.disconnectedOtherPlayerNames(players, null)
+        assertEquals(listOf(alice, bob), result)
     }
 }
