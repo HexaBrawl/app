@@ -323,6 +323,32 @@ class UnitMoveEndpointTest {
         }
     }
 
+    // ---- reconnect -----------------------------------------------------
+
+    @Test
+    fun `reconnect sends correct JSON with playerName and joinCode`() {
+        endpoint.reconnect("game1", "Alice", "CODE12")
+
+        verify {
+            stomp.sendJson(
+                "/app/rooms/game1/reconnect",
+                """{"playerName":"Alice","joinCode":"CODE12"}"""
+            )
+        }
+    }
+
+    @Test
+    fun `reconnect uses the room id provided`() {
+        endpoint.reconnect("arena-7", "Bob", "AAA111")
+
+        verify {
+            stomp.sendJson(
+                destination = "/app/rooms/arena-7/reconnect",
+                json = any()
+            )
+        }
+    }
+
     // ---- subscribeToGameState ------------------------------------------
 
     @Test

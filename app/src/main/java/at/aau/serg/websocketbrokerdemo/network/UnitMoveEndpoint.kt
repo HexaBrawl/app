@@ -163,6 +163,25 @@ class UnitMoveEndpoint(
         stomp.sendJsonAwait("/app/rooms/$roomId/leave", json)
     }
 
+    /**
+     * Meldet sich nach einem unerwarteten WebSocket-Drop wieder am Raum
+     * an. Wird ausgeloest, sobald die Auto-Reconnect-Loop in [Stomp]
+     * einen erfolgreichen WebSocket-Wiederaufbau gemeldet hat
+     * (siehe `Stomp.onReconnected`). Spieler-Identitaet kommt aus dem
+     * SessionRepository — Server prueft Name + JoinCode und re-attached
+     * den Spieler an seinen alten Slot, sofern er noch innerhalb der
+     * Grace-Period ist.
+     *
+     * Fire-and-forget: der Aufruf erfolgt im Hintergrund nach dem WS-
+     * Reconnect, kein Lifecycle-Druck wie bei /leave.
+     */
+    fun reconnect(roomId: String, playerName: String, joinCode: String) {
+        val payload = ReconnectRequest(playerName = playerName, joinCode = joinCode)
+        val json = gson.toJson(payload)
+        Log.d(TAG, "-> /app/rooms/$roomId/reconnect: $json")
+        stomp.sendJson("/app/rooms/$roomId/reconnect", json)
+    }
+
     private data class JoinRequest(val name: String, val color: String?)
     private data class ClaimGiftRequest(val playerName: String, val delta: Int)
     private data class StealResponseRequest(val playerName: String, val accept: Boolean)
@@ -170,6 +189,7 @@ class UnitMoveEndpoint(
     private data class BuyUnitRequest(val playerName: String, val type: String, val x: Int, val y: Int)
     private data class EndTurnRequest(val playerName: String)
     private data class LeaveRequest(val playerName: String)
+    private data class ReconnectRequest(val playerName: String, val joinCode: String)
 
     companion object { private const val TAG = "UnitMoveEndpoint" }
 }
