@@ -103,13 +103,17 @@ class LobbyViewModel(
             when (effect) {
                 is LobbyEffect.SetRoomId -> {
                     session.activeRoomId.value = effect.roomId
+                    session.sessionRepository.roomId = effect.roomId
                     // Neuer Raum: alle stale States aus vorherigen Spielen
                     // wegwerfen, damit die WaitingLobby nicht alte Spieler
                     // oder Fehler anzeigt.
                     session.gameState.value = null
                     session.lastError.value = null
                 }
-                is LobbyEffect.SetJoinCode -> session.activeJoinCode.value = effect.joinCode
+                is LobbyEffect.SetJoinCode -> {
+                    session.activeJoinCode.value = effect.joinCode
+                    session.sessionRepository.joinCode = effect.joinCode
+                }
                 is LobbyEffect.CloseJoinDialog -> _state.value = _state.value.copy(showJoinDialog = false)
                 is LobbyEffect.ShowError -> _lastError.value = effect.message
                 is LobbyEffect.NavigateToWaiting -> onSuccess()

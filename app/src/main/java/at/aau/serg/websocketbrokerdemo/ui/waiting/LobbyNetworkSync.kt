@@ -60,6 +60,7 @@ fun LobbyNetworkSync(
     LaunchedEffect(localReady, localName, localColor) {
         if (localReady && localName.isNotBlank() && session.activeRoomId.value.isNotBlank()) {
             session.localPlayerName.value = localName
+            session.sessionRepository.playerName = localName
             session.endpoint.joinGame(
                 roomId = session.activeRoomId.value,
                 playerName = localName,
