@@ -194,20 +194,28 @@ class Stomp(
     fun sendJson(destination: String, json: String) {
         scope.launch {
             try {
-                awaitConnected()
-                val s = session
-                if (s == null) {
-                    Log.e(TAG, "sendJson($destination) aborted: session still null after awaitConnected")
-                    return@launch
-                }
-                s.send(
-                    StompSendHeaders(destination) { contentType = "application/json" },
-                    FrameBody.Text(json)
-                )
+                sendJsonAwait(destination, json)
             } catch (e: Exception) {
                 Log.e(TAG, "sendJson to $destination failed", e)
             }
         }
+    }
+
+    /**
+     * Suspending-Variante von [sendJson]. Faengt KEINE Exception ab — wird
+     * vom Caller umschlossen.
+     *
+     * Use-Case: Activity-Lifecycle-Calls wie /leave bei `onDestroy`, wo
+     * der Caller mit `runBlocking { withTimeout(...) { ... } }` warten
+     * muss bis der Frame raus ist, bevor der Process eventuell stirbt.
+     */
+    suspend fun sendJsonAwait(destination: String, json: String) {
+        awaitConnected()
+        val s = session ?: error("STOMP session still null after awaitConnected")
+        s.send(
+            StompSendHeaders(destination) { contentType = "application/json" },
+            FrameBody.Text(json)
+        )
     }
 
     fun disconnect() {

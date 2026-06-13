@@ -8,6 +8,8 @@ import at.aau.serg.websocketbrokerdemo.data.serverside.GameStatus
 import at.aau.serg.websocketbrokerdemo.data.serverside.Move
 import at.aau.serg.websocketbrokerdemo.data.serverside.PlayerColor
 import at.aau.serg.websocketbrokerdemo.data.serverside.UnitType
+import io.mockk.coJustRun
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.justRun
 import io.mockk.mockk
@@ -15,6 +17,7 @@ import io.mockk.mockkStatic
 import io.mockk.unmockkAll
 import io.mockk.verify
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -290,8 +293,35 @@ class UnitMoveEndpointTest {
         }
     }
 
+    // ---- leaveGameAwait ------------------------------------------------
 
+    @Test
+    fun `leaveGameAwait sends correct JSON via sendJsonAwait`() = runBlocking {
+        coJustRun { stomp.sendJsonAwait(any(), any()) }
 
+        endpoint.leaveGameAwait("game1", "Alice")
+
+        coVerify {
+            stomp.sendJsonAwait(
+                "/app/rooms/game1/leave",
+                """{"playerName":"Alice"}"""
+            )
+        }
+    }
+
+    @Test
+    fun `leaveGameAwait uses the room id provided`() = runBlocking {
+        coJustRun { stomp.sendJsonAwait(any(), any()) }
+
+        endpoint.leaveGameAwait("arena-99", "Bob")
+
+        coVerify {
+            stomp.sendJsonAwait(
+                destination = "/app/rooms/arena-99/leave",
+                json = any()
+            )
+        }
+    }
 
     // ---- subscribeToGameState ------------------------------------------
 
