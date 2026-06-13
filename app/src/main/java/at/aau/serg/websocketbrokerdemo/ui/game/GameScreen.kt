@@ -16,11 +16,14 @@ import androidx.navigation.NavController
 import at.aau.serg.websocketbrokerdemo.data.serverside.GameStatus
 import at.aau.serg.websocketbrokerdemo.grid.HexGridLogic
 import at.aau.serg.websocketbrokerdemo.grid.MapLayouts
+import at.aau.serg.websocketbrokerdemo.network.ConnectionState
 import at.aau.serg.websocketbrokerdemo.network.GameSession
 import at.aau.serg.websocketbrokerdemo.ui.game.bottomhud.BottomHud
 import at.aau.serg.websocketbrokerdemo.ui.game.bottomhud.components.PlacementOverlay
 import at.aau.serg.websocketbrokerdemo.ui.game.camera.CameraState
 import at.aau.serg.websocketbrokerdemo.ui.game.tophud.TopHud
+import at.aau.serg.websocketbrokerdemo.ui.game.tophud.components.DisconnectedPlayerOverlay
+import at.aau.serg.websocketbrokerdemo.ui.game.tophud.components.ReconnectingOverlay
 import at.aau.serg.websocketbrokerdemo.ui.mainmenu.GameMode
 import androidx.compose.runtime.LaunchedEffect
 import at.aau.serg.websocketbrokerdemo.ui.navigation.Screen
@@ -76,6 +79,8 @@ fun GameScreen(
     val pendingGift = gameState?.pendingGift
     val currentTurn = gameState?.currentTurn
     val status = gameState?.status ?: GameStatus.WAITING_FOR_PLAYERS
+    val connectionState by session.connectionState.collectAsStateWithLifecycle()
+    val disconnectedNames = GameScreenLogic.disconnectedOtherPlayerNames(players, localName)
 
     // Wenn eine eigene Einheit selektiert ist, dunkle alle Felder ab,
     // die NICHT in Reichweite sind. Range = 2 nur wenn die Einheit auf
@@ -90,6 +95,11 @@ fun GameScreen(
 
     LaunchedEffect(status) {
         if (status == GameStatus.FINISHED) {
+            // Spiel ist vorbei -- die Reconnect-Identitaet wird nicht
+            // mehr gebraucht. Wir loeschen sie hier (statt im EndScreen),
+            // damit ein direktes "App wegswipen" auf dem EndScreen kein
+            // /leave fuer einen toten Raum mehr ausloest.
+            session.sessionRepository.clear()
             val winner = gameState?.winner
             val isWin = winner == localName
             val route = if (isWin) Screen.EndWin.route else Screen.EndLoss.route
@@ -155,6 +165,23 @@ fun GameScreen(
                 onCancel = viewModel::cancelPlacement,
                 modifier = Modifier.align(Alignment.TopCenter)
             )
+        }
+
+        // Eigener Reconnect-Overlay liegt OBEN auf allem (auch ueber den
+        // DisconnectedPlayerOverlay), damit der lokale Spieler im Worst
+        // Case zuerst den eigenen Status sieht.
+        if (connectionState != ConnectionState.Connected) {
+            ReconnectingOverlay(
+                state = connectionState,
+                onBackToMenu = {
+                    session.sessionRepository.clear()
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Home.route) { inclusive = false }
+                    }
+                }
+            )
+        } else if (disconnectedNames.isNotEmpty()) {
+            DisconnectedPlayerOverlay(disconnectedNames = disconnectedNames)
         }
     }
 }

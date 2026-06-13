@@ -2,8 +2,12 @@ package at.aau.serg.websocketbrokerdemo.network
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import at.aau.serg.websocketbrokerdemo.data.SessionRepository
 import at.aau.serg.websocketbrokerdemo.data.serverside.ErrorMessage
 import at.aau.serg.websocketbrokerdemo.data.serverside.GameState
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 /**
  * App-scoped holder for the live STOMP session.
@@ -24,6 +28,18 @@ import at.aau.serg.websocketbrokerdemo.data.serverside.GameState
  *  - [localPlayerName]   Name des lokalen Spielers, vom WaitingLobby-
  *                        Screen gesetzt sobald der User seinen Namen
  *                        bestaetigt hat.
+ *  - [sessionRepository] In-Memory-Spiegel von roomId / joinCode /
+ *                        playerName fuer Reconnect- und Leave-Calls.
+ *                        Die einzelnen MutableState-Felder oben bleiben
+ *                        Source-of-Truth fuer die UI; das Repository
+ *                        wird parallel beschrieben, damit Endpoints
+ *                        ohne UI-Bezug (Activity-Lifecycle, Auto-
+ *                        Reconnect-Callback) sauberen Zugriff haben.
+ *  - [connectionState]   Aktueller WebSocket-Status (Connected /
+ *                        Reconnecting / LostPermanently). Default ist
+ *                        ein statischer Connected-Flow; produktiv wird
+ *                        in der MainActivity der echte Stomp.connectionState
+ *                        durchgereicht.
  */
 class GameSession(
     val endpoint: UnitMoveEndpoint,
@@ -31,5 +47,8 @@ class GameSession(
     val activeJoinCode: MutableState<String> = mutableStateOf(""),
     val gameState: MutableState<GameState?> = mutableStateOf(null),
     val lastError: MutableState<ErrorMessage?> = mutableStateOf(null),
-    val localPlayerName: MutableState<String?> = mutableStateOf(null)
+    val localPlayerName: MutableState<String?> = mutableStateOf(null),
+    val sessionRepository: SessionRepository = SessionRepository(),
+    val connectionState: StateFlow<ConnectionState> =
+        MutableStateFlow(ConnectionState.Connected).asStateFlow()
 )

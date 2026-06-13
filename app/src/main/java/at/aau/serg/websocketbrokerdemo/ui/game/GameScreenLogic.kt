@@ -4,6 +4,7 @@ import androidx.compose.ui.unit.IntSize
 import at.aau.serg.websocketbrokerdemo.data.serverside.Field
 import at.aau.serg.websocketbrokerdemo.data.serverside.GameUnit
 import at.aau.serg.websocketbrokerdemo.data.serverside.Move
+import at.aau.serg.websocketbrokerdemo.data.serverside.Player
 import at.aau.serg.websocketbrokerdemo.data.serverside.UnitType
 import at.aau.serg.websocketbrokerdemo.grid.HexGridLogic
 import at.aau.serg.websocketbrokerdemo.grid.MapLayout
@@ -117,6 +118,23 @@ object GameScreenLogic {
         val target = findClickableUnit(units, move.toX, move.toY) ?: return false
         return target.player != localName
     }
+
+    /**
+     * Liefert die Namen aller Mitspieler (= NICHT der lokale Spieler),
+     * die laut Server-State gerade `connected == false` sind.
+     *
+     * Reihenfolge stabil (Eingangsreihenfolge), damit das UI keine
+     * Sortier-Sprünge produziert. Liefert eine leere Liste wenn nur der
+     * lokale Spieler weg ist (dann zeigt der eigene Reconnecting-Overlay
+     * — der DisconnectedPlayerOverlay ist nur fuer die ANDEREN gedacht).
+     */
+    fun disconnectedOtherPlayerNames(
+        players: List<Player>,
+        localName: String?
+    ): List<String> =
+        players
+            .filter { !it.connected && it.name != localName }
+            .map { it.name }
 
     /**
      * Berechnet die Felder, auf die [unit] in diesem Zug ziehen kann.
