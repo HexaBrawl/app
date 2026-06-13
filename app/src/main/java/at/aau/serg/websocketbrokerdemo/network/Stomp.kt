@@ -1,20 +1,26 @@
 package at.aau.serg.websocketbrokerdemo.network
 
 import android.util.Log
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.hildan.krossbow.stomp.StompClient
 import org.hildan.krossbow.stomp.StompSession
+import org.hildan.krossbow.stomp.config.HeartBeat
 import org.hildan.krossbow.stomp.frame.FrameBody
 import org.hildan.krossbow.stomp.headers.StompSendHeaders
 import org.hildan.krossbow.stomp.subscribeText
 import org.hildan.krossbow.websocket.okhttp.OkHttpWebSocketClient
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * Single STOMP entry-point for the whole app.
@@ -29,6 +35,16 @@ import org.hildan.krossbow.websocket.okhttp.OkHttpWebSocketClient
  *    keine Race-Condition mehr zwischen App-Start und erster Lobby-Aktion:
  *    der User kann sofort einen Raum erstellen oder beitreten, die Frames
  *    werden gepuffert/verzoegert bis der WebSocket steht.
+ *  - HeartBeat 20s/20s ist im StompClient konfiguriert (matched den
+ *    Server). Verhindert Idle-Timeout-Drops (Azure schliesst die WS
+ *    sonst nach ~120s ohne Traffic).
+ *  - Bei einem unerwarteten Disconnect (Display aus, Netzwechsel, Cell
+ *    Tower Wechsel, ...) faehrt [Stomp] automatisch eine Reconnect-Loop
+ *    (max [MAX_RECONNECT_ATTEMPTS] Versuche im [RECONNECT_DELAY_MS]
+ *    Abstand). Status ist ueber [connectionState] als StateFlow
+ *    beobachtbar; Subscriber koennen sich ueber [onReconnected] eine
+ *    Benachrichtigung holen, sobald die Verbindung wieder steht
+ *    (typischer Use-Case: dann den /reconnect-Application-Call senden).
  *
  * NOTE on content-type:
  *  - sendText  -> "text/plain"        (for /app/join)
@@ -44,13 +60,38 @@ class Stomp(
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private val connectMutex = Mutex()
 
+    /**
+     * True sobald [disconnect] aufgerufen wurde. Verhindert dass die
+     * Auto-Reconnect-Loop nach einem absichtlichen Disconnect (App-Shutdown)
+     * weiter versucht zu verbinden.
+     */
+    @Volatile
+    private var intentionallyDisconnected = false
+
+    private val _connectionState = MutableStateFlow(ConnectionState.Connected)
+    val connectionState: StateFlow<ConnectionState> = _connectionState.asStateFlow()
+
+    private var reconnectJob: Job? = null
+    private val onReconnectedCallbacks = mutableListOf<() -> Unit>()
+    private val callbacksLock = Any()
+
     val isConnected: Boolean get() = session != null
+
+    /**
+     * Registriert einen Callback, der jedes Mal feuert, wenn die
+     * Auto-Reconnect-Loop einen STOMP-Wiederaufbau geschafft hat.
+     * Wird typischerweise vom GameViewModel genutzt, um danach den
+     * /reconnect-Application-Call zu senden.
+     */
+    fun onReconnected(callback: () -> Unit) {
+        synchronized(callbacksLock) { onReconnectedCallbacks += callback }
+    }
 
     /**
      * Verbindet zum STOMP-Broker, mit automatischem Retry um Azure-Cold-Start
      * abzufedern. Bei einem frisch gestarteten App-Backend dauert der erste
      * TLS-Handshake regelmaessig laenger als der OkHttp-Default-Timeout (10s);
-     * deshalb bis zu MAX_CONNECT_ATTEMPTS-mal probieren, mit einer kurzen
+     * deshalb bis zu [MAX_CONNECT_ATTEMPTS]-mal probieren, mit einer kurzen
      * Pause zwischen den Versuchen.
      *
      * Ist Mutex-geschuetzt, sodass parallele Aufrufer sich nicht doppelt
@@ -67,10 +108,9 @@ class Stomp(
             var lastError: Throwable? = null
             for (attempt in 1..MAX_CONNECT_ATTEMPTS) {
                 try {
-                    val c = StompClient(OkHttpWebSocketClient())
-                    client = c
-                    session = c.connect(websocketUri)
+                    doConnectOnce()
                     Log.i(TAG, "Connected to $websocketUri (attempt $attempt)")
+                    _connectionState.value = ConnectionState.Connected
                     return
                 } catch (e: Exception) {
                     lastError = e
@@ -96,7 +136,9 @@ class Stomp(
 
     /**
      * Abonniert ein STOMP-Topic. Wartet automatisch, bis STOMP verbunden
-     * ist (kein stiller No-Op mehr wie frueher).
+     * ist (kein stiller No-Op mehr wie frueher). Wenn der Subscribe-Flow
+     * endet (Server-Disconnect, Netzwerk weg, ...), wird der
+     * Auto-Reconnect getriggert.
      */
     fun subscribe(
         topic: String,
@@ -110,8 +152,14 @@ class Stomp(
                 return@launch
             }
             s.subscribeText(topic).collect { onMessage(it) }
+            // Subscribe-Flow normal beendet -> Session ist down.
+            Log.w(TAG, "Subscription to $topic ended (session closed)")
+            handleSessionLost("subscribe $topic ended")
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             Log.e(TAG, "Subscription to $topic failed", e)
+            handleSessionLost("subscribe $topic threw")
         }
     }
 
@@ -163,6 +211,7 @@ class Stomp(
     }
 
     fun disconnect() {
+        intentionallyDisconnected = true
         scope.launch {
             try {
                 session?.disconnect()
@@ -171,6 +220,75 @@ class Stomp(
             } finally {
                 session = null
                 client = null
+            }
+        }
+    }
+
+    // ---- Internals ------------------------------------------------------
+
+    /** Einzelner Connect-Versuch mit HeartBeat-Config. */
+    private suspend fun doConnectOnce() {
+        val c = StompClient(OkHttpWebSocketClient()) {
+            heartBeat = HeartBeat(
+                minSendPeriod = HEARTBEAT_PERIOD,
+                expectedPeriod = HEARTBEAT_PERIOD,
+            )
+        }
+        client = c
+        session = c.connect(websocketUri)
+    }
+
+    /**
+     * Markiert die aktuelle Session als verloren und startet die
+     * Auto-Reconnect-Loop. Idempotent: wenn schon ein Reconnect laeuft
+     * oder der App-User absichtlich disconnected hat, passiert nichts.
+     */
+    private fun handleSessionLost(reason: String) {
+        if (intentionallyDisconnected) return
+        synchronized(callbacksLock) {
+            if (reconnectJob?.isActive == true) return
+            session = null
+            client = null
+            _connectionState.value = ConnectionState.Reconnecting
+            Log.w(TAG, "Session lost ($reason) -- starting reconnect loop")
+            reconnectJob = scope.launch {
+                val success = ReconnectLogic.retryUntilSuccess(
+                    maxAttempts = MAX_RECONNECT_ATTEMPTS,
+                    delayMillis = RECONNECT_DELAY_MS,
+                    attempt = { tryReconnectOnce() }
+                )
+                if (success) {
+                    Log.i(TAG, "Reconnect successful")
+                    _connectionState.value = ConnectionState.Connected
+                    fireReconnectedCallbacks()
+                } else {
+                    Log.e(TAG, "Reconnect failed after $MAX_RECONNECT_ATTEMPTS attempts")
+                    _connectionState.value = ConnectionState.LostPermanently
+                }
+            }
+        }
+    }
+
+    private suspend fun tryReconnectOnce(): Boolean {
+        return try {
+            connectMutex.withLock {
+                if (session != null) return@withLock true
+                doConnectOnce()
+                true
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Reconnect attempt failed: ${e.message}")
+            false
+        }
+    }
+
+    private fun fireReconnectedCallbacks() {
+        val snapshot = synchronized(callbacksLock) { onReconnectedCallbacks.toList() }
+        snapshot.forEach { cb ->
+            try {
+                cb()
+            } catch (e: Exception) {
+                Log.e(TAG, "onReconnected callback threw", e)
             }
         }
     }
@@ -188,6 +306,25 @@ class Stomp(
          * Pause zwischen zwei Connect-Versuchen in Millisekunden.
          */
         private const val RETRY_DELAY_MS = 2000L
+
+        /**
+         * Maximale Anzahl an Auto-Reconnect-Versuchen nach einem
+         * unerwarteten Disconnect. 15 * 2s = 30s und matched die Grace-
+         * Period des Servers (Spieler wird nach 30s aus dem Raum entfernt).
+         */
+        private const val MAX_RECONNECT_ATTEMPTS = 15
+
+        /**
+         * Pause zwischen zwei Auto-Reconnect-Versuchen in Millisekunden.
+         */
+        private const val RECONNECT_DELAY_MS = 2000L
+
+        /**
+         * STOMP-Heartbeat-Periode. 20s matched die Server-Konfiguration;
+         * zwei Heartbeats pro Minute halten die WebSocket im Azure-Idle-
+         * Timeout (120s) sicher offen.
+         */
+        private val HEARTBEAT_PERIOD = 20.seconds
 
         /**
          * Production backend on Azure. Use `wss://` (TLS) - the matching health endpoint is
