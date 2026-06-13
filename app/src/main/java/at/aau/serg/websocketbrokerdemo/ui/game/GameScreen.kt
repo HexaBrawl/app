@@ -90,6 +90,11 @@ fun GameScreen(
 
     LaunchedEffect(status) {
         if (status == GameStatus.FINISHED) {
+            // Spiel ist vorbei -- die Reconnect-Identitaet wird nicht
+            // mehr gebraucht. Wir loeschen sie hier (statt im EndScreen),
+            // damit ein direktes "App wegswipen" auf dem EndScreen kein
+            // /leave fuer einen toten Raum mehr ausloest.
+            session.sessionRepository.clear()
             val winner = gameState?.winner
             val isWin = winner == localName
             val route = if (isWin) Screen.EndWin.route else Screen.EndLoss.route
