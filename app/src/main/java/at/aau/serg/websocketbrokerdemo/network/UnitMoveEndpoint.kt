@@ -144,12 +144,52 @@ class UnitMoveEndpoint(
         stomp.sendJson("/app/rooms/$roomId/end-turn", json)
     }
 
+    /**
+     * Verlaesst den Raum explizit. Wird vom Activity-Lifecycle-Hook
+     * (`onDestroy` mit `isFinishing == true`) aufgerufen, damit die
+     * Mitspieler den Spieler sofort als raus sehen — sonst greift die
+     * 30s-Grace-Period des Servers.
+     *
+     * Suspending, weil der Caller via `runBlocking { withTimeout(...) }`
+     * synchron warten muss, bis der STOMP-Frame raus ist, bevor der
+     * Process eventuell stirbt. Wirft die Exception weiter, damit der
+     * Caller (MainActivity) sie loggen kann ohne den Lifecycle zu
+     * blockieren.
+     */
+    suspend fun leaveGameAwait(roomId: String, playerName: String) {
+        val payload = LeaveRequest(playerName = playerName)
+        val json = gson.toJson(payload)
+        Log.d(TAG, "-> /app/rooms/$roomId/leave: $json")
+        stomp.sendJsonAwait("/app/rooms/$roomId/leave", json)
+    }
+
+    /**
+     * Meldet sich nach einem unerwarteten WebSocket-Drop wieder am Raum
+     * an. Wird ausgeloest, sobald die Auto-Reconnect-Loop in [Stomp]
+     * einen erfolgreichen WebSocket-Wiederaufbau gemeldet hat
+     * (siehe `Stomp.onReconnected`). Spieler-Identitaet kommt aus dem
+     * SessionRepository — Server prueft Name + JoinCode und re-attached
+     * den Spieler an seinen alten Slot, sofern er noch innerhalb der
+     * Grace-Period ist.
+     *
+     * Fire-and-forget: der Aufruf erfolgt im Hintergrund nach dem WS-
+     * Reconnect, kein Lifecycle-Druck wie bei /leave.
+     */
+    fun reconnect(roomId: String, playerName: String, joinCode: String) {
+        val payload = ReconnectRequest(playerName = playerName, joinCode = joinCode)
+        val json = gson.toJson(payload)
+        Log.d(TAG, "-> /app/rooms/$roomId/reconnect: $json")
+        stomp.sendJson("/app/rooms/$roomId/reconnect", json)
+    }
+
     private data class JoinRequest(val name: String, val color: String?)
     private data class ClaimGiftRequest(val playerName: String, val delta: Int)
     private data class StealResponseRequest(val playerName: String, val accept: Boolean)
     private data class BuyFarmRequest(val playerName: String)
     private data class BuyUnitRequest(val playerName: String, val type: String, val x: Int, val y: Int)
     private data class EndTurnRequest(val playerName: String)
+    private data class LeaveRequest(val playerName: String)
+    private data class ReconnectRequest(val playerName: String, val joinCode: String)
 
     companion object { private const val TAG = "UnitMoveEndpoint" }
 }

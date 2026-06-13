@@ -115,4 +115,13 @@
 
     <!-- EndScreen -->
     <string name="end_screen_home">HAUPTMENÜ</string>
+
+    <!-- Reconnect / Disconnect overlays -->
+    <string name="reconnect_overlay_title">Verbinde wieder…</string>
+    <string name="reconnect_overlay_subtitle">Versuche den Server zu erreichen</string>
+    <string name="reconnect_lost_title">Verbindung verloren</string>
+    <string name="reconnect_lost_subtitle">Der Server kann nicht erreicht werden.</string>
+    <string name="reconnect_back_to_menu">Zurück zum Menü</string>
+    <string name="disconnect_overlay_title">%1$s hat die Verbindung verloren</string>
+    <string name="disconnect_overlay_subtitle">Warte auf Reconnect…</string>
 </resources>
