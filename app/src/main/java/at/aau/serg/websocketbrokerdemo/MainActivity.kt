@@ -25,7 +25,7 @@ class MainActivity : ComponentActivity() {
 
     private val stomp = Stomp()
     private val endpoint = UnitMoveEndpoint(stomp)
-    private val session = GameSession(endpoint)
+    private val session = GameSession(endpoint, connectionState = stomp.connectionState)
 
     override fun attachBaseContext(newBase: Context) {
         val lang = LanguageCache.get(newBase)
@@ -45,6 +45,22 @@ class MainActivity : ComponentActivity() {
             ).settings.first()
             MusicManager.applyMusicSettings(s.musicEnabled, s.musicVolume)
             MusicManager.applySfxSettings(s.sfxEnabled)
+        }
+
+        // Auto-/reconnect-Hook: sobald die Stomp-interne Reconnect-Loop
+        // den WebSocket wieder aufgebaut hat, schicken wir den /reconnect-
+        // Application-Call mit der gespeicherten Spieler-Identitaet, sodass
+        // der Server den Spieler wieder seinem Slot zuordnet. Wird nur
+        // geschickt, wenn aktuell ueberhaupt ein Match laeuft (roomId
+        // gesetzt) — in der Lobby ist nichts zu rejoinen.
+        stomp.onReconnected {
+            val repo = session.sessionRepository
+            val roomId = repo.roomId
+            val playerName = repo.playerName
+            val joinCode = repo.joinCode
+            if (!roomId.isNullOrBlank() && !playerName.isNullOrBlank() && !joinCode.isNullOrBlank()) {
+                endpoint.reconnect(roomId, playerName, joinCode)
+            }
         }
 
         // Connect STOMP once for the whole app session; then wire the error stream.

@@ -5,6 +5,9 @@ import androidx.compose.runtime.mutableStateOf
 import at.aau.serg.websocketbrokerdemo.data.SessionRepository
 import at.aau.serg.websocketbrokerdemo.data.serverside.ErrorMessage
 import at.aau.serg.websocketbrokerdemo.data.serverside.GameState
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 /**
  * App-scoped holder for the live STOMP session.
@@ -32,6 +35,11 @@ import at.aau.serg.websocketbrokerdemo.data.serverside.GameState
  *                        wird parallel beschrieben, damit Endpoints
  *                        ohne UI-Bezug (Activity-Lifecycle, Auto-
  *                        Reconnect-Callback) sauberen Zugriff haben.
+ *  - [connectionState]   Aktueller WebSocket-Status (Connected /
+ *                        Reconnecting / LostPermanently). Default ist
+ *                        ein statischer Connected-Flow; produktiv wird
+ *                        in der MainActivity der echte Stomp.connectionState
+ *                        durchgereicht.
  */
 class GameSession(
     val endpoint: UnitMoveEndpoint,
@@ -40,5 +48,7 @@ class GameSession(
     val gameState: MutableState<GameState?> = mutableStateOf(null),
     val lastError: MutableState<ErrorMessage?> = mutableStateOf(null),
     val localPlayerName: MutableState<String?> = mutableStateOf(null),
-    val sessionRepository: SessionRepository = SessionRepository()
+    val sessionRepository: SessionRepository = SessionRepository(),
+    val connectionState: StateFlow<ConnectionState> =
+        MutableStateFlow(ConnectionState.Connected).asStateFlow()
 )
