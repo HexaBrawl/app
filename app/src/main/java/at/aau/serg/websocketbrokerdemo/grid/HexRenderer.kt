@@ -36,7 +36,9 @@ class HexRenderer {
      * @param buildings Liste der Gebaeude (Building)
      * @param fields  Hex-Felder mit Besitzer-Info aus dem GameState;
      *                eroberte Felder (owner != null) werden halbtransparent
-     *                in der Spielerfarbe gefuellt (subissue #123)
+     *                in der Spielerfarbe gefuellt (subissue #123);
+     *                abgeschnittene Felder (isSkeleton = true) werden
+     *                zusaetzlich entsaettigt (subissue #172)
      * @param players Volle Spieler-Liste aus dem GameState fuer das
      *                Farb-Mapping
      * @param unitPainters Vorab geladene Painter fuer die Einheiten-Icons
@@ -62,9 +64,15 @@ class HexRenderer {
 
             // Eroberte Felder zuerst fuellen, damit Rand und Icons
             // darueber liegen
-            fieldsByPosition[col to row]?.owner?.let { owner ->
-                val fillColor = PlayerColorMap.cellFillFor(owner, players)
-                drawCellFill(cx, cy, layout.hexSize, fillColor)
+            fieldsByPosition[col to row]?.let { field ->
+                field.owner?.let { owner ->
+                    val fillColor = if (field.isSkeleton) {
+                        PlayerColorMap.skeletonCellFillFor(owner, players)
+                    } else {
+                        PlayerColorMap.cellFillFor(owner, players)
+                    }
+                    drawCellFill(cx, cy, layout.hexSize, fillColor)
+                }
             }
 
             drawHex(cx, cy, layout.hexSize)
