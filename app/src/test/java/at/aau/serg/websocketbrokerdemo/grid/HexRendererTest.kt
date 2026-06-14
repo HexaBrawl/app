@@ -156,6 +156,71 @@ class HexRendererTest {
         }
     }
 
+    // ---- Skelett-Felder (subissue #172) -------------------------------
+
+    @Test
+    fun `fills skeleton field exactly once`() {
+        val fields = listOf(Field(x = 0, y = 0, owner = "Alice", isSkeleton = true))
+        draw(fields = fields, players = listOf(alice))
+
+        // Skelett-Feld muss weiterhin genau eine Fuellung bekommen -
+        // konkrete Farbe ist durch PlayerColorMapTest abgedeckt.
+        verify(exactly = 1) {
+            scope.drawPath(any(), any<Color>(), any(), eq(Fill), any(), any())
+        }
+    }
+
+    @Test
+    fun `fills owner field with skeleton unit on it exactly once`() {
+        // Insolvenz-Fall: Unit ist SKELETON, Field.isSkeleton bleibt false.
+        // Renderer muss das Feld trotzdem als tot zeichnen (Fill-Aufruf
+        // existiert, konkrete Farbe via PlayerColorMapTest).
+        val fields = listOf(Field(x = 0, y = 0, owner = "Alice", isSkeleton = false))
+        val units = listOf(GameUnit(player = "Alice", x = 0, y = 0, type = UnitType.SKELETON))
+        draw(units = units, fields = fields, players = listOf(alice))
+
+        verify(exactly = 1) {
+            scope.drawPath(any(), any<Color>(), any(), eq(Fill), any(), any())
+        }
+    }
+
+    @Test
+    fun `does not desaturate when foreign skeleton stands on owner field`() {
+        // Eine Skelett-Einheit eines anderen Spielers auf Alices Feld
+        // darf die Insolvenz-Heuristik NICHT triggern. Test fasst hier
+        // nur den Render-Pfad an: Fill bleibt genau 1, Skelett wird
+        // gezeichnet, kein Crash.
+        val fields = listOf(Field(x = 0, y = 0, owner = "Alice", isSkeleton = false))
+        val units = listOf(GameUnit(player = "Bob", x = 0, y = 0, type = UnitType.SKELETON))
+        draw(units = units, fields = fields, players = listOf(alice, bob))
+
+        verify(exactly = 1) {
+            scope.drawPath(any(), any<Color>(), any(), eq(Fill), any(), any())
+        }
+    }
+
+    @Test
+    fun `fills disconnected owner field as desaturated even without isSkeleton flag`() {
+        // X-Feld-Szenario: gehoert Alice, isSkeleton=false, aber keine
+        // Hex-Verbindung zur Basis -> muss trotzdem als tot gerendert
+        // werden (Frontend-BFS).
+        // (1,1) ist im odd-q-Layout KEIN Nachbar von (0,0), damit ist
+        // es im 2x2-Layout disconnected -- innerhalb der Layout-Grenzen.
+        val fields = listOf(
+            Field(x = 0, y = 0, owner = "Alice"),
+            Field(x = 1, y = 1, owner = "Alice", isSkeleton = false)
+        )
+        val units = listOf(
+            GameUnit(player = "Alice", x = 0, y = 0, type = UnitType.BASE)
+        )
+        draw(units = units, fields = fields, players = listOf(alice))
+
+        // Zwei Fills: Basis lebend, (1,1) tot. Style bleibt in beiden Fill.
+        verify(exactly = 2) {
+            scope.drawPath(any(), any<Color>(), any(), eq(Fill), any(), any())
+        }
+    }
+
     // ---- Rendering Order -----------------------------------------------
 
     @Test
