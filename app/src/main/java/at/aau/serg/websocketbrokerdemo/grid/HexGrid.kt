@@ -32,6 +32,7 @@ fun HexGrid(
     fields: List<Field>,
     players: List<Player>,
     darkenedCells: Set<Pair<Int, Int>> = emptySet(),
+    highlightedCells: Set<Pair<Int, Int>> = emptySet(),
     modifier: Modifier = Modifier
 ) {
     val renderer = remember { HexRenderer() }
@@ -57,7 +58,10 @@ fun HexGrid(
 
     Canvas(modifier = modifier) {
         with(renderer) {
-            render(layout, units, buildings, fields, players, unitPainters, buildingPainters, darkenedCells)
+            render(
+                layout, units, buildings, fields, players,
+                unitPainters, buildingPainters, darkenedCells, highlightedCells
+            )
         }
     }
 }
