@@ -108,6 +108,71 @@ class FieldConnectivityTest {
         }
     }
 
+    // ---- isOwnedCellDead ---------------------------------------------
+
+    @Test
+    fun `isOwnedCellDead false fuer verbundenes lebendes Feld`() {
+        val field = Field(1, 0, owner = "Alice")
+        val dead = FieldConnectivity.isOwnedCellDead(
+            field = field,
+            owner = "Alice",
+            unitOnCell = null,
+            connectedCells = setOf(0 to 0, 1 to 0)
+        )
+        assertFalse(dead)
+    }
+
+    @Test
+    fun `isOwnedCellDead true wenn Field als skeleton markiert`() {
+        val field = Field(1, 0, owner = "Alice", isSkeleton = true)
+        val dead = FieldConnectivity.isOwnedCellDead(
+            field = field,
+            owner = "Alice",
+            unitOnCell = null,
+            connectedCells = setOf(1 to 0) // sogar verbunden -> Flag gewinnt
+        )
+        assertTrue(dead)
+    }
+
+    @Test
+    fun `isOwnedCellDead true wenn eigene Skelett-Einheit auf dem Feld steht`() {
+        val field = Field(1, 0, owner = "Alice")
+        val skeletonUnit = GameUnit(player = "Alice", x = 1, y = 0, type = UnitType.SKELETON)
+        val dead = FieldConnectivity.isOwnedCellDead(
+            field = field,
+            owner = "Alice",
+            unitOnCell = skeletonUnit,
+            connectedCells = setOf(1 to 0)
+        )
+        assertTrue(dead)
+    }
+
+    @Test
+    fun `isOwnedCellDead true wenn Feld nicht mit Basis verbunden`() {
+        val field = Field(2, 0, owner = "Alice")
+        val dead = FieldConnectivity.isOwnedCellDead(
+            field = field,
+            owner = "Alice",
+            unitOnCell = null,
+            connectedCells = setOf(0 to 0) // (2,0) nicht enthalten
+        )
+        assertTrue(dead)
+    }
+
+    @Test
+    fun `isOwnedCellDead ignoriert fremde Skelett-Einheit als Owner-Marker`() {
+        // Skelett gehoert Bob, Feld gehoert Alice und ist verbunden -> lebend.
+        val field = Field(1, 0, owner = "Alice")
+        val enemySkeleton = GameUnit(player = "Bob", x = 1, y = 0, type = UnitType.SKELETON)
+        val dead = FieldConnectivity.isOwnedCellDead(
+            field = field,
+            owner = "Alice",
+            unitOnCell = enemySkeleton,
+            connectedCells = setOf(1 to 0)
+        )
+        assertFalse(dead)
+    }
+
     @Test
     fun `disjoint outer cluster is correctly excluded`() {
         // Szenario aus dem Screenshot vom User:

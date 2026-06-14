@@ -73,4 +73,33 @@ object FieldConnectivity {
         }
         return visited
     }
+
+    /**
+     * Entscheidet, ob ein dem Spieler gehoerendes Feld visuell als "tot"
+     * (entsaettigt) dargestellt werden soll (subissue #172).
+     *
+     * Tot ist ein Feld, sobald mindestens eines zutrifft:
+     *  - der Server hat es bereits als abgeschnitten markiert
+     *    ([Field.isSkeleton]),
+     *  - eine Skelett-Einheit des Owners steht darauf (Insolvenz aus
+     *    GameService.applyEconomy), ODER
+     *  - es ist laut [connectedFields]-BFS nicht (mehr) mit der Basis
+     *    verbunden.
+     *
+     * @param field          das betrachtete Feld (muss [owner] gehoeren)
+     * @param owner          Name des Feld-Besitzers
+     * @param unitOnCell     Einheit auf dem Feld, oder null
+     * @param connectedCells die mit der Basis verbundenen Felder des Owners
+     *                       (Ergebnis von [connectedFields])
+     */
+    fun isOwnedCellDead(
+        field: Field,
+        owner: String,
+        unitOnCell: GameUnit?,
+        connectedCells: Set<Pair<Int, Int>>
+    ): Boolean {
+        if (field.isSkeleton) return true
+        if (unitOnCell?.player == owner && unitOnCell?.type == UnitType.SKELETON) return true
+        return (field.x to field.y) !in connectedCells
+    }
 }

@@ -73,26 +73,20 @@ class HexRenderer {
         for ((col, row) in HexGridLogic.allCells(layout)) {
             val (cx, cy) = HexGridLogic.cellCenter(col, row, layout)
 
-            // Eroberte Felder zuerst fuellen, damit Rand und Icons
-            // darueber liegen
+            // Eroberte Felder zuerst fuellen (lebend vs. entsaettigt), damit
+            // Rand und Icons darueber liegen.
             fieldsByPosition[col to row]?.let { field ->
                 field.owner?.let { owner ->
-                    val cellPos = col to row
-                    val unitHere = unitsByPosition[cellPos]
-                    val ownerSkeletonOnField = unitHere != null &&
-                            unitHere.player == owner &&
-                            unitHere.type == UnitType.SKELETON
-                    val notConnectedToBase =
-                        cellPos !in (connectedByPlayer[owner] ?: emptySet())
-                    val showAsDead = field.isSkeleton ||
-                            ownerSkeletonOnField ||
-                            notConnectedToBase
-                    val fillColor = if (showAsDead) {
-                        PlayerColorMap.skeletonCellFillFor(owner, players)
-                    } else {
-                        PlayerColorMap.cellFillFor(owner, players)
-                    }
-                    drawCellFill(cx, cy, layout.hexSize, fillColor)
+                    drawOwnedCellBackground(
+                        field = field,
+                        owner = owner,
+                        unitOnCell = unitsByPosition[col to row],
+                        connectedCells = connectedByPlayer[owner].orEmpty(),
+                        players = players,
+                        cx = cx,
+                        cy = cy,
+                        size = layout.hexSize
+                    )
                 }
             }
 
@@ -120,25 +114,56 @@ class HexRenderer {
             }
         }
 
-        // Outside-Range-Overlay als letzter Schritt -- darunter sind
-        // Owner-Farbe, Hex-Rand und Einheiten/Gebaeude schon gezeichnet,
-        // der dunkle Overlay legt sich darueber und signalisiert
-        // "ausserhalb der Reichweite".
-        if (darkenedCells.isNotEmpty()) {
-            for ((col, row) in darkenedCells) {
-                val (cx, cy) = HexGridLogic.cellCenter(col, row, layout)
-                drawCellFill(cx, cy, layout.hexSize, Color(0f, 0f, 0f, 0.45f))
-            }
-        }
+        // Overlays zum Schluss: erst alles ausserhalb der Reichweite
+        // abdunkeln (ueber Owner-Farbe, Rand und Icons), dann die gueltigen
+        // Zielfelder mit dem Gold-Rand umranden.
+        drawCellOverlay(darkenedCells, layout, OUTSIDE_RANGE_OVERLAY)
+        drawHighlightBorders(highlightedCells, layout)
+    }
 
-        // Gueltige Zielfelder zum Schluss mit einem kraeftigen Gold-Rand
-        // umranden (ueber Icons + Darken-Overlay), damit sie deutlich
-        // "aufleuchten" und sich klar vom Rest abheben.
-        if (highlightedCells.isNotEmpty()) {
-            for ((col, row) in highlightedCells) {
-                val (cx, cy) = HexGridLogic.cellCenter(col, row, layout)
-                drawHexStroke(cx, cy, layout.hexSize, HIGHLIGHT_BORDER, HIGHLIGHT_STROKE)
-            }
+    /**
+     * Fuellt ein erobertes Feld -- lebende Felder in der Spielerfarbe,
+     * "tote"/abgeschnittene Felder entsaettigt (subissue #172). Die
+     * Tot-Entscheidung liegt in [FieldConnectivity.isOwnedCellDead].
+     */
+    private fun DrawScope.drawOwnedCellBackground(
+        field: Field,
+        owner: String,
+        unitOnCell: GameUnit?,
+        connectedCells: Set<Pair<Int, Int>>,
+        players: List<Player>,
+        cx: Float,
+        cy: Float,
+        size: Float
+    ) {
+        val fillColor = if (FieldConnectivity.isOwnedCellDead(field, owner, unitOnCell, connectedCells)) {
+            PlayerColorMap.skeletonCellFillFor(owner, players)
+        } else {
+            PlayerColorMap.cellFillFor(owner, players)
+        }
+        drawCellFill(cx, cy, size, fillColor)
+    }
+
+    /** Legt ueber jede Zelle in [cells] eine einfarbige Fuellung (Overlay). */
+    private fun DrawScope.drawCellOverlay(
+        cells: Set<Pair<Int, Int>>,
+        layout: MapLayout,
+        color: Color
+    ) {
+        for ((col, row) in cells) {
+            val (cx, cy) = HexGridLogic.cellCenter(col, row, layout)
+            drawCellFill(cx, cy, layout.hexSize, color)
+        }
+    }
+
+    /** Umrandet jede Zelle in [cells] mit dem Highlight-Gold-Rand. */
+    private fun DrawScope.drawHighlightBorders(
+        cells: Set<Pair<Int, Int>>,
+        layout: MapLayout
+    ) {
+        for ((col, row) in cells) {
+            val (cx, cy) = HexGridLogic.cellCenter(col, row, layout)
+            drawHexStroke(cx, cy, layout.hexSize, HIGHLIGHT_BORDER, HIGHLIGHT_STROKE)
         }
     }
 
@@ -215,6 +240,9 @@ class HexRenderer {
     }
 
     private companion object {
+        /** Halbtransparentes Schwarz fuer Felder ausserhalb der Reichweite. */
+        val OUTSIDE_RANGE_OVERLAY = Color(0f, 0f, 0f, 0.45f)
+
         /**
          * Dezenter heller Schein ueber gueltigen Zielfeldern -- hellt dunkle
          * Farben nur leicht auf, sodass die Spielerfarbe darunter sichtbar
