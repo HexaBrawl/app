@@ -349,6 +349,32 @@ class UnitMoveEndpointTest {
         }
     }
 
+    // ---- requestRoomState ----------------------------------------------
+
+    @Test
+    fun `requestRoomState sends to the room init endpoint`() {
+        endpoint.requestRoomState("game1")
+
+        verify {
+            stomp.sendJson(
+                "/app/rooms/game1/init",
+                "{}"
+            )
+        }
+    }
+
+    @Test
+    fun `requestRoomState uses the room id provided`() {
+        endpoint.requestRoomState("arena-3")
+
+        verify {
+            stomp.sendJson(
+                destination = "/app/rooms/arena-3/init",
+                json = any()
+            )
+        }
+    }
+
     // ---- subscribeToGameState ------------------------------------------
 
     @Test
