@@ -50,7 +50,8 @@ class HexRenderer {
         players: List<Player>,
         unitPainters: Map<Pair<PlayerColor, UnitType>, Painter>,
         buildingPainters: Map<Pair<PlayerColor, BuildingType>, Painter>,
-        darkenedCells: Set<Pair<Int, Int>> = emptySet()
+        darkenedCells: Set<Pair<Int, Int>> = emptySet(),
+        highlightedCells: Set<Pair<Int, Int>> = emptySet()
     ) {
         val unitsByPosition = units.associateBy { it.x to it.y }
         val buildingsByPosition = buildings.associateBy { it.x to it.y }
@@ -65,6 +66,14 @@ class HexRenderer {
             fieldsByPosition[col to row]?.owner?.let { owner ->
                 val fillColor = PlayerColorMap.cellFillFor(owner, players)
                 drawCellFill(cx, cy, layout.hexSize, fillColor)
+            }
+
+            // Gueltige Zielfelder (Platzieren/Bewegen) hell ueberlagern, damit
+            // sie auch bei dunklen Spielerfarben (z. B. Blau) klar als "offen"
+            // erkennbar sind. Der Schein liegt UNTER den Icons (die kommen
+            // weiter unten), aber ueber der Owner-Fuellung.
+            if ((col to row) in highlightedCells) {
+                drawCellFill(cx, cy, layout.hexSize, HIGHLIGHT_FILL)
             }
 
             drawHex(cx, cy, layout.hexSize)
@@ -93,6 +102,16 @@ class HexRenderer {
                 drawCellFill(cx, cy, layout.hexSize, Color(0f, 0f, 0f, 0.45f))
             }
         }
+
+        // Gueltige Zielfelder zum Schluss mit einem kraeftigen Gold-Rand
+        // umranden (ueber Icons + Darken-Overlay), damit sie deutlich
+        // "aufleuchten" und sich klar vom Rest abheben.
+        if (highlightedCells.isNotEmpty()) {
+            for ((col, row) in highlightedCells) {
+                val (cx, cy) = HexGridLogic.cellCenter(col, row, layout)
+                drawHexStroke(cx, cy, layout.hexSize, HIGHLIGHT_BORDER, HIGHLIGHT_STROKE)
+            }
+        }
     }
 
     /**
@@ -109,13 +128,23 @@ class HexRenderer {
     }
 
     /** Einzelner Hex als geschlossener Pfad mit schwarzem Rand. */
-    private fun DrawScope.drawHex(cx: Float, cy: Float, size: Float) {
+    private fun DrawScope.drawHex(cx: Float, cy: Float, size: Float) =
+        drawHexStroke(cx, cy, size, Color.Black, 3f)
+
+    /** Hex-Umrandung in beliebiger Farbe/Strichstaerke. */
+    private fun DrawScope.drawHexStroke(
+        cx: Float,
+        cy: Float,
+        size: Float,
+        color: Color,
+        width: Float
+    ) {
         val path = Path()
         HexGridLogic.hexCorners(cx, cy, size).forEachIndexed { i, (x, y) ->
             if (i == 0) path.moveTo(x, y) else path.lineTo(x, y)
         }
         path.close()
-        drawPath(path, Color.Black, style = Stroke(3f))
+        drawPath(path, color, style = Stroke(width))
     }
 
     /** Einheit als Icon-Painter. */
@@ -155,5 +184,21 @@ class HexRenderer {
                 draw(size = Size(iconSize, iconSize))
             }
         }
+    }
+
+    private companion object {
+        /**
+         * Dezenter heller Schein ueber gueltigen Zielfeldern -- hellt dunkle
+         * Farben nur leicht auf, sodass die Spielerfarbe darunter sichtbar
+         * bleibt. Der goldene Rand ([HIGHLIGHT_BORDER]) ist der eigentliche
+         * Hervorhebungs-Indikator.
+         */
+        val HIGHLIGHT_FILL = Color(1f, 1f, 1f, 0.01f)
+
+        /** Kraeftiger Gold-Rand, der gueltige Zielfelder umrandet. */
+        val HIGHLIGHT_BORDER = Color(0xFFFFE082)
+
+        /** Strichstaerke des Highlight-Rands (dicker als der normale Hex-Rand). */
+        const val HIGHLIGHT_STROKE = 6f
     }
 }

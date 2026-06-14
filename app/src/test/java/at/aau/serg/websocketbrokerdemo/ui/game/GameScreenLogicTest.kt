@@ -407,4 +407,156 @@ class GameScreenLogicTest {
         val result = GameScreenLogic.disconnectedOtherPlayerNames(players, null)
         assertEquals(listOf(alice, bob), result)
     }
+
+    // ---- placeableCells ----------------------------------------------
+
+    @Test
+    fun `placeableCells liefert nur eigene freie Felder`() {
+        val fields = listOf(
+            field(1, 1, alice),
+            field(2, 2, alice),
+            field(3, 3, null),
+            field(4, 4, bob)
+        )
+        val result = GameScreenLogic.placeableCells(fields, emptyList(), alice)
+        assertEquals(setOf(1 to 1, 2 to 2), result)
+    }
+
+    @Test
+    fun `placeableCells schliesst von eigener Truppe besetzte Felder aus`() {
+        val fields = listOf(field(1, 1, alice), field(2, 2, alice))
+        val units = listOf(ownInf(2, 2))
+        val result = GameScreenLogic.placeableCells(fields, units, alice)
+        assertEquals(setOf(1 to 1), result)
+    }
+
+    @Test
+    fun `placeableCells schliesst die eigene BASE aus`() {
+        val fields = listOf(field(2, 2, alice))
+        val units = listOf(GameUnit(player = alice, x = 2, y = 2, type = UnitType.BASE))
+        val result = GameScreenLogic.placeableCells(fields, units, alice)
+        assertTrue(result.isEmpty())
+    }
+
+    @Test
+    fun `placeableCells schliesst Skelett-Felder aus`() {
+        val fields = listOf(
+            field(1, 1, alice),
+            Field(x = 2, y = 2, owner = alice, isSkeleton = true)
+        )
+        val result = GameScreenLogic.placeableCells(fields, emptyList(), alice)
+        assertEquals(setOf(1 to 1), result)
+    }
+
+    @Test
+    fun `placeableCells wertet eigenes Skelett-Feld als frei`() {
+        // Eigene Skelett-Reste werden beim Platzieren entfernt -> Feld bleibt frei.
+        val fields = listOf(field(1, 1, alice))
+        val units = listOf(GameUnit(player = alice, x = 1, y = 1, type = UnitType.SKELETON))
+        val result = GameScreenLogic.placeableCells(fields, units, alice)
+        assertEquals(setOf(1 to 1), result)
+    }
+
+    @Test
+    fun `placeableCells leer wenn localName null`() {
+        val fields = listOf(field(1, 1, alice))
+        val result = GameScreenLogic.placeableCells(fields, emptyList(), null)
+        assertTrue(result.isEmpty())
+    }
+
+    // ---- cellHighlighting --------------------------------------------
+
+    @Test
+    fun `cellHighlighting im Placement-Modus hebt eigene freie Felder hervor`() {
+        val fields = listOf(field(1, 1, alice), field(2, 2, alice))
+        val units = listOf(ownInf(2, 2)) // (2,2) besetzt -> nicht platzierbar
+        val result = GameScreenLogic.cellHighlighting(
+            placementMode = UnitType.INFANTRY,
+            selected = null,
+            fields = fields,
+            units = units,
+            localName = alice,
+            layout = testLayout
+        )
+        assertEquals(setOf(1 to 1), result.highlighted)
+        assertTrue((1 to 1) !in result.darkened)
+        assertTrue((2 to 2) in result.darkened) // eigenes, aber besetztes Feld abgedunkelt
+    }
+
+    @Test
+    fun `cellHighlighting im Bewegungs-Modus dunkelt von eigener Truppe blockierte Felder ab`() {
+        val mover = ownInf(3, 3)
+        val blocked = 3 to 2 // dist-1 Nachbar, von eigener Truppe besetzt
+        val units = listOf(mover, ownInf(blocked.first, blocked.second))
+        val result = GameScreenLogic.cellHighlighting(
+            placementMode = null,
+            selected = mover,
+            fields = emptyList(),
+            units = units,
+            localName = alice,
+            layout = testLayout
+        )
+        assertTrue(blocked !in result.highlighted) // blockiert -> nicht hervorgehoben
+        assertTrue(blocked in result.darkened)      // blockiert -> abgedunkelt
+    }
+
+    @Test
+    fun `cellHighlighting im Bewegungs-Modus blockiert die eigene Hauptburg`() {
+        val mover = ownInf(3, 3)
+        val baseCell = 3 to 2
+        val units = listOf(
+            mover,
+            GameUnit(player = alice, x = baseCell.first, y = baseCell.second, type = UnitType.BASE)
+        )
+        val result = GameScreenLogic.cellHighlighting(
+            null, mover, emptyList(), units, alice, testLayout
+        )
+        assertTrue(baseCell !in result.highlighted)
+        assertTrue(baseCell in result.darkened)
+    }
+
+    @Test
+    fun `cellHighlighting im Bewegungs-Modus blockiert eigene Skelette NICHT (einnehmbar)`() {
+        val mover = ownInf(3, 3)
+        val skeletonCell = 3 to 2 // dist-1 Nachbar, eigenes Skelett -> einnehmbar
+        val units = listOf(
+            mover,
+            GameUnit(player = alice, x = skeletonCell.first, y = skeletonCell.second, type = UnitType.SKELETON)
+        )
+        val result = GameScreenLogic.cellHighlighting(
+            null, mover, emptyList(), units, alice, testLayout
+        )
+        assertTrue(skeletonCell in result.highlighted) // Skelett blockiert nicht
+        assertTrue(skeletonCell !in result.darkened)
+    }
+
+    @Test
+    fun `cellHighlighting im Bewegungs-Modus haelt feindlich besetzte Felder als Ziel`() {
+        val mover = ownInf(3, 3)
+        val enemyCell = 3 to 2 // dist-1 Nachbar, Gegner drauf -> Angriff erlaubt
+        val units = listOf(mover, enemyArc(enemyCell.first, enemyCell.second))
+        val result = GameScreenLogic.cellHighlighting(
+            null, mover, emptyList(), units, alice, testLayout
+        )
+        assertTrue(enemyCell in result.highlighted)
+    }
+
+    @Test
+    fun `cellHighlighting dunkelt das Standfeld der selektierten Einheit nicht ab`() {
+        val mover = ownInf(3, 3)
+        val result = GameScreenLogic.cellHighlighting(
+            null, mover, emptyList(), listOf(mover), alice, testLayout
+        )
+        assertTrue((3 to 3) !in result.darkened)
+        assertTrue((3 to 3) !in result.highlighted)
+    }
+
+    @Test
+    fun `cellHighlighting ohne Modus hebt nichts hervor und dunkelt nichts ab`() {
+        val result = GameScreenLogic.cellHighlighting(
+            null, null, emptyList(), emptyList(), alice, testLayout
+        )
+        assertTrue(result.highlighted.isEmpty())
+        assertTrue(result.darkened.isEmpty())
+    }
 }
