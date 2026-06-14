@@ -11,6 +11,7 @@ import at.aau.serg.websocketbrokerdemo.data.serverside.GameStatus
 import at.aau.serg.websocketbrokerdemo.data.serverside.PlayerColor
 import at.aau.serg.websocketbrokerdemo.network.GameSession
 import at.aau.serg.websocketbrokerdemo.ui.navigation.Screen
+import kotlinx.coroutines.delay
 
 /**
  * Verbindet das Wartelobby-ViewModel mit dem GameSession-Netzwerk.
@@ -47,6 +48,31 @@ fun LobbyNetworkSync(
             session.gameState.value = state
         }
         onDispose { job.cancel() }
+    }
+
+    // Aktuellen Raum-Zustand aktiv anfordern.
+    //
+    // STOMP-Subscriptions liefern nur zukuenftige Broadcasts. Ein spaet
+    // beitretender Spieler wuerde die bereits anwesenden Spieler und deren
+    // belegte Farben sonst nie sehen -- er bliebe auf der Default-Farbe,
+    // wuerde beim "Ready" mit COLOR_ALREADY_TAKEN abgelehnt und der Raum
+    // erreicht nie die volle Spielerzahl (kein Auto-Start). Mit dem
+    // angeforderten State greift der Auto-Reassign in
+    // applyRemoteState, bevor der User "Ready" drueckt.
+    //
+    // Gestaffelte Wiederholung: der erste Request kann die Subscribe-
+    // Registrierung am Broker knapp verpassen (Subscribe und Send laufen in
+    // getrennten Coroutines). Wir fragen daher mehrfach, bis der erste
+    // Broadcast eintrifft -- danach stoppt die Schleife. Die Requests sind
+    // idempotent (der Server rebroadcastet nur).
+    LaunchedEffect(session.activeRoomId.value) {
+        val roomId = session.activeRoomId.value
+        if (roomId.isBlank()) return@LaunchedEffect
+        repeat(MAX_ROOM_STATE_REQUESTS) {
+            if (session.gameState.value != null) return@LaunchedEffect
+            session.endpoint.requestRoomState(roomId)
+            delay(ROOM_STATE_REQUEST_DELAY_MS)
+        }
     }
 
     // Anmelden erst wenn der User "Ready" geklickt hat.
@@ -133,3 +159,12 @@ fun LobbyNetworkSync(
         session.lastError.value = null
     }
 }
+
+/**
+ * Maximale Anzahl gestaffelter /init-Anfragen beim Betreten der Wartelobby,
+ * bis der erste GameState-Broadcast eingetroffen ist.
+ */
+private const val MAX_ROOM_STATE_REQUESTS = 5
+
+/** Abstand zwischen zwei /init-Anfragen in Millisekunden. */
+private const val ROOM_STATE_REQUEST_DELAY_MS = 400L
