@@ -271,14 +271,15 @@ object GameScreenLogic {
     }
 
     /**
-     * Zellen, die von einer Einheit des Spielers [player] besetzt sind --
-     * inklusive Hauptburg (BASE) und eigener Skelett-Reste. Spiegelt die
-     * "friendlyOnTarget"-Pruefung des Servers wider, die einen Zug auf ein
-     * von eigenen Einheiten besetztes Feld ablehnt.
+     * Zellen, die von einer eigenen, "lebenden" Einheit des Spielers [player]
+     * besetzt sind -- inklusive Hauptburg (BASE), ABER ohne Skelett-Reste:
+     * auf ein eigenes Skelett darf man ziehen, um es einzunehmen (der Server
+     * entfernt das Skelett beim Betreten des Feldes). Solche Felder blockieren
+     * die Bewegung also nicht und werden daher NICHT abgedunkelt.
      */
     private fun ownOccupiedCells(units: List<GameUnit>, player: String): Set<Pair<Int, Int>> =
         units.asSequence()
-            .filter { it.player == player }
+            .filter { it.player == player && it.type != UnitType.SKELETON }
             .map { it.x to it.y }
             .toSet()
 }

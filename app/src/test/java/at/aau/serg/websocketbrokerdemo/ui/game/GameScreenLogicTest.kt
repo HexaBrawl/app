@@ -516,6 +516,21 @@ class GameScreenLogicTest {
     }
 
     @Test
+    fun `cellHighlighting im Bewegungs-Modus blockiert eigene Skelette NICHT (einnehmbar)`() {
+        val mover = ownInf(3, 3)
+        val skeletonCell = 3 to 2 // dist-1 Nachbar, eigenes Skelett -> einnehmbar
+        val units = listOf(
+            mover,
+            GameUnit(player = alice, x = skeletonCell.first, y = skeletonCell.second, type = UnitType.SKELETON)
+        )
+        val result = GameScreenLogic.cellHighlighting(
+            null, mover, emptyList(), units, alice, testLayout
+        )
+        assertTrue(skeletonCell in result.highlighted) // Skelett blockiert nicht
+        assertTrue(skeletonCell !in result.darkened)
+    }
+
+    @Test
     fun `cellHighlighting im Bewegungs-Modus haelt feindlich besetzte Felder als Ziel`() {
         val mover = ownInf(3, 3)
         val enemyCell = 3 to 2 // dist-1 Nachbar, Gegner drauf -> Angriff erlaubt
