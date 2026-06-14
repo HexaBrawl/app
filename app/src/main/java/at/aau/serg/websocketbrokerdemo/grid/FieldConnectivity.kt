@@ -99,7 +99,9 @@ object FieldConnectivity {
         connectedCells: Set<Pair<Int, Int>>
     ): Boolean {
         if (field.isSkeleton) return true
-        if (unitOnCell?.player == owner && unitOnCell?.type == UnitType.SKELETON) return true
+        if (unitOnCell != null && unitOnCell.player == owner && unitOnCell.type == UnitType.SKELETON) {
+            return true
+        }
         return (field.x to field.y) !in connectedCells
     }
 }
