@@ -185,4 +185,100 @@ object GameScreenLogic {
             }
             .toSet()
     }
+
+    /**
+     * Berechnet die Felder, auf denen der Spieler eine gekaufte Einheit
+     * platzieren darf (Platzierungs-Modus).
+     *
+     * Spiegelt exakt die Server-Validierung in buyUnit wider:
+     *  - Feld gehoert dem Spieler (owner == [localName])
+     *  - Feld ist NICHT abgeschnitten (isSkeleton == false)
+     *  - Feld ist NICHT von einer eigenen Einheit besetzt -- inklusive der
+     *    eigenen BASE/Hauptburg. Eigene Skelett-Reste zaehlen NICHT als
+     *    besetzt, weil der Server sie beim Platzieren entfernt.
+     *
+     * Feindliche Einheiten/Felder werden gar nicht erst betrachtet, da nur
+     * eigene Felder ueberhaupt in Frage kommen. Liefert eine leere Menge,
+     * wenn [localName] null ist.
+     */
+    fun placeableCells(
+        fields: List<Field>,
+        units: List<GameUnit>,
+        localName: String?
+    ): Set<Pair<Int, Int>> {
+        if (localName == null) return emptySet()
+        val occupiedByOwn = units
+            .asSequence()
+            .filter { it.player == localName && it.type != UnitType.SKELETON }
+            .map { it.x to it.y }
+            .toSet()
+        return fields
+            .asSequence()
+            .filter { it.owner == localName && !it.isSkeleton }
+            .map { it.x to it.y }
+            .filter { it !in occupiedByOwn }
+            .toSet()
+    }
+
+    /**
+     * Ergebnis der Feld-Hervorhebung auf der Karte: welche Zellen aktiv
+     * aufleuchten (gueltige Ziele) und welche abgedunkelt werden (ungueltig
+     * bzw. ausserhalb der Reichweite).
+     */
+    data class CellHighlight(
+        val highlighted: Set<Pair<Int, Int>>,
+        val darkened: Set<Pair<Int, Int>>
+    )
+
+    /**
+     * Bestimmt die Feld-Hervorhebung fuer den aktuellen Interaktions-Modus.
+     *
+     *  - Platzierungs-Modus ([placementMode] != null): hervorgehoben sind die
+     *    eigenen, freien Felder ([placeableCells]).
+     *  - Bewegungs-Modus ([selected] != null): hervorgehoben sind die per
+     *    Reichweite erreichbaren Felder ([reachableCells]) ABZUEGLICH der
+     *    Felder, die von einer eigenen Einheit (Truppe ODER Hauptburg)
+     *    besetzt sind -- dorthin laesst der Server keinen Zug zu, also werden
+     *    sie nicht hervorgehoben, sondern abgedunkelt.
+     *  - Kein Modus aktiv: nichts hervorgehoben, nichts abgedunkelt.
+     *
+     * Abgedunkelt wird jeweils alles ausser den hervorgehobenen Feldern und
+     * (im Bewegungs-Modus) dem Standfeld der selektierten Einheit. Ist nichts
+     * hervorgehoben, bleibt auch nichts abgedunkelt.
+     */
+    fun cellHighlighting(
+        placementMode: UnitType?,
+        selected: GameUnit?,
+        fields: List<Field>,
+        units: List<GameUnit>,
+        localName: String?,
+        layout: MapLayout
+    ): CellHighlight {
+        val highlighted: Set<Pair<Int, Int>> = when {
+            placementMode != null -> placeableCells(fields, units, localName)
+            selected != null ->
+                reachableCells(selected, fields, layout) - ownOccupiedCells(units, selected.player)
+            else -> emptySet()
+        }
+        if (highlighted.isEmpty()) return CellHighlight(emptySet(), emptySet())
+
+        val allCells = HexGridLogic.allCells(layout).toSet()
+        val ownStand = setOfNotNull(selected?.let { it.x to it.y })
+        return CellHighlight(
+            highlighted = highlighted,
+            darkened = allCells - highlighted - ownStand
+        )
+    }
+
+    /**
+     * Zellen, die von einer Einheit des Spielers [player] besetzt sind --
+     * inklusive Hauptburg (BASE) und eigener Skelett-Reste. Spiegelt die
+     * "friendlyOnTarget"-Pruefung des Servers wider, die einen Zug auf ein
+     * von eigenen Einheiten besetztes Feld ablehnt.
+     */
+    private fun ownOccupiedCells(units: List<GameUnit>, player: String): Set<Pair<Int, Int>> =
+        units.asSequence()
+            .filter { it.player == player }
+            .map { it.x to it.y }
+            .toSet()
 }
