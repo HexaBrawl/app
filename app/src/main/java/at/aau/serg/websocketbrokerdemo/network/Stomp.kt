@@ -10,6 +10,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -135,31 +137,45 @@ class Stomp(
     suspend fun awaitConnected() = connect()
 
     /**
-     * Abonniert ein STOMP-Topic. Wartet automatisch, bis STOMP verbunden
-     * ist (kein stiller No-Op mehr wie frueher). Wenn der Subscribe-Flow
-     * endet (Server-Disconnect, Netzwerk weg, ...), wird der
-     * Auto-Reconnect getriggert.
+     * Abonniert ein STOMP-Topic und re-subscribed automatisch nach jedem
+     * unerwarteten WebSocket-Drop. Wartet beim ersten Aufruf bis STOMP
+     * verbunden ist; wenn der Subscribe-Flow danach endet (Server-
+     * Disconnect, Netzwerk weg, ...), wird der Auto-Reconnect getriggert
+     * und nach dessen Erfolg automatisch neu auf das Topic abonniert.
+     * Ohne diese Schleife wuerde der urspruengliche collect-Coroutine
+     * nach einem Drop einfach auslaufen und der Client wuerde keine
+     * Broadcasts mehr empfangen, obwohl der WebSocket wieder steht.
+     *
+     * Beendet sich erst bei [disconnect] (intentionallyDisconnected),
+     * bei [ConnectionState.LostPermanently] oder wenn der zurueck-
+     * gegebene Job gecancelt wird.
      */
     fun subscribe(
         topic: String,
         onMessage: (String) -> Unit
     ): Job = scope.launch {
-        try {
-            awaitConnected()
-            val s = session
-            if (s == null) {
-                Log.e(TAG, "subscribe($topic) aborted: session still null after awaitConnected")
-                return@launch
+        while (isActive && !intentionallyDisconnected) {
+            try {
+                awaitConnected()
+                val s = session
+                if (s == null) {
+                    Log.e(TAG, "subscribe($topic) aborted: session still null after awaitConnected")
+                } else {
+                    s.subscribeText(topic).collect { onMessage(it) }
+                    Log.w(TAG, "Subscription to $topic ended (session closed)")
+                    handleSessionLost("subscribe $topic ended")
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.e(TAG, "Subscription to $topic failed", e)
+                handleSessionLost("subscribe $topic threw")
             }
-            s.subscribeText(topic).collect { onMessage(it) }
-            // Subscribe-Flow normal beendet -> Session ist down.
-            Log.w(TAG, "Subscription to $topic ended (session closed)")
-            handleSessionLost("subscribe $topic ended")
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            Log.e(TAG, "Subscription to $topic failed", e)
-            handleSessionLost("subscribe $topic threw")
+            if (intentionallyDisconnected) break
+            val next = connectionState.first {
+                it == ConnectionState.Connected || it == ConnectionState.LostPermanently
+            }
+            if (next == ConnectionState.LostPermanently) break
         }
     }
 
