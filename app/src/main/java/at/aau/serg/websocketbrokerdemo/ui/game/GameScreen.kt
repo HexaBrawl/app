@@ -93,15 +93,25 @@ fun GameScreen(
             setOf(selected.x to selected.y)
     } ?: emptySet()
 
-    LaunchedEffect(status) {
-        if (status == GameStatus.FINISHED) {
+    LaunchedEffect(status, gameState?.players) {
+        val state = gameState ?: return@LaunchedEffect
+        val name = localName ?: return@LaunchedEffect
+
+        // Im 3-/4-Spieler-Modus bleibt der GameStatus nach dem Ausscheiden
+        // eines Spielers auf IN_PROGRESS — der Verlierer wird vom Server
+        // einfach aus state.players entfernt (siehe GameService.eliminatePlayer).
+        // Daher zusaetzlich pruefen, ob der lokale Spieler noch in der Liste
+        // steht; falls nicht, ist er raus und gehoert auf den LossScreen.
+        val iAmEliminated = state.players.none { it.name == name }
+        val gameOver = status == GameStatus.FINISHED
+
+        if (iAmEliminated || gameOver) {
             // Spiel ist vorbei -- die Reconnect-Identitaet wird nicht
             // mehr gebraucht. Wir loeschen sie hier (statt im EndScreen),
             // damit ein direktes "App wegswipen" auf dem EndScreen kein
             // /leave fuer einen toten Raum mehr ausloest.
             session.sessionRepository.clear()
-            val winner = gameState?.winner
-            val isWin = winner == localName
+            val isWin = state.winner == name
             val route = if (isWin) Screen.EndWin.route else Screen.EndLoss.route
             navController.navigate(route) {
                 // Clear the backstack up to Home to avoid going back into the finished game
