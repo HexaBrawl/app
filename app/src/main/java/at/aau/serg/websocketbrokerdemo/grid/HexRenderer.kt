@@ -18,31 +18,17 @@ import at.aau.serg.websocketbrokerdemo.data.serverside.UnitType
 
 /**
  * Zeichnet das Hex-Grid samt Einheiten und Gebaeuden in einen Compose-DrawScope.
- *
- * Benoetigt die aktuelle Spieler-Liste vom Server, um pro Einheit/Gebaeude die
- * richtige Farbe aufzuloesen.
  */
 class HexRenderer {
 
     /**
-     * Zeichnet alle Zellen und die darauf stehenden Einheiten/Gebaeude.
-     *
-     * Reihenfolge pro Zelle: Fuellung eroberter Felder -> Hex-Rand ->
-     * Gebaeude -> Einheit, damit Rand und Icons immer ueber der Markierung liegen.
-     *
-     *
-     * @param layout  Hex-Geometrie der aktuellen Karte
-     * @param units   Liste der Einheiten (GameUnit)
-     * @param buildings Liste der Gebaeude (Building)
      * @param fields  Hex-Felder mit Besitzer-Info aus dem GameState;
-     *                eroberte Felder (owner != null) werden halbtransparent
-     *                in der Spielerfarbe gefuellt (subissue #123);
-     *                abgeschnittene Felder (isSkeleton = true) werden
-     *                zusaetzlich entsaettigt (subissue #172)
-     * @param players Volle Spieler-Liste aus dem GameState fuer das
-     *                Farb-Mapping
-     * @param unitPainters Vorab geladene Painter fuer die Einheiten-Icons
-     * @param buildingPainters Vorab geladene Painter fuer die Gebaeude-Icons
+     *                eroberte Felder werden halbtransparent in der
+     *                Spielerfarbe gefuellt (subissue #123); Felder gelten
+     *                als "tot" (entsaettigt, subissue #172) wenn
+     *                Field.isSkeleton gesetzt ist ODER eine
+     *                UnitType.SKELETON-Einheit des Owners darauf steht
+     *                (Insolvenz aus applyEconomy)
      */
     fun DrawScope.render(
         layout: MapLayout,
@@ -59,14 +45,29 @@ class HexRenderer {
         val fieldsByPosition = fields.associateBy { it.x to it.y }
         val playerMap = players.associateBy { it.name }
 
+        // Einmal pro Render-Pass die Hex-Konnektivitaet pro Spieler ausrechnen.
+        // Felder, die nicht in dieser Menge stehen, gelten visuell als tot.
+        val connectedByPlayer: Map<String, Set<Pair<Int, Int>>> =
+            players.associate { player ->
+                player.name to FieldConnectivity.connectedFields(fields, units, player.name)
+            }
+
         for ((col, row) in HexGridLogic.allCells(layout)) {
             val (cx, cy) = HexGridLogic.cellCenter(col, row, layout)
 
-            // Eroberte Felder zuerst fuellen, damit Rand und Icons
-            // darueber liegen
             fieldsByPosition[col to row]?.let { field ->
                 field.owner?.let { owner ->
-                    val fillColor = if (field.isSkeleton) {
+                    val cellPos = col to row
+                    val unitHere = unitsByPosition[cellPos]
+                    val ownerSkeletonOnField = unitHere != null &&
+                            unitHere.player == owner &&
+                            unitHere.type == UnitType.SKELETON
+                    val notConnectedToBase =
+                        cellPos !in (connectedByPlayer[owner] ?: emptySet())
+                    val showAsDead = field.isSkeleton ||
+                            ownerSkeletonOnField ||
+                            notConnectedToBase
+                    val fillColor = if (showAsDead) {
                         PlayerColorMap.skeletonCellFillFor(owner, players)
                     } else {
                         PlayerColorMap.cellFillFor(owner, players)
@@ -77,7 +78,6 @@ class HexRenderer {
 
             drawHex(cx, cy, layout.hexSize)
 
-            // Gebaeude zuerst zeichnen (Hintergrund fuer Einheiten)
             buildingsByPosition[col to row]?.let { building ->
                 val player = playerMap[building.player]
                 val color = player?.color ?: PlayerColor.RED
@@ -86,15 +86,11 @@ class HexRenderer {
 
             unitsByPosition[col to row]?.let { unit ->
                 val player = playerMap[unit.player]
-                val color = player?.color ?: PlayerColor.RED // Fallback
+                val color = player?.color ?: PlayerColor.RED
                 drawUnit(unit, color, unitPainters, cx, cy, layout.hexSize)
             }
         }
 
-        // Outside-Range-Overlay als letzter Schritt -- darunter sind
-        // Owner-Farbe, Hex-Rand und Einheiten/Gebaeude schon gezeichnet,
-        // der dunkle Overlay legt sich darueber und signalisiert
-        // "ausserhalb der Reichweite".
         if (darkenedCells.isNotEmpty()) {
             for ((col, row) in darkenedCells) {
                 val (cx, cy) = HexGridLogic.cellCenter(col, row, layout)
@@ -103,10 +99,6 @@ class HexRenderer {
         }
     }
 
-    /**
-     * Fuellt ein Hex vollflaechig in der (bereits halbtransparenten)
-     * Besitzer-Farbe, siehe [PlayerColorMap.cellFillFor].
-     */
     private fun DrawScope.drawCellFill(cx: Float, cy: Float, size: Float, color: Color) {
         val path = Path()
         HexGridLogic.hexCorners(cx, cy, size).forEachIndexed { i, (x, y) ->
@@ -116,7 +108,6 @@ class HexRenderer {
         drawPath(path, color, style = Fill)
     }
 
-    /** Einzelner Hex als geschlossener Pfad mit schwarzem Rand. */
     private fun DrawScope.drawHex(cx: Float, cy: Float, size: Float) {
         val path = Path()
         HexGridLogic.hexCorners(cx, cy, size).forEachIndexed { i, (x, y) ->
@@ -126,7 +117,6 @@ class HexRenderer {
         drawPath(path, Color.Black, style = Stroke(3f))
     }
 
-    /** Einheit als Icon-Painter. */
     private fun DrawScope.drawUnit(
         unit: GameUnit,
         color: PlayerColor,
@@ -137,7 +127,7 @@ class HexRenderer {
     ) {
         val painter = painters[color to unit.type] ?: return
         val radius = HexGridLogic.unitRadius(size)
-        val iconSize = radius * 3.75f // Erhoeht von 2.5f auf 3.75f (+50%)
+        val iconSize = radius * 3.75f
 
         translate(cx - iconSize / 2, cy - iconSize / 2) {
             with(painter) {
@@ -146,7 +136,6 @@ class HexRenderer {
         }
     }
 
-    /** Gebaeude als Icon-Painter. */
     private fun DrawScope.drawBuilding(
         building: Building,
         color: PlayerColor,
@@ -156,7 +145,7 @@ class HexRenderer {
         size: Float
     ) {
         val painter = painters[color to building.type] ?: return
-        val iconSize = size * 1.5f // Gebaeude etwas groesser als Einheiten
+        val iconSize = size * 1.5f
 
         translate(cx - iconSize / 2, cy - iconSize / 2) {
             with(painter) {
