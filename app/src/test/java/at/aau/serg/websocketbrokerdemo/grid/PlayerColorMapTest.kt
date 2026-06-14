@@ -8,12 +8,6 @@ import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
-/**
- * Tests fuer das umgebaute PlayerColorMap.
- *
- * Frueher: Hash-basiert. Jetzt: Lookup ueber GameState.players. Die
- * Logik ist seiteneffekt-frei und gut testbar.
- */
 class PlayerColorMapTest {
 
     private val alice = Player(name = "Alice", color = PlayerColor.RED)
@@ -80,8 +74,6 @@ class PlayerColorMapTest {
 
     @Test
     fun `colorFor is deterministic for same input`() {
-        // Mehrfacher Aufruf gibt das gleiche Ergebnis (keine versteckte
-        // State-Mutation).
         val first = PlayerColorMap.colorFor("Alice", allPlayers)
         val second = PlayerColorMap.colorFor("Alice", allPlayers)
         assertEquals(first, second)
@@ -93,14 +85,10 @@ class PlayerColorMapTest {
     fun `skeletonCellFillFor differs from cellFillFor in RGB for known player`() {
         val live = PlayerColorMap.cellFillFor("Alice", allPlayers)
         val skeleton = PlayerColorMap.skeletonCellFillFor("Alice", allPlayers)
-
-        // Mindestens ein RGB-Kanal muss sich unterscheiden -- sonst ist
-        // die Entsaettigung visuell nicht erkennbar. RED hat sehr wenig
-        // Gruen/Blau, daher schlaegt der Grau-Mix dort am staerksten an.
         val rgbDiffers = live.red != skeleton.red ||
                 live.green != skeleton.green ||
                 live.blue != skeleton.blue
-        assertTrue(rgbDiffers, "Skelett-Farbe muss sich im RGB von der Lebend-Farbe unterscheiden")
+        assertTrue(rgbDiffers)
     }
 
     @Test
@@ -131,14 +119,11 @@ class PlayerColorMapTest {
             PlayerColorMap.skeletonCellFillFor("Carol", allPlayers),
             PlayerColorMap.skeletonCellFillFor("Dave", allPlayers)
         )
-        // Vier paarweise unterschiedliche Farben -> Set hat Groesse 4.
         assertEquals(4, skeletons.toSet().size)
     }
 
     @Test
     fun `skeletonCellFillFor falls back to translucent gray for unknown player`() {
-        // Unbekannter Spieler -> colorFor liefert DEFAULT_COLOR (Gray).
-        // Grau gemischt mit Grau bleibt Grau -- konsistent zu cellFillFor.
         assertEquals(
             PlayerColorMap.DEFAULT_COLOR.copy(alpha = 0.5f),
             PlayerColorMap.skeletonCellFillFor("Ghost", allPlayers)
@@ -153,16 +138,16 @@ class PlayerColorMapTest {
     }
 
     @Test
-    fun `skeletonCellFillFor moves color toward gray (each RGB channel closer to gray)`() {
-        // Sanity-Check fuer die Mischrichtung: jede Komponente sollte
-        // naeher an Color.Gray liegen als die Ausgangsfarbe.
-        val baseRed = PlayerColor.RED.main
-        val skeletonRed = PlayerColorMap.skeletonCellFillFor("Alice", allPlayers)
+    fun `skeletonCellFillFor moves each channel measurably toward gray`() {
+        // Bei GRAY_MIX_FACTOR = 0.7 muss jeder Kanal mindestens 40 % des
+        // Abstands zu Color.Gray ueberbrueckt haben -- damit der Effekt
+        // visuell auf Pergament + Alpha 0.5 garantiert sichtbar ist.
+        val base = PlayerColor.RED.main
+        val skel = PlayerColorMap.skeletonCellFillFor("Alice", allPlayers)
         val gray = Color.Gray
-
-        assertTrue(distance(skeletonRed.red, gray.red) <= distance(baseRed.red, gray.red))
-        assertTrue(distance(skeletonRed.green, gray.green) <= distance(baseRed.green, gray.green))
-        assertTrue(distance(skeletonRed.blue, gray.blue) <= distance(baseRed.blue, gray.blue))
+        assertTrue(distance(skel.red, gray.red) <= distance(base.red, gray.red) * 0.6f)
+        assertTrue(distance(skel.green, gray.green) <= distance(base.green, gray.green) * 0.6f)
+        assertTrue(distance(skel.blue, gray.blue) <= distance(base.blue, gray.blue) * 0.6f)
     }
 
     private fun distance(a: Float, b: Float): Float = kotlin.math.abs(a - b)
