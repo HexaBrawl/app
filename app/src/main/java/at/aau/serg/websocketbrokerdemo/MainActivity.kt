@@ -60,6 +60,10 @@ class MainActivity : ComponentActivity() {
             val joinCode = repo.joinCode
             if (!roomId.isNullOrBlank() && !playerName.isNullOrBlank() && !joinCode.isNullOrBlank()) {
                 endpoint.reconnect(roomId, playerName, joinCode)
+                // Idempotenter /init-Call: triggert einen zweiten State-Broadcast,
+                // falls der durch /reconnect ausgeloeste Broadcast den frisch
+                // wieder aufgebauten Subscriber knapp verpasst.
+                endpoint.requestRoomState(roomId)
             }
         }
 

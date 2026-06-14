@@ -35,6 +35,25 @@ class UnitMoveEndpoint(
             }
         }
 
+    /**
+     * Fordert einmalig den aktuellen GameState des Raums an.
+     *
+     * STOMP-Topic-Subscriptions liefern nur ZUKUENFTIGE Broadcasts -- nicht
+     * den Stand, der schon vor dem Subscribe existierte. Ein Spieler, der
+     * einer bereits bestehenden Lobby beitritt, wuerde die schon anwesenden
+     * Spieler (und damit ihre belegten Farben) sonst nie sehen und beim
+     * "Ready" mit der Default-Farbe kollidieren -> COLOR_ALREADY_TAKEN, der
+     * Auto-Start bleibt aus und das Spiel startet nie.
+     *
+     * Dieser Call triggert ueber den /init-Endpoint einen frischen Broadcast
+     * des aktuellen GameState an alle Subscriber des Raums. Idempotent --
+     * der Server aendert dabei nichts, er sendet nur erneut.
+     */
+    fun requestRoomState(roomId: String) {
+        Log.d(TAG, "-> /app/rooms/$roomId/init")
+        stomp.sendJson("/app/rooms/$roomId/init", "{}")
+    }
+
     fun subscribeToErrors(onError: (ErrorMessage) -> Unit): Job =
         stomp.subscribe("/user/queue/errors") { msg ->
             Log.w(TAG, "<- /user/queue/errors: $msg")
