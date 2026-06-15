@@ -15,8 +15,30 @@ Die mobile Anwendung für das Hexagon-Strategieduell. Diese App wird mit **Kotli
 * **Netzwerk:** STOMP-Protokoll für WebSockets
 
 ## 📡 Kommunikation
-Die App verbindet sich beim Start mit dem Game-Server via WebSockets. 
-Standard-Endpoint für lokale Entwicklung: `ws://10.0.2.2:8080/ws` (Android Emulator Adresse für localhost).
+Die App spricht den Game-Server über zwei TLS-Kanäle an (produktiv auf Azure gehostet):
+
+* **REST** (`RoomApiClient`): Raum erstellen / per Code beitreten — Basis-URL
+  `https://hexabrawl-server-…azurewebsites.net`
+* **STOMP über WebSocket** (`Stomp`): Live-Spielzustand —
+  `wss://hexabrawl-server-…azurewebsites.net/websocket-example-broker`
+
+Der Server broadcastet den vollständigen `GameState` pro Raum auf
+`/topic/rooms/{roomId}/state`; Aktionen (join, move, end-turn, buy-unit, …)
+laufen über `/app/rooms/{roomId}/…`. Die konkreten Endpoint-URLs stehen
+zentral in `Stomp.kt` bzw. `RoomApiClient.kt`.
+
+## 🧱 Architektur
+* **UI:** schlanke Jetpack-Compose-Screens — die Spiel-/Lobby-Logik liegt in
+  reinen, testbaren `*Logic`-Objekten und ViewModels (z. B. `GameScreenLogic`,
+  `WaitingLobbyLogic`, `FieldConnectivity`).
+* **Single Source of Truth:** der Server-`GameState`; die UI leitet ihren
+  Zustand ausschließlich daraus ab.
+
+## 🧪 Build & Tests
+* Unit-Tests (JUnit 5 + MockK): `./gradlew :app:testDebugUnitTest`
+* Coverage-Report (JaCoCo): `./gradlew :app:jacocoTestReport`
+* Statische Analyse + Coverage laufen in CI über **SonarCloud**
+  (`.github/workflows/build.yml`).
 
 ## ⌯⌲ Deployment
 Mit Doco-CD am Uni Server 
