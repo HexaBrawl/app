@@ -41,7 +41,7 @@ jobs:
 
       - name: Publish APK to GitHub Release
         if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
         with:
           files: ${{ env.APK_PATH }}
         env:
@@ -49,7 +49,9 @@ jobs:
 
       - name: Install butler
         run: |
-          curl -L -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
+          # --proto '=https' erzwingt HTTPS auch ueber Redirects (kein Fallback
+          # auf http); -sSf macht Fehler sichtbar und bricht bei HTTP-Fehlern ab.
+          curl --proto '=https' --tlsv1.2 -sSfL -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
           unzip butler.zip
           chmod +x butler
           ./butler -V
