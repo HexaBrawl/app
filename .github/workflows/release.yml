@@ -1,0 +1,62 @@
+name: Release
+
+# Baut bei einem Versions-Tag (v*) eine downloadbare APK und veroeffentlicht
+# sie an zwei Stellen: als GitHub-Release-Asset und auf Itch.io (via butler).
+# Manuell per "Run workflow" (workflow_dispatch) ohne Tag moeglich -- dann wird
+# nur nach Itch.io gepusht (ein GitHub-Release braucht einen Tag).
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  release:
+    name: Build APK and publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # noetig, damit action-gh-release das Release anlegen darf
+    env:
+      # Itch.io-Ziel im Format <user>/<spiel>:<channel>.
+      # <spiel> = der Teil hinter hexabrawl.itch.io/... ; anpassen falls die
+      # Projekt-Seite anders heisst. Die Projekt-Seite MUSS auf itch.io
+      # existieren (Kind: Android), sonst lehnt butler den Push ab.
+      ITCH_TARGET: hexabrawl/hexabrawl:android
+      APK_PATH: app/build/outputs/apk/debug/app-debug.apk
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          java-version: '17'
+          distribution: 'zulu'
+          cache: gradle
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build debug APK
+        run: ./gradlew :app:assembleDebug --no-daemon
+
+      - name: Publish APK to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
+        with:
+          files: ${{ env.APK_PATH }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install butler
+        run: |
+          # --proto '=https' erzwingt HTTPS auch ueber Redirects (kein Fallback
+          # auf http); -sSf macht Fehler sichtbar und bricht bei HTTP-Fehlern ab.
+          curl --proto '=https' --tlsv1.2 -sSfL -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
+          unzip butler.zip
+          chmod +x butler
+          ./butler -V
+
+      - name: Push APK to Itch.io
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+        run: ./butler push "${{ env.APK_PATH }}" "${{ env.ITCH_TARGET }}" --userversion "${{ github.ref_name }}"
