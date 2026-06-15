@@ -18,8 +18,11 @@ android {
         applicationId = "com.example.myapplication"
         minSdk = 30
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        // Aus dem Release-Tag ableitbar: die CI uebergibt -PversionName /
+        // -PversionCode (siehe .github/workflows/release.yml). Lokale Builds
+        // ohne diese Properties fallen auf die Defaults zurueck.
+        versionCode = (project.findProperty("versionCode") as String?)?.toInt() ?: 1
+        versionName = (project.findProperty("versionName") as String?) ?: "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
