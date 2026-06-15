@@ -70,6 +70,14 @@ sonar {
             "sonar.coverage.jacoco.xmlReportPaths",
             "${project.layout.buildDirectory.get().asFile}/reports/jacoco/jacocoTestReport/jacocoTestReport.xml"
         )
+        // Android-Lint-Report fuer SonarCloud. lintDebug schreibt das XML
+        // hierhin (siehe CI: "./gradlew build lintDebug sonar"); ohne diese
+        // Property kann Sonar den Report nicht importieren
+        // ("Unable to import 1 Android Lint report file(s)").
+        property(
+            "sonar.androidLint.reportPaths",
+            "${project.layout.buildDirectory.get().asFile}/reports/lint-results-debug.xml"
+        )
     }
 }
 

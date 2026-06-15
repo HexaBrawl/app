@@ -14,6 +14,7 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.NavController
 import at.aau.serg.websocketbrokerdemo.data.serverside.GameStatus
+import at.aau.serg.websocketbrokerdemo.grid.HexGridLogic
 import at.aau.serg.websocketbrokerdemo.grid.MapLayouts
 import at.aau.serg.websocketbrokerdemo.network.ConnectionState
 import at.aau.serg.websocketbrokerdemo.network.GameSession
@@ -81,17 +82,16 @@ fun GameScreen(
     val connectionState by session.connectionState.collectAsStateWithLifecycle()
     val disconnectedNames = GameScreenLogic.disconnectedOtherPlayerNames(players, localName)
 
-    // Feld-Hervorhebung (gueltige Felder leuchten auf, der Rest wird
-    // abgedunkelt) wird vollstaendig in der reinen Logik berechnet -- der
-    // Composable reicht nur den State rein und das Ergebnis ans Rendering.
-    val highlighting = GameScreenLogic.cellHighlighting(
-        placementMode = uiState.placementMode,
-        selected = uiState.selected,
-        fields = fields,
-        units = units,
-        localName = localName,
-        layout = layout
-    )
+    // Wenn eine eigene Einheit selektiert ist, dunkle alle Felder ab,
+    // die NICHT in Reichweite sind. Range = 2 nur wenn die Einheit auf
+    // einem eigenen (Field.owner == player) Feld steht, sonst 1.
+    val darkenedCells: Set<Pair<Int, Int>> = uiState.selected?.let { selected ->
+        val reachable = GameScreenLogic.reachableCells(selected, fields, layout)
+        if (reachable.isEmpty()) emptySet()
+        else HexGridLogic.allCells(layout).toSet() -
+            reachable -
+            setOf(selected.x to selected.y)
+    } ?: emptySet()
 
     LaunchedEffect(status, gameState?.players) {
         val state = gameState ?: return@LaunchedEffect
@@ -134,8 +134,7 @@ fun GameScreen(
                     viewModel.onCellTapped(cell.first, cell.second, units)
                 }
             },
-            darkenedCells = highlighting.darkened,
-            highlightedCells = highlighting.highlighted
+            darkenedCells = darkenedCells
         )
 
         TopHud(

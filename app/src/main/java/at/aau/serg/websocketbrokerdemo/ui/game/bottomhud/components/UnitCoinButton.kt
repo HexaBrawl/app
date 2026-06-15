@@ -7,7 +7,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,7 +22,6 @@ import at.aau.serg.websocketbrokerdemo.data.serverside.PlayerColor
 import at.aau.serg.websocketbrokerdemo.data.serverside.UnitType
 import at.aau.serg.websocketbrokerdemo.grid.UnitIconProvider
 import at.aau.serg.websocketbrokerdemo.ui.theme.GoldCoinDark
-import at.aau.serg.websocketbrokerdemo.ui.theme.GoldCoinLight
 import at.aau.serg.websocketbrokerdemo.ui.theme.InkBlack
 import at.aau.serg.websocketbrokerdemo.ui.theme.ParchmentDark
 
@@ -50,17 +48,6 @@ fun UnitCoinButton(
         modifier = modifier
             .size(50.dp)
             .alpha(if (enabled) 1f else 0.4f)
-            // Im Platzierungs-Modus (Muenze ausgewaehlt) goldener Ring +
-            // dezenter Glow, damit klar ist welche Truppe gerade gesetzt wird.
-            .then(
-                if (selected) {
-                    Modifier
-                        .background(GoldCoinDark.copy(alpha = 0.35f), CircleShape)
-                        .border(3.dp, GoldCoinLight, CircleShape)
-                } else {
-                    Modifier
-                }
-            )
             .clickable(enabled = enabled, onClick = onClick)
     ) {
         // Icon
