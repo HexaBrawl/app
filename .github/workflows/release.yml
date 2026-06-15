@@ -59,7 +59,7 @@ jobs:
         run: |
           # --proto '=https' erzwingt HTTPS auch ueber Redirects (kein Fallback
           # auf http); -sSf macht Fehler sichtbar und bricht bei HTTP-Fehlern ab.
-          curl --proto '=https' --tlsv1.2 -sSfL -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
+          curl --proto '=https' --tlsv1.2 -sSfL -o butler.zip https://broth.itch.zone/butler/linux-amd64/LATEST/archive/default
           unzip butler.zip
           chmod +x butler
           ./butler -V
