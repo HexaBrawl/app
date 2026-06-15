@@ -1,5 +1,16 @@
 package at.aau.serg.websocketbrokerdemo.ui.mainmenu
 
+/**
+ * Rechnet die Pixel-Position von Hauptmenue-Hotspots auf dem
+ * Hintergrundbild aus.
+ *
+ * Hotspots sind als relative Anteile (0..1) der Bildflaeche definiert. Da das
+ * Bild seitenverhaeltnis-erhaltend zentriert eingepasst wird (Fit),
+ * beruecksichtigt [computeCenter] das Verhaeltnis von Bildmass
+ * ([IMAGE_WIDTH] x [IMAGE_HEIGHT]) zum Viewport und die dadurch entstehenden
+ * Raender (Letterboxing), damit Marker exakt auf den gemeinten Bildpunkten
+ * sitzen.
+ */
 object HotspotCalculator {
 
     private const val IMAGE_WIDTH = 1024f

@@ -5,6 +5,14 @@ import android.app.Application
 import at.aau.serg.websocketbrokerdemo.audio.MusicManager
 import at.aau.serg.websocketbrokerdemo.data.LanguageCache
 
+/**
+ * Reine Aktions-Logik des Einstellungs-Screens.
+ *
+ * Kapselt die Seiteneffekte hinter den Settings-Eingaben, damit das
+ * ViewModel/Composable sie nur ausloest: Sprachwechsel (Cache setzen +
+ * Activity neu erstellen) sowie das Anwenden von Musik-/SFX-Einstellungen
+ * ueber den [MusicManager].
+ */
 class SettingsLogic(private val app: Application) {
 
     fun changeLanguage(currentLang: String, newLang: String, activity: Activity?) {

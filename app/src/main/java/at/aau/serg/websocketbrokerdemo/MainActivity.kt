@@ -21,6 +21,19 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 
+/**
+ * Einzige Activity der App und Einstiegspunkt fuer die Compose-UI.
+ *
+ * Besitzt die app-weite STOMP-Verbindung ([Stomp] + [UnitMoveEndpoint],
+ * gebuendelt in [GameSession]) und koppelt deren Lebenszyklus an die Activity:
+ *  - setzt vor dem Start die gewaehlte Sprache (`attachBaseContext`),
+ *  - initialisiert und wendet die Audio-Einstellungen an,
+ *  - registriert den Auto-Reconnect-Hook (schickt nach WS-Wiederaufbau
+ *    `/reconnect` + `/init` mit der gespeicherten Spieler-Identitaet),
+ *  - sendet bei echtem Verlassen (`isFinishing`) ein `/leave` und trennt
+ *    die Verbindung in `onDestroy`.
+ * Das eigentliche UI und Routing liegt im [AppNavHost].
+ */
 class MainActivity : ComponentActivity() {
 
     private val stomp = Stomp()

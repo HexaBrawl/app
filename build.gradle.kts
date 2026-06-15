@@ -58,7 +58,12 @@ sonar {
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/network/GameSession.kt",
 
                 // AndroidViewModel (braucht Robolectric)
-                "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/settings/SettingsViewModel.kt"
+                "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/settings/SettingsViewModel.kt",
+
+                // Framework-Glue ohne testbare Logik: reine DataStore-Property-
+                // Delegation, braucht einen echten Context -> nur via Robolectric
+                // erreichbar (Variante B). Keine Verzweigung/Logik zum Testen.
+                "app/src/main/java/at/aau/serg/websocketbrokerdemo/data/SettingsDataStoreProvider.kt"
             ).joinToString(",")
         )
 

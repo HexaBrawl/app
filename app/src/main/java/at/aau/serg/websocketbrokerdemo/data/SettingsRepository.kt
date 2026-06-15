@@ -7,6 +7,15 @@ import androidx.datastore.preferences.core.edit
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
+/**
+ * Persistiert die App-Einstellungen ueber Jetpack DataStore.
+ *
+ * Stellt die gespeicherten Werte als [settings]-Flow ([AppSettings]) bereit
+ * und bietet suspend-Setter fuer Sprache, Musik (an/aus + Lautstaerke) und
+ * SFX. Die Sprache wird zusaetzlich in den [LanguageCache] gespiegelt, weil
+ * `attachBaseContext()` die Locale synchron (vor dem ersten DataStore-Read)
+ * braucht.
+ */
 class SettingsRepository(private val dataStore: DataStore<Preferences>,
                          private val context: Context
 ) {

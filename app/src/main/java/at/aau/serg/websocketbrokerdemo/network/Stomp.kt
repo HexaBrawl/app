@@ -155,29 +155,46 @@ class Stomp(
         onMessage: (String) -> Unit
     ): Job = scope.launch {
         while (isActive && !intentionallyDisconnected) {
-            try {
-                awaitConnected()
-                val s = session
-                if (s == null) {
-                    Log.e(TAG, "subscribe($topic) aborted: session still null after awaitConnected")
-                } else {
-                    s.subscribeText(topic).collect { onMessage(it) }
-                    Log.w(TAG, "Subscription to $topic ended (session closed)")
-                    handleSessionLost("subscribe $topic ended")
-                }
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                Log.e(TAG, "Subscription to $topic failed", e)
-                handleSessionLost("subscribe $topic threw")
-            }
+            runSubscription(topic, onMessage)
             if (intentionallyDisconnected) break
-            val next = connectionState.first {
-                it == ConnectionState.Connected || it == ConnectionState.LostPermanently
-            }
-            if (next == ConnectionState.LostPermanently) break
+            if (awaitConnectedOrLost() == ConnectionState.LostPermanently) break
         }
     }
+
+    /**
+     * Eine einzelne Subscribe-Iteration: wartet auf die Verbindung, sammelt
+     * den Topic-Flow bis er endet, und meldet den Verbindungsverlust an die
+     * Auto-Reconnect-Loop. [CancellationException] wird durchgereicht, damit
+     * das Canceln des zurueckgegebenen Jobs sauber greift.
+     */
+    private suspend fun runSubscription(topic: String, onMessage: (String) -> Unit) {
+        try {
+            awaitConnected()
+            val s = session
+            if (s == null) {
+                Log.e(TAG, "subscribe($topic) aborted: session still null after awaitConnected")
+                return
+            }
+            s.subscribeText(topic).collect { onMessage(it) }
+            Log.w(TAG, "Subscription to $topic ended (session closed)")
+            handleSessionLost("subscribe $topic ended")
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Log.e(TAG, "Subscription to $topic failed", e)
+            handleSessionLost("subscribe $topic threw")
+        }
+    }
+
+    /**
+     * Suspendiert, bis der naechste stabile Verbindungszustand erreicht ist:
+     * [ConnectionState.Connected] (dann abonniert die Loop neu) oder
+     * [ConnectionState.LostPermanently] (dann gibt sie auf).
+     */
+    private suspend fun awaitConnectedOrLost(): ConnectionState =
+        connectionState.first {
+            it == ConnectionState.Connected || it == ConnectionState.LostPermanently
+        }
 
     /**
      * Sendet einen rohen Text-Payload (content-type: text/plain).
