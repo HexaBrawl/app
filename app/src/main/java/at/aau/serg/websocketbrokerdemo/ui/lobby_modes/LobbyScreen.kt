@@ -185,7 +185,7 @@ fun LobbyScreen(
                         onCodeChange = { viewModel.onCodeChange(it) },
                         onDismiss = { viewModel.closeJoinDialog() },
                         onJoin = {
-                            viewModel.tryJoinByCodeAsync {
+                            viewModel.tryJoinByCodeAsync(mode) {
                                 navController.navigate(waitingScreen.route)
                             }
                         }

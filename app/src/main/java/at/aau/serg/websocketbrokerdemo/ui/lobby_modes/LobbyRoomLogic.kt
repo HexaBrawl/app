@@ -1,5 +1,6 @@
 package at.aau.serg.websocketbrokerdemo.ui.lobby_modes
 
+import at.aau.serg.websocketbrokerdemo.data.serverside.GameMode
 import at.aau.serg.websocketbrokerdemo.data.serverside.RoomDTO
 
 /**
@@ -30,18 +31,33 @@ object LobbyRoomLogic {
             listOf(LobbyEffect.ShowError("Raum konnte nicht erstellt werden"))
         }
 
-    /** Effekte fuer das Ergebnis eines findByCode-Aufrufs. */
-    fun effectsForJoinByCodeResult(room: RoomDTO?, code: String): List<LobbyEffect> =
-        if (room != null && room.roomId.isNotBlank()) {
-            listOf(
-                LobbyEffect.SetRoomId(room.roomId),
-                LobbyEffect.SetJoinCode(room.joinCode),
-                LobbyEffect.CloseJoinDialog,
-                LobbyEffect.NavigateToWaiting,
-            )
-        } else {
+    /**
+     * Effekte fuer das Ergebnis eines findByCode-Aufrufs.
+     *
+     * Schlaegt fehl, wenn kein Raum gefunden wurde ODER der gefundene Raum
+     * einen anderen [GameMode] hat als der, aus dem der User beitreten will
+     * ([expectedMode]) -- sonst landet er in einem fremden Spielmodus.
+     */
+    fun effectsForJoinByCodeResult(
+        room: RoomDTO?,
+        code: String,
+        expectedMode: GameMode
+    ): List<LobbyEffect> = when {
+        room == null || room.roomId.isBlank() ->
             listOf(LobbyEffect.ShowError("Kein Raum mit Code '$code' gefunden"))
-        }
+        room.mode != expectedMode ->
+            listOf(
+                LobbyEffect.ShowError(
+                    "Dieser Code gehört zu einem ${room.mode}-Raum, du wolltest einen $expectedMode-Raum."
+                )
+            )
+        else -> listOf(
+            LobbyEffect.SetRoomId(room.roomId),
+            LobbyEffect.SetJoinCode(room.joinCode),
+            LobbyEffect.CloseJoinDialog,
+            LobbyEffect.NavigateToWaiting,
+        )
+    }
 
     /**
      * Prueft, ob ein Join-Versuch ueberhaupt gestartet werden darf.
