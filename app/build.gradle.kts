@@ -116,6 +116,8 @@ tasks.register<JacocoReport>("jacocoTestReport") {
         "**/ui/game/bottomhud/components/**",
         "**/ui/game/bottomhud/BottomHud.kt",
         "**/ui/game/GameScreen.kt",
+        "**/ui/game/GameOverNavigationEffect.kt",
+        "**/ui/game/GameStateResyncEffect.kt",
         "**/ui/game/GameMap.kt",
         "**/ui/game/camera/CameraModifier*.*",
         "**/ui/home/HomeScreen.kt",
