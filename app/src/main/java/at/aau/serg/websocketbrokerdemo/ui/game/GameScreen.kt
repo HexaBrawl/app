@@ -26,6 +26,7 @@ import at.aau.serg.websocketbrokerdemo.ui.game.tophud.components.ReconnectingOve
 import at.aau.serg.websocketbrokerdemo.ui.mainmenu.GameMode
 import androidx.compose.runtime.LaunchedEffect
 import at.aau.serg.websocketbrokerdemo.ui.navigation.Screen
+import kotlinx.coroutines.delay
 
 /**
  * GameScreen -- der eigentliche Spielbildschirm.
@@ -120,6 +121,24 @@ fun GameScreen(
         }
     }
 
+    // Resync nach (Re-)Connect: STOMP-Subscriptions liefern nur ZUKUENFTIGE
+    // Broadcasts -- waehrend einer Trennung verpasste Aenderungen (Zugwechsel,
+    // pendingGift, ...) fehlen sonst, der Client haengt oder zeigt kein Popup.
+    // Sobald die Verbindung steht und ein Match laeuft, fordern wir den
+    // aktuellen GameState gestaffelt an, bis ein frischer Broadcast eintrifft
+    // (analog zur Wartelobby).
+    LaunchedEffect(connectionState) {
+        if (connectionState != ConnectionState.Connected) return@LaunchedEffect
+        val roomId = session.activeRoomId.value
+        if (roomId.isBlank()) return@LaunchedEffect
+        val before = session.gameState.value
+        repeat(GAME_RESYNC_REQUESTS) {
+            session.endpoint.requestRoomState(roomId)
+            delay(GAME_RESYNC_DELAY_MS)
+            if (session.gameState.value !== before) return@LaunchedEffect
+        }
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
         GameMap(
             layout = layout,
@@ -184,6 +203,7 @@ fun GameScreen(
         if (connectionState != ConnectionState.Connected) {
             ReconnectingOverlay(
                 state = connectionState,
+                onRetry = { session.onRetryConnect() },
                 onBackToMenu = {
                     session.sessionRepository.clear()
                     navController.navigate(Screen.Home.route) {
@@ -196,3 +216,9 @@ fun GameScreen(
         }
     }
 }
+
+/** Anzahl gestaffelter /init-Anfragen fuer den Resync nach (Re-)Connect. */
+private const val GAME_RESYNC_REQUESTS = 5
+
+/** Abstand zwischen zwei Resync-Anfragen in Millisekunden. */
+private const val GAME_RESYNC_DELAY_MS = 400L

@@ -12,6 +12,7 @@ import at.aau.serg.websocketbrokerdemo.data.LanguageCache
 import at.aau.serg.websocketbrokerdemo.data.LanguageHelper
 import at.aau.serg.websocketbrokerdemo.data.SettingsRepository
 import at.aau.serg.websocketbrokerdemo.data.settingsDataStore
+import at.aau.serg.websocketbrokerdemo.network.ConnectionState
 import at.aau.serg.websocketbrokerdemo.network.GameSession
 import at.aau.serg.websocketbrokerdemo.network.Stomp
 import at.aau.serg.websocketbrokerdemo.network.UnitMoveEndpoint
@@ -38,7 +39,11 @@ class MainActivity : ComponentActivity() {
 
     private val stomp = Stomp()
     private val endpoint = UnitMoveEndpoint(stomp)
-    private val session = GameSession(endpoint, connectionState = stomp.connectionState)
+    private val session = GameSession(
+        endpoint,
+        connectionState = stomp.connectionState,
+        onRetryConnect = stomp::retryConnect
+    )
 
     override fun attachBaseContext(newBase: Context) {
         val lang = LanguageCache.get(newBase)
@@ -107,6 +112,15 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         MusicManager.resume()
+        // Nach laengerer Pause (Hintergrund laenger als das 30s-Reconnect-
+        // Fenster) kann die Verbindung endgueltig verloren sein. Beim
+        // Zurueckkehren erneut verbinden, sofern ein Match laeuft --
+        // retryConnect ist ein No-op, wenn die Verbindung ohnehin steht.
+        if (!session.sessionRepository.roomId.isNullOrBlank() &&
+            stomp.connectionState.value != ConnectionState.Connected
+        ) {
+            stomp.retryConnect()
+        }
     }
 
     override fun onDestroy() {

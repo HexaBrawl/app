@@ -50,5 +50,11 @@ class GameSession(
     val localPlayerName: MutableState<String?> = mutableStateOf(null),
     val sessionRepository: SessionRepository = SessionRepository(),
     val connectionState: StateFlow<ConnectionState> =
-        MutableStateFlow(ConnectionState.Connected).asStateFlow()
+        MutableStateFlow(ConnectionState.Connected).asStateFlow(),
+    /**
+     * Manueller Reconnect-Versuch (nach LostPermanently). Wird in der
+     * MainActivity an [at.aau.serg.websocketbrokerdemo.network.Stomp.retryConnect]
+     * gebunden; Default ist ein No-op fuer Previews/Tests.
+     */
+    val onRetryConnect: () -> Unit = {}
 )
