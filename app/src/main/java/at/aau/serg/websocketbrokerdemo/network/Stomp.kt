@@ -157,7 +157,11 @@ class Stomp(
         while (isActive && !intentionallyDisconnected) {
             runSubscription(topic, onMessage)
             if (intentionallyDisconnected) break
-            if (awaitConnectedOrLost() == ConnectionState.LostPermanently) break
+            // Auf die naechste stehende Verbindung warten und dann neu
+            // abonnieren -- bewusst OHNE Abbruch bei LostPermanently, damit ein
+            // spaeterer Reconnect (App-Resume / Retry-Button) die Subscription
+            // wiederbelebt. Parkt suspendiert (kein Busy-Loop).
+            awaitNextConnected()
         }
     }
 
@@ -187,14 +191,28 @@ class Stomp(
     }
 
     /**
-     * Suspendiert, bis der naechste stabile Verbindungszustand erreicht ist:
-     * [ConnectionState.Connected] (dann abonniert die Loop neu) oder
-     * [ConnectionState.LostPermanently] (dann gibt sie auf).
+     * Suspendiert, bis die Verbindung wieder steht ([ConnectionState.Connected]).
+     * Bewusst OHNE Abbruch bei [ConnectionState.LostPermanently], damit die
+     * Subscribe-Loop einen spaeteren manuellen Reconnect ([retryConnect]) oder
+     * App-Resume abwarten und dann neu abonnieren kann.
      */
-    private suspend fun awaitConnectedOrLost(): ConnectionState =
-        connectionState.first {
-            it == ConnectionState.Connected || it == ConnectionState.LostPermanently
-        }
+    private suspend fun awaitNextConnected() {
+        connectionState.first { it == ConnectionState.Connected }
+    }
+
+    /**
+     * Manueller Reconnect-Versuch, nachdem die Auto-Reconnect-Loop aufgegeben
+     * hat ([ConnectionState.LostPermanently]) -- genutzt vom "Erneut verbinden"-
+     * Button und vom App-Resume. Re-armt das intentionallyDisconnected-Flag und
+     * startet die Reconnect-Loop neu; bei Erfolg feuern die [onReconnected]-
+     * Callbacks und die Subscriptions abonnieren ueber [awaitNextConnected]
+     * von selbst neu. No-op, wenn bereits verbunden.
+     */
+    fun retryConnect() {
+        if (connectionState.value == ConnectionState.Connected) return
+        intentionallyDisconnected = false
+        handleSessionLost("manual retry")
+    }
 
     /**
      * Sendet einen rohen Text-Payload (content-type: text/plain).
