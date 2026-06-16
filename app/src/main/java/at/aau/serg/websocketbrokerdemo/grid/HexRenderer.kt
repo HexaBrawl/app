@@ -46,6 +46,10 @@ class HexRenderer {
      *                Farb-Mapping
      * @param unitPainters Vorab geladene Painter fuer die Einheiten-Icons
      * @param buildingPainters Vorab geladene Painter fuer die Gebaeude-Icons
+     * @param darkenedCells  Zellen, die mit einem dunklen Overlay versehen werden
+     *                       (ausserhalb der Reichweite / ungueltig)
+     * @param highlightedCells  gueltige Zielfelder, die hell + mit Gold-Rand
+     *                          hervorgehoben werden
      */
     fun DrawScope.render(
         layout: MapLayout,
