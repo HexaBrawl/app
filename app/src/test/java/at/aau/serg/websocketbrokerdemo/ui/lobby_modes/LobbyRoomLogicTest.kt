@@ -54,7 +54,7 @@ class LobbyRoomLogicTest {
             joinCode = "ROOM45",
             mode = GameMode.DUAL_VALLEY
         )
-        val effects = LobbyRoomLogic.effectsForJoinByCodeResult(room, "123456")
+        val effects = LobbyRoomLogic.effectsForJoinByCodeResult(room, "123456", GameMode.DUAL_VALLEY)
 
         assertEquals(4, effects.size)
         assertTrue(effects.any { it is LobbyEffect.SetRoomId && it.roomId == "uuid-join" })
@@ -64,9 +64,24 @@ class LobbyRoomLogicTest {
     }
 
     @Test
+    fun `effectsForJoinByCodeResult returns error when room mode differs from expected`() {
+        val room = RoomDTO(
+            roomId = "uuid-join",
+            joinCode = "ROOM45",
+            mode = GameMode.TRIAD_OUTPOST
+        )
+        val effects = LobbyRoomLogic.effectsForJoinByCodeResult(room, "123456", GameMode.DUAL_VALLEY)
+
+        assertEquals(1, effects.size)
+        val effect = effects[0] as LobbyEffect.ShowError
+        assertTrue(effect.message.contains("TRIAD_OUTPOST"))
+        assertTrue(effect.message.contains("DUAL_VALLEY"))
+    }
+
+    @Test
     fun `effectsForJoinByCodeResult returns error including code when join fails`() {
         // Case 1: room is null
-        val effectsNull = LobbyRoomLogic.effectsForJoinByCodeResult(null, "ABCDEF")
+        val effectsNull = LobbyRoomLogic.effectsForJoinByCodeResult(null, "ABCDEF", GameMode.DUAL_VALLEY)
         assertEquals(1, effectsNull.size)
         assertTrue((effectsNull[0] as LobbyEffect.ShowError).message.contains("ABCDEF"))
 
@@ -76,7 +91,7 @@ class LobbyRoomLogicTest {
             joinCode = "JOIN42",
             mode = GameMode.DUAL_VALLEY
         )
-        val effectsBlank = LobbyRoomLogic.effectsForJoinByCodeResult(roomBlank, "EFGHIJ")
+        val effectsBlank = LobbyRoomLogic.effectsForJoinByCodeResult(roomBlank, "EFGHIJ", GameMode.DUAL_VALLEY)
         assertEquals(1, effectsBlank.size)
         assertTrue((effectsBlank[0] as LobbyEffect.ShowError).message.contains("EFGHIJ"))
     }
