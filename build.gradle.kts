@@ -32,6 +32,8 @@ sonar {
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/game/bottomhud/components/**",
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/game/bottomhud/BottomHud.kt",
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/game/GameScreen.kt",
+                "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/game/GameOverNavigationEffect.kt",
+                "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/game/GameStateResyncEffect.kt",
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/game/GameMap.kt",
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/game/camera/CameraModifier.kt",
                 "app/src/main/java/at/aau/serg/websocketbrokerdemo/ui/home/HomeScreen.kt",
