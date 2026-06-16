@@ -23,6 +23,8 @@ import at.aau.serg.websocketbrokerdemo.data.serverside.UnitType
  * @param fields  Hex-Felder mit Besitzer-Info fuer die Einfaerbung
  *                eroberter Zellen (subissue #123)
  * @param players Volle Spieler-Liste fuer das Farb-Mapping
+ * @param darkenedCells  Zellen, die abgedunkelt werden (ausserhalb der Reichweite)
+ * @param highlightedCells  gueltige Zielfelder, die hervorgehoben werden (Platzieren/Bewegen)
  */
 @Composable
 fun HexGrid(
@@ -32,6 +34,7 @@ fun HexGrid(
     fields: List<Field>,
     players: List<Player>,
     darkenedCells: Set<Pair<Int, Int>> = emptySet(),
+    highlightedCells: Set<Pair<Int, Int>> = emptySet(),
     modifier: Modifier = Modifier
 ) {
     val renderer = remember { HexRenderer() }
@@ -57,7 +60,10 @@ fun HexGrid(
 
     Canvas(modifier = modifier) {
         with(renderer) {
-            render(layout, units, buildings, fields, players, unitPainters, buildingPainters, darkenedCells)
+            render(
+                layout, units, buildings, fields, players,
+                unitPainters, buildingPainters, darkenedCells, highlightedCells
+            )
         }
     }
 }
