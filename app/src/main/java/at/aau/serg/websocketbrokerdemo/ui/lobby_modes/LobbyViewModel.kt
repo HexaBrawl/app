@@ -74,7 +74,7 @@ class LobbyViewModel(
     }
 
     /** Versucht via Code einem Raum beizutreten. */
-    fun tryJoinByCodeAsync(onSuccess: () -> Unit) {
+    fun tryJoinByCodeAsync(expectedMode: GameMode, onSuccess: () -> Unit) {
         if (!LobbyRoomLogic.canAttemptJoin(_state.value) || _isLoading.value) return
         val code = _state.value.code
 
@@ -83,7 +83,14 @@ class LobbyViewModel(
             _lastError.value = null
             try {
                 val room = apiClient.findByCode(code)
-                apply(LobbyRoomLogic.effectsForJoinByCodeResult(room, code), onSuccess)
+                apply(
+                    LobbyRoomLogic.effectsForJoinByCodeResult(
+                        room,
+                        code,
+                        mapUiToDataMode(expectedMode)
+                    ),
+                    onSuccess
+                )
             } catch (e: Exception) {
                 _isLoading.value = false
                 _lastError.value = "Netzwerkfehler: ${e.message}"

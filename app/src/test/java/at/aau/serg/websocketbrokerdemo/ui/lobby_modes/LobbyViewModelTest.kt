@@ -3,6 +3,7 @@ package at.aau.serg.websocketbrokerdemo.ui.lobby_modes
 import androidx.compose.runtime.mutableStateOf
 import at.aau.serg.websocketbrokerdemo.data.serverside.GameMode
 import at.aau.serg.websocketbrokerdemo.data.serverside.RoomDTO
+import at.aau.serg.websocketbrokerdemo.ui.mainmenu.GameMode as UiGameMode
 import at.aau.serg.websocketbrokerdemo.network.GameSession
 import at.aau.serg.websocketbrokerdemo.network.RoomApiClient
 import io.mockk.coEvery
@@ -138,7 +139,7 @@ class LobbyViewModelTest {
         coEvery { apiClient.findByCode("CODE12") } returns room
         var successCalled = false
 
-        vm.tryJoinByCodeAsync {
+        vm.tryJoinByCodeAsync(UiGameMode.DUAL_VALLEY) {
             successCalled = true
         }
 
@@ -155,7 +156,7 @@ class LobbyViewModelTest {
         vm.onCodeChange("CODE12")
         coEvery { apiClient.findByCode("CODE12") } returns null
 
-        vm.tryJoinByCodeAsync {}
+        vm.tryJoinByCodeAsync(UiGameMode.DUAL_VALLEY) {}
 
         assertTrue(vm.state.value.showJoinDialog)
         assertTrue(vm.lastError.value!!.contains("CODE12"))
