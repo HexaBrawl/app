@@ -55,7 +55,8 @@ import com.example.myapplication.R
 @Composable
 fun ReconnectingOverlay(
     state: ConnectionState,
-    onBackToMenu: () -> Unit
+    onBackToMenu: () -> Unit,
+    onRetry: () -> Unit = {}
 ) {
     Box(
         modifier = Modifier
@@ -78,7 +79,7 @@ fun ReconnectingOverlay(
         ) {
             when (state) {
                 ConnectionState.Reconnecting -> ReconnectingBody()
-                ConnectionState.LostPermanently -> LostPermanentlyBody(onBackToMenu)
+                ConnectionState.LostPermanently -> LostPermanentlyBody(onRetry, onBackToMenu)
                 ConnectionState.Connected -> Unit
             }
         }
@@ -110,7 +111,7 @@ private fun ReconnectingBody() {
 }
 
 @Composable
-private fun LostPermanentlyBody(onBackToMenu: () -> Unit) {
+private fun LostPermanentlyBody(onRetry: () -> Unit, onBackToMenu: () -> Unit) {
     Text(
         text = stringResource(R.string.reconnect_lost_title),
         style = TextStyle(
@@ -130,6 +131,25 @@ private fun LostPermanentlyBody(onBackToMenu: () -> Unit) {
         )
     )
     Spacer(Modifier.height(24.dp))
+    Button(
+        onClick = onRetry,
+        shape = RoundedCornerShape(8.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = GoldCoinDark,
+            contentColor = ParchmentLight
+        )
+    ) {
+        Text(
+            text = stringResource(R.string.reconnect_retry),
+            style = TextStyle(
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                color = GoldCoinLight,
+                letterSpacing = 1.sp
+            )
+        )
+    }
+    Spacer(Modifier.height(12.dp))
     Button(
         onClick = onBackToMenu,
         shape = RoundedCornerShape(8.dp),
