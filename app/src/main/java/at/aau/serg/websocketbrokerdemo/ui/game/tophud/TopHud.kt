@@ -107,6 +107,12 @@ fun TopHud(
         HudPopup.Menu -> HudMenuPopup(
             onSettings = viewModel::showSettings,
             onInfo = viewModel::showInfo,
+            onSync = {
+                // Aktuellen Server-State erzwingen (Resync), falls der Client
+                // durch einen verpassten Broadcast haengt.
+                session.endpoint.requestRoomState(session.activeRoomId.value)
+                viewModel.closePopup()
+            },
             onDismiss = viewModel::closePopup
         )
         HudPopup.Info -> InfoPopup(onDismiss = viewModel::closePopup)

@@ -73,6 +73,7 @@
     <string name="hud_menu_title">Menü</string>
     <string name="hud_menu_settings">Einstellungen</string>
     <string name="hud_menu_info">Informationen</string>
+    <string name="hud_menu_sync">Aktualisieren</string>
     <string name="hud_settings_title">Einstellungen</string>
     <string name="hud_info_title">Spielerklärung</string>
     <string name="hud_info_body">HexaBrawl ist ein rundenbasiertes Strategiespiel. Erobere Felder, baue Farmen und Truppen, und nimm die gegnerische Hauptburg ein, um zu gewinnen. Gold sammelst du über deine Farmen, und du kannst es ausgeben um Truppen zu kaufen.</string>

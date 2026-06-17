@@ -31,14 +31,17 @@ import com.example.myapplication.R
 /**
  * Menue-Popup ueber dem Top-HUD.
  *
- * Bietet zwei Aktionen: zu den Einstellungen wechseln oder das Info-
- * Popup mit der Spielerklaerung oeffnen. Stateless -- alle Callbacks
- * kommen von aussen.
+ * Bietet drei Aktionen: zu den Einstellungen wechseln, das Info-Popup
+ * mit der Spielerklaerung oeffnen, oder den aktuellen Spielstand neu vom
+ * Server anfordern ([onSync]) -- nuetzlich, wenn der Client durch einen
+ * verpassten Broadcast haengt (z. B. ein Mitspieler ist weg, wird aber
+ * noch angezeigt). Stateless -- alle Callbacks kommen von aussen.
  */
 @Composable
 fun HudMenuPopup(
     onSettings: () -> Unit,
     onInfo: () -> Unit,
+    onSync: () -> Unit,
     onDismiss: () -> Unit
 ) {
     Dialog(onDismissRequest = onDismiss) {
@@ -86,6 +89,19 @@ fun HudMenuPopup(
                         text = stringResource(R.string.hud_menu_info),
                         primary = false,
                         onClick = onInfo
+                    )
+                }
+
+                Spacer(Modifier.height(10.dp))
+
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    DialogButton(
+                        text = stringResource(R.string.hud_menu_sync),
+                        primary = false,
+                        onClick = onSync
                     )
                 }
             }
