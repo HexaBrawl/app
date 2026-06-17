@@ -22,6 +22,9 @@ package at.aau.serg.websocketbrokerdemo.data.serverside
  *  - ROOM_NOT_FOUND       Der angegebene roomId existiert nicht (mehr) in
  *                         der RoomRegistry. Wird auch beim Join mit
  *                         falschem JoinCode bzw. UUID gesendet.
+ *  - NAME_ALREADY_TAKEN   Beitritt verweigert, weil der gewuenschte
+ *                         Spielername im Raum bereits von einem anderen
+ *                         (verbundenen) Spieler belegt ist.
  */
 enum class ErrorCode {
     NOT_YOUR_TURN,
@@ -30,5 +33,6 @@ enum class ErrorCode {
     GAME_NOT_STARTED,
     INSUFFICIENT_GOLD,
     COLOR_ALREADY_TAKEN,
-    ROOM_NOT_FOUND
+    ROOM_NOT_FOUND,
+    NAME_ALREADY_TAKEN
 }

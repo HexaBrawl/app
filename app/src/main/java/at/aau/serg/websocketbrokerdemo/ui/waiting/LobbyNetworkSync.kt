@@ -135,10 +135,10 @@ fun LobbyNetworkSync(
 
     // Server-Fehler beobachten und sinnvoll behandeln.
     //
-    // Speziell COLOR_ALREADY_TAKEN: der lokale Spieler hat eine Farbe
-    // gewaehlt, die schon belegt war. Wir setzen den ready-Status zurueck
-    // (damit der User die Farbe wieder wechseln kann) und zeigen eine
-    // Snackbar mit einem klaren Hinweis.
+    // COLOR_ALREADY_TAKEN / NAME_ALREADY_TAKEN: der lokale Spieler hat eine
+    // Farbe bzw. einen Namen gewaehlt, die/der schon belegt war. Wir setzen
+    // den ready-Status zurueck (damit Name/Farbe wieder editierbar sind) und
+    // zeigen eine Snackbar mit einem klaren Hinweis.
     //
     // Andere Fehler werden 1:1 als Snackbar gezeigt; die App bleibt
     // ansonsten im aktuellen State.
@@ -146,7 +146,7 @@ fun LobbyNetworkSync(
     LaunchedEffect(lastError) {
         val error = lastError ?: return@LaunchedEffect
         when (error.errorCode) {
-            ErrorCode.COLOR_ALREADY_TAKEN -> {
+            ErrorCode.COLOR_ALREADY_TAKEN, ErrorCode.NAME_ALREADY_TAKEN -> {
                 viewModel.clearLocalReady()
                 viewModel.showError(error.message)
             }
