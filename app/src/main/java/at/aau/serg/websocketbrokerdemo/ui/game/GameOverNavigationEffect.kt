@@ -38,16 +38,16 @@ fun GameOverNavigationEffect(
         val state = gameState ?: return@LaunchedEffect
         val name = localName ?: return@LaunchedEffect
 
-        val iAmEliminated = state.players.none { it.name == name }
-        val gameOver = status == GameStatus.FINISHED
+        if (!GameOverLogic.isGameOver(state.players, status, name)) return@LaunchedEffect
 
-        if (iAmEliminated || gameOver) {
-            session.sessionRepository.clear()
-            val isWin = state.winner == name
-            val route = if (isWin) Screen.EndWin.route else Screen.EndLoss.route
-            navController.navigate(route) {
-                popUpTo(Screen.Home.route) { inclusive = false }
-            }
+        session.sessionRepository.clear()
+        val route = if (GameOverLogic.isLocalWinner(state.winner, name)) {
+            Screen.EndWin.route
+        } else {
+            Screen.EndLoss.route
+        }
+        navController.navigate(route) {
+            popUpTo(Screen.Home.route) { inclusive = false }
         }
     }
 }
