@@ -16,6 +16,17 @@ import at.aau.serg.websocketbrokerdemo.ui.theme.GoldCoinDark
 import at.aau.serg.websocketbrokerdemo.ui.theme.ParchmentDark
 import at.aau.serg.websocketbrokerdemo.ui.theme.ParchmentLight
 
+/**
+ * Pergament-Karte als Hintergrund-Wrapper fuer Settings-Inhalte.
+ *
+ * Legt den uebergebenen [content] in eine Box mit Pergament-Verlauf,
+ * Gold-Rand und Schatten und ordnet ihn vertikal in einer Column an.
+ * Dient als einheitlicher Rahmen, damit alle Settings-Abschnitte gleich
+ * aussehen.
+ *
+ * @param content Die im Pergament-Rahmen dargestellten Composables.
+ */
+
 @Composable
 internal fun SettingsBackground(content: @Composable () -> Unit) {
     Box(
