@@ -6,8 +6,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import at.aau.serg.websocketbrokerdemo.data.serverside.ErrorCode
-import at.aau.serg.websocketbrokerdemo.data.serverside.GameStatus
 import at.aau.serg.websocketbrokerdemo.data.serverside.PlayerColor
 import at.aau.serg.websocketbrokerdemo.network.GameSession
 import at.aau.serg.websocketbrokerdemo.ui.navigation.Screen
@@ -16,15 +14,18 @@ import kotlinx.coroutines.delay
 /**
  * Verbindet das Wartelobby-ViewModel mit dem GameSession-Netzwerk.
  *
+ * Reine Side-Effect-/Wiring-Schicht: Subscription verwalten, Server-Calls
+ * absetzen und Navigation ausloesen. Saemtliche Entscheidungen (wann anmelden,
+ * wer ist remote, wann navigieren, welcher Fehler braucht Reselection) liegen
+ * in [LobbyNetworkLogic] -- pure und getestet.
+ *
  * Verantwortungen:
  *  - GameState-Subscription verwalten (DisposableEffect)
- *  - Server-Updates an [WaitingLobbyViewModel.applyRemoteState]
- *    weiterreichen
- *  - Lokalen Spieler erst dann beim Server anmelden, wenn der User
- *    "Ready" geklickt hat -- vorher hat er Zeit, Name und Farbe zu
- *    waehlen
- *  - Zum GameScreen navigieren, sobald der Countdown durchgelaufen ist
- *    UND der Server den Spielstatus auf IN_PROGRESS gesetzt hat
+ *  - Aktuellen Raum-Zustand beim Eintritt anfordern (Resync)
+ *  - Lokalen Spieler beim Server anmelden, sobald "Ready" geklickt ist
+ *  - Server-Updates an [WaitingLobbyViewModel.applyRemoteState] weiterreichen
+ *  - Zum GameScreen navigieren, sobald Countdown durch + Spiel IN_PROGRESS
+ *  - Server-Fehler behandeln (Snackbar; bei Farb-/Namens-Konflikt Ready-Reset)
  */
 @Composable
 fun LobbyNetworkSync(
@@ -33,11 +34,8 @@ fun LobbyNetworkSync(
     navController: NavController
 ) {
     val viewModelState by viewModel.state.collectAsStateWithLifecycle()
-    // Lokale Werte direkt aus dem observed State ableiten -- damit Compose
-    // die Recomposition garantiert triggert, wenn der User Name, Farbe
-    // oder Ready-Status aendert. Direkte Aufrufe von viewModel.localXyz
-    // wurden zwar gelesen, aber nicht zuverlaessig fuer LaunchedEffect-Keys
-    // erfasst.
+    // Lokale Werte aus dem observed State ableiten, damit Compose die
+    // Recomposition (und damit die LaunchedEffect-Keys) zuverlaessig triggert.
     val localSlot = viewModelState.slots.firstOrNull { it.isLocal }
     val localName = localSlot?.name.orEmpty()
     val localColor = localSlot?.color ?: PlayerColor.RED
@@ -50,41 +48,23 @@ fun LobbyNetworkSync(
         onDispose { job.cancel() }
     }
 
-    // Aktuellen Raum-Zustand aktiv anfordern.
-    //
-    // STOMP-Subscriptions liefern nur zukuenftige Broadcasts. Ein spaet
-    // beitretender Spieler wuerde die bereits anwesenden Spieler und deren
-    // belegte Farben sonst nie sehen -- er bliebe auf der Default-Farbe,
-    // wuerde beim "Ready" mit COLOR_ALREADY_TAKEN abgelehnt und der Raum
-    // erreicht nie die volle Spielerzahl (kein Auto-Start). Mit dem
-    // angeforderten State greift der Auto-Reassign in
-    // applyRemoteState, bevor der User "Ready" drueckt.
-    //
-    // Gestaffelte Wiederholung: der erste Request kann die Subscribe-
-    // Registrierung am Broker knapp verpassen (Subscribe und Send laufen in
-    // getrennten Coroutines). Wir fragen daher mehrfach, bis der erste
-    // Broadcast eintrifft -- danach stoppt die Schleife. Die Requests sind
-    // idempotent (der Server rebroadcastet nur).
+    // Aktuellen Raum-Zustand aktiv anfordern (STOMP liefert nur zukuenftige
+    // Broadcasts). Gestaffelt, bis der erste Broadcast eintrifft -- danach
+    // stoppt die Schleife. Idempotent (Server rebroadcastet nur).
     LaunchedEffect(session.activeRoomId.value) {
         val roomId = session.activeRoomId.value
         if (roomId.isBlank()) return@LaunchedEffect
-        repeat(MAX_ROOM_STATE_REQUESTS) {
+        repeat(LobbyNetworkLogic.RESYNC_REQUESTS) {
             if (session.gameState.value != null) return@LaunchedEffect
             session.endpoint.requestRoomState(roomId)
-            delay(ROOM_STATE_REQUEST_DELAY_MS)
+            delay(LobbyNetworkLogic.RESYNC_DELAY_MS)
         }
     }
 
-    // Anmelden erst wenn der User "Ready" geklickt hat.
-    //
-    // Der User hat in der WaitingLobby zuvor seinen Namen und seine Farbe
-    // gewaehlt. Der Klick auf "Ready" setzt im lokalen Slot ready=true
-    // und triggert diesen Effect. Die gewaehlte Farbe wird mitgegeben --
-    // bei Konflikt (zwei Spieler waehlen die gleiche Farbe) lehnt der
-    // Server mit COLOR_ALREADY_TAKEN ab; das Error-Handling dafuer kommt
-    // als Follow-up.
+    // Beim Server anmelden, sobald der User "Ready" geklickt hat (Name/Farbe
+    // sind dann gewaehlt).
     LaunchedEffect(localReady, localName, localColor) {
-        if (localReady && localName.isNotBlank() && session.activeRoomId.value.isNotBlank()) {
+        if (LobbyNetworkLogic.shouldJoin(localReady, localName, session.activeRoomId.value)) {
             session.localPlayerName.value = localName
             session.sessionRepository.playerName = localName
             session.endpoint.joinGame(
@@ -97,74 +77,36 @@ fun LobbyNetworkSync(
 
     val gameState by session.gameState
 
-    // Server-Updates an das ViewModel weiterreichen (Slots, Spielerliste).
-    // Navigation passiert bewusst NICHT hier, sondern erst nachdem der
-    // Countdown im ViewModel abgelaufen ist (siehe LaunchedEffect unten).
+    // Server-Updates ans ViewModel weiterreichen. Navigation passiert bewusst
+    // erst nach dem Countdown (siehe LaunchedEffect unten).
     LaunchedEffect(gameState) {
         val state = gameState ?: return@LaunchedEffect
-
-        // Lokalen Spieler im Server-State erkennen -> Name + Farbe locken.
-        // Wir verlassen uns nicht auf den joinGame-Send, sondern auf den
-        // tatsaechlichen Broadcast: wenn der Server den Spieler ablehnt
-        // (z.B. COLOR_ALREADY_TAKEN), taucht er nicht in der Liste auf
-        // und der Lock bleibt offen, sodass der User die Farbe wechseln
-        // kann.
-        if (state.players.any { it.name == localName }) {
+        if (LobbyNetworkLogic.isLocalPlayerPresent(state.players, localName)) {
             viewModel.markJoinedServer()
         }
-
-        // Komplette Player-Objekte (mit Server-Farbe) weitergeben, damit
-        // der Color-Picker im Wartelobby-UI konsistent zur Realitaet ist.
-        val remotePlayers = state.players.filter { it.name != localName }
-
-        viewModel.applyRemoteState(remotePlayers)
+        viewModel.applyRemoteState(LobbyNetworkLogic.remotePlayers(state.players, localName))
     }
 
-    // Zum GameScreen navigieren -- aber erst NACHDEM der Countdown
-    // wirklich durchgelaufen ist. So sieht der User die 3-2-1-Anzeige,
-    // auch wenn der Server (Auto-Start sobald maxPlayers erreicht) den
-    // Status schon vorher auf IN_PROGRESS gesetzt hat.
+    // Zum GameScreen navigieren -- erst NACHDEM der Countdown durchgelaufen ist
+    // UND der Server IN_PROGRESS meldet.
     LaunchedEffect(viewModelState.countdownComplete, gameState?.status) {
-        val status = gameState?.status ?: return@LaunchedEffect
-        if (viewModelState.countdownComplete && status == GameStatus.IN_PROGRESS) {
+        if (LobbyNetworkLogic.shouldNavigateToGame(viewModelState.countdownComplete, gameState?.status)) {
             navController.navigate(Screen.Game.route) {
                 popUpTo(Screen.Home.route) { inclusive = false }
             }
         }
     }
 
-    // Server-Fehler beobachten und sinnvoll behandeln.
-    //
-    // COLOR_ALREADY_TAKEN / NAME_ALREADY_TAKEN: der lokale Spieler hat eine
-    // Farbe bzw. einen Namen gewaehlt, die/der schon belegt war. Wir setzen
-    // den ready-Status zurueck (damit Name/Farbe wieder editierbar sind) und
-    // zeigen eine Snackbar mit einem klaren Hinweis.
-    //
-    // Andere Fehler werden 1:1 als Snackbar gezeigt; die App bleibt
-    // ansonsten im aktuellen State.
+    // Server-Fehler behandeln: Snackbar; bei Farb-/Namens-Konflikt zusaetzlich
+    // Ready zuruecksetzen, damit Name/Farbe wieder editierbar sind.
     val lastError by session.lastError
     LaunchedEffect(lastError) {
         val error = lastError ?: return@LaunchedEffect
-        when (error.errorCode) {
-            ErrorCode.COLOR_ALREADY_TAKEN, ErrorCode.NAME_ALREADY_TAKEN -> {
-                viewModel.clearLocalReady()
-                viewModel.showError(error.message)
-            }
-            else -> {
-                viewModel.showError(error.message)
-            }
+        if (LobbyNetworkLogic.requiresReselection(error.errorCode)) {
+            viewModel.clearLocalReady()
         }
-        // Error in der Session wieder loeschen, sonst triggert derselbe
-        // Effect bei jeder Recomposition erneut.
+        viewModel.showError(error.message)
+        // Error loeschen, sonst triggert derselbe Effect bei jeder Recomposition.
         session.lastError.value = null
     }
 }
-
-/**
- * Maximale Anzahl gestaffelter /init-Anfragen beim Betreten der Wartelobby,
- * bis der erste GameState-Broadcast eingetroffen ist.
- */
-private const val MAX_ROOM_STATE_REQUESTS = 5
-
-/** Abstand zwischen zwei /init-Anfragen in Millisekunden. */
-private const val ROOM_STATE_REQUEST_DELAY_MS = 400L
