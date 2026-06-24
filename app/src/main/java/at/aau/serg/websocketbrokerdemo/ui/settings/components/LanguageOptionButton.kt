@@ -18,6 +18,19 @@ import at.aau.serg.websocketbrokerdemo.ui.theme.InkBlack
 import at.aau.serg.websocketbrokerdemo.ui.theme.ParchmentLight
 import at.aau.serg.websocketbrokerdemo.ui.theme.WoodMedium
 
+/**
+ * Auswahl-Button fuer eine einzelne Sprache im Settings-Screen.
+ *
+ * Der ausgewaehlte Zustand wird rein optisch gespiegelt (Gold-Fuellung,
+ * dickerer Rand, fetterer Text), damit der User die aktive Sprache auf
+ * einen Blick erkennt. Die eigentliche Auswahl-Logik liegt beim Aufrufer.
+ *
+ * @param text     Anzeigetext des Buttons (z. B. der Sprachname).
+ * @param selected Ob diese Sprache aktuell aktiv ist.
+ * @param onClick  Callback beim Antippen.
+ * @param modifier Optionaler Layout-Modifier.
+ */
+
 @Composable
 internal fun LanguageOptionButton(
     text: String,

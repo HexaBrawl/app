@@ -5,6 +5,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 
+/**
+ * Modifier, der Pinch-Zoom und Pan auf die Spielkarte anwendet.
+ *
+ * Faengt Transform-Gesten ab und reicht sie an die seiteneffekt-freie
+ * [CameraGestureLogic] weiter: erst der neue Zoom, daraus der effektive
+ * Zoom-Faktor des Frames, dann die pivot-basierten Offsets (skaliert um den
+ * Gesten-Mittelpunkt statt um die Bildschirmmitte). Die Ergebnisse werden
+ * in den [camera]-State geschrieben und ueber [CameraState.clampOffset] auf
+ * den gueltigen Bereich begrenzt. Der `graphicsLayer`-Block uebertraegt
+ * Scale und Translation anschliessend auf die gerenderte Karte.
+ *
+ * @param camera Beobachtbarer Kamera-State (Zoom, Offset, Viewport).
+ */
+
 fun Modifier.cameraControls(camera: CameraState): Modifier =
     this
         .pointerInput(Unit) {

@@ -7,6 +7,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import at.aau.serg.websocketbrokerdemo.ui.theme.InkBlack
 
+/**
+ * Abschnitts-Ueberschrift im Settings-Screen.
+ *
+ * Einheitlich formatierter, fetter Titel zur visuellen Gruppierung
+ * zusammengehoeriger Einstellungen.
+ *
+ * @param text Der angezeigte Ueberschriften-Text.
+ */
+
 @Composable
 internal fun SettingsSectionTitle(text: String) {
     Text(

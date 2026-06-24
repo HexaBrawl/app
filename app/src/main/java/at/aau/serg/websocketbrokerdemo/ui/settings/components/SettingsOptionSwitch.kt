@@ -19,6 +19,18 @@ import at.aau.serg.websocketbrokerdemo.ui.theme.ParchmentLight
 import at.aau.serg.websocketbrokerdemo.ui.theme.WoodDark
 import at.aau.serg.websocketbrokerdemo.ui.theme.WoodMedium
 
+/**
+ * Beschriftete Umschalt-Option (Label links, Switch rechts) im Settings-Screen.
+ *
+ * Genereller Baustein fuer An/Aus-Einstellungen wie Musik oder Soundeffekte.
+ * Haelt selbst keinen State -- der [checked]-Wert kommt von aussen rein,
+ * Aenderungen gehen ueber [onCheckedChange] zurueck.
+ *
+ * @param label           Beschriftung der Option.
+ * @param checked         Aktueller An/Aus-Zustand.
+ * @param onCheckedChange Callback bei Umschalten, liefert den neuen Wert.
+ */
+
 @Composable
 internal fun SettingsOptionSwitch(
     label: String,

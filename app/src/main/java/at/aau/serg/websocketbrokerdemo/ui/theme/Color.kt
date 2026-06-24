@@ -2,6 +2,16 @@ package at.aau.serg.websocketbrokerdemo.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
+/**
+ * Zentrale Farb-Palette des HexaBrawl-Themes.
+ *
+ * Die Farben sind in vier semantische Gruppen geordnet -- Pergament
+ * (Hintergruende, Map, Cards), Tinte (Text und Linien), Holz (Buttons und
+ * Rahmen) und Metall (Muenzen und Akzente). Alle Composables beziehen ihre
+ * Farben hierueber, damit das mittelalterliche Pergament-Look konsistent
+ * bleibt und Aenderungen an einer Stelle passieren.
+ */
+
 // Pergament-Töne (Hintergrund, Map, Cards)
 val ParchmentLight = Color(0xFFF5E6C4)   // helles, sauberes Pergament
 val ParchmentBase  = Color(0xFFE8D5A8)   // Standard-Pergament

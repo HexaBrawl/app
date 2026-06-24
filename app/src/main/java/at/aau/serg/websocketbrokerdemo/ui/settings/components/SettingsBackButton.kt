@@ -20,6 +20,16 @@ import at.aau.serg.websocketbrokerdemo.ui.theme.WoodDark
 import at.aau.serg.websocketbrokerdemo.ui.theme.WoodLight
 import com.example.myapplication.R
 
+/**
+ * Runder Zurueck-Button im Settings-Screen.
+ *
+ * Stilisiert als Holz-Medaillon mit Gold-Rand, passend zum Parchment-Theme
+ * des Spiels. Die contentDescription kommt aus den String-Resources, damit
+ * Screenreader den Button korrekt vorlesen.
+ *
+ * @param onClick Callback beim Antippen (typischerweise Navigation zurueck).
+ */
+
 @Composable
 internal fun SettingsBackButton(onClick: () -> Unit) {
     IconButton(
