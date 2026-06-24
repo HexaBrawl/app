@@ -7,6 +7,16 @@ plugins {
 }
 
 android {
+    // Hinweis: "com.example.myapplication" ist der vom Android-Studio-Template
+    // uebernommene Platzhalter-Name. Fachlich korrekt waere "at.aau.serg.hexabrawl"
+    // (Reverse-Domain-Notation, von allgemein nach speziell gelesen):
+    //   at        -> Laenderkuerzel Oesterreich
+    //   aau       -> Alpen-Adria-Universitaet Klagenfurt
+    //   serg      -> Software Engineering Research Group (Institut/Kurs)
+    //   hexabrawl -> Projektname dieser App
+    // Bewusst NICHT umbenannt, da der generierte R-Klassen-Import sonst in ~35
+    // Dateien angepasst werden muesste; das Source-Package bleibt
+    // "at.aau.serg.websocketbrokerdemo". (namespace != applicationId ist in AGP erlaubt.)
     namespace = "com.example.myapplication"
     compileSdk {
         version = release(36) {
@@ -15,6 +25,8 @@ android {
     }
 
     defaultConfig {
+        // Platzhalter aus dem Template (siehe Hinweis bei namespace oben);
+        // fachlich "at.aau.serg.hexabrawl".
         applicationId = "com.example.myapplication"
         minSdk = 30
         targetSdk = 36
