@@ -20,6 +20,17 @@ import at.aau.serg.websocketbrokerdemo.ui.theme.GoldCoinDark
 import at.aau.serg.websocketbrokerdemo.ui.theme.GoldCoinLight
 import at.aau.serg.websocketbrokerdemo.ui.theme.InkBlack
 
+/**
+ * Rundes Muenz-Badge, das die Spielerzahl als roemische Ziffer zeigt.
+ *
+ * Wandelt 2/3/4 in II/III/IV um (andere Werte werden als Dezimalzahl
+ * angezeigt) und stellt sie auf einem Gold-Medaillon dar. Wird in der
+ * Lobby genutzt, um den gewaehlten Spielmodus visuell zu kennzeichnen.
+ *
+ * @param count    Anzahl der Spieler des Modus.
+ * @param modifier Optionaler Layout-Modifier.
+ */
+
 @Composable
 public fun PlayerCountBadge(count: Int, modifier: Modifier = Modifier) {
     val roman = when (count) {
